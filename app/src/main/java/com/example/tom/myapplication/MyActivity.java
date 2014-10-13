@@ -9,6 +9,8 @@ import android.view.View;
 import android.widget.EditText;
 import android.widget.TextView;
 
+import java.util.Date;
+
 public class MyActivity extends Activity {
 
     DatabaseHelper dbh;
@@ -48,5 +50,7 @@ public class MyActivity extends Activity {
         EditText email = (EditText) findViewById(R.id.email);
         Profile profile = new Profile(/*Integer.parseInt(id.getText().toString())*/ 0, firstName.getText().toString(), lastName.getText().toString(), username.getText().toString(), email.getText().toString());
         dbh.storeProfile(profile);
+        DBLog log = new DBLog(0, "storing profile", new Date());
+        dbh.addLog(log);
     }
 }

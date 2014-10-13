@@ -42,14 +42,14 @@ public class DatabaseHelper extends SQLiteOpenHelper{
         onCreate(db);
     }
 
-    /*public void addLog(DBLog log) {
+    public void addLog(DBLog log) {
         Log.d("addLog", "adding a log");
         ContentValues input = new ContentValues();
         input.put(KEY_ACTION, log.getAction());
-        input.put(KEY_DATETIME, log.getDatetime());
+        input.put(KEY_DATETIME, log.getDateTimeString());
         SQLiteDatabase db = getWritableDatabase();
         db.insert(TABLE_LOGS, null, input);
-    }*/
+    }
 
     public void storeProfile(Profile input){
         ContentValues value = new ContentValues();
