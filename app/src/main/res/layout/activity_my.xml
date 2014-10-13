@@ -14,18 +14,6 @@
         android:id="@+id/firstName"
         android:hint="first name"
         android:layout_marginTop="28dp"
-        android:layout_below="@+id/profile_id"
-        android:layout_centerHorizontal="true" />
-
-    <EditText
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:inputType="number"
-        android:ems="10"
-        android:id="@+id/profile_id"
-        android:layout_marginTop="33dp"
-        android:hint="id"
-        android:layout_alignParentTop="true"
         android:layout_centerHorizontal="true" />
 
     <EditText

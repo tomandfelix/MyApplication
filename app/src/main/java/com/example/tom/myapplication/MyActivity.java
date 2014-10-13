@@ -43,7 +43,6 @@ public class MyActivity extends Activity {
 
     public void submitProfile(View v) {
         Log.d("submitProfile", "storing profile");
-//        EditText id = (EditText) findViewById(R.id.profile_id);
         EditText firstName = (EditText) findViewById(R.id.firstName);
         EditText lastName = (EditText) findViewById(R.id.lastName);
         EditText username = (EditText) findViewById(R.id.username);
