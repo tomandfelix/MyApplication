@@ -54,4 +54,14 @@
         android:layout_marginTop="36dp"
         android:hint="email"
         android:onClick="submitProfile" />
+
+    <EditText
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:inputType="textPassword"
+        android:ems="10"
+        android:id="@+id/password"
+        android:layout_below="@+id/lastName"
+        android:layout_centerHorizontal="true"
+        android:hint="Password" />
 </RelativeLayout>
