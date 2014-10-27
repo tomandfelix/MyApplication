@@ -9,7 +9,9 @@ import org.apache.http.client.ClientProtocolException;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.entity.UrlEncodedFormEntity;
 import org.apache.http.client.methods.HttpPost;
+import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.DefaultHttpClient;
+import org.apache.http.message.BasicHeader;
 import org.apache.http.message.BasicNameValuePair;
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -48,28 +50,31 @@ public class ServerHelper {
             Log.d("ASYNC", "CreateProfile started");
             HttpClient client = new DefaultHttpClient();
             HttpPost post = new HttpPost("http://eng.studev.groept.be/thesis/a14_stapp2/createProfile.php");
+            JSONObject query = new JSONObject();
             try {
-                List<NameValuePair> values = new ArrayList<NameValuePair>(5);
-                values.add(new BasicNameValuePair("firstname", params[0]));
-                values.add(new BasicNameValuePair("lastname", params[1]));
-                values.add(new BasicNameValuePair("username", params[2]));
-                values.add(new BasicNameValuePair("email", params[3]));
-                values.add(new BasicNameValuePair("password", params[4]));
-                post.setEntity(new UrlEncodedFormEntity(values));
+                query.put("firstname", params[0]);
+                query.put("lastname", params[1]);
+                query.put("username", params[2]);
+                query.put("email", params[3]);
+                query.put("password", params[4]);
+                post.setEntity(new StringEntity(query.toString()));
                 HttpResponse response = client.execute(post);
                 BufferedReader in = new BufferedReader(new InputStreamReader(response.getEntity().getContent()));
-                int id = 0;
                 String line;
+                JSONObject result = new JSONObject();
                 if((line = in.readLine()) != null) {
-                    id = Integer.parseInt(line);
+                    result = new JSONObject(line);
                 }
+                int id = result.getInt("id");
                 in.close();
                 Log.d("POST", "reply= " + id);
                 dbh.storeProfile(new Profile(id , params[0], params[1], params[2], params[3], 0, 0));
             } catch (ClientProtocolException e) {
-                Log.e("POST", "POST failed");
+                Log.e("CreateProfile", "Error: ClientProtocolException");
             } catch (IOException e) {
-                Log.e("POST", "POST failed");
+                Log.e("CreateProfile", "Error: IOException");
+            } catch (JSONException e) {
+                Log.e("CreateProfile", "JSON error");
             }
             return null;
         }
@@ -81,27 +86,25 @@ public class ServerHelper {
             Log.d("ASYNC", "GetProfile started");
             HttpClient client = new DefaultHttpClient();
             HttpPost post = new HttpPost("http://eng.studev.groept.be/thesis/a14_stapp2/getProfile.php");
+            JSONObject query = new JSONObject();
             try {
-                /*JSONObject query = new JSONObject();
-                obj.put("username"), */
-                List<NameValuePair> values = new ArrayList<NameValuePair>(5);
-                values.add(new BasicNameValuePair("username", params[0]));
-                values.add(new BasicNameValuePair("password", params[1]));
-                post.setEntity(new UrlEncodedFormEntity(values));
+                query.put("username", params[0]);
+                query.put("password", params[1]);
+                post.setEntity(new StringEntity(query.toString()));
                 HttpResponse response = client.execute(post);
                 BufferedReader in = new BufferedReader(new InputStreamReader(response.getEntity().getContent()));
                 String line;
-                JSONObject json = new JSONObject();
-                if((line = in.readLine()) != null) {
-                    json = new JSONObject(line);
+                JSONObject result = new JSONObject();
+                if ((line = in.readLine()) != null) {
+                    result = new JSONObject(line);
                 }
                 in.close();
-                Log.d("GetProfile", json.getString("id"));
-                Log.d("GetProfile", json.getString("firstname"));
-                Log.d("GetProfile", json.getString("lastname"));
-                Log.d("GetProfile", json.getString("email"));
-                Log.d("GetProfile", json.getString("money"));
-                Log.d("GetProfile", json.getString("experience"));
+                Log.d("GetProfile", result.getString("id"));
+                Log.d("GetProfile", result.getString("firstname"));
+                Log.d("GetProfile", result.getString("lastname"));
+                Log.d("GetProfile", result.getString("email"));
+                Log.d("GetProfile", result.getString("money"));
+                Log.d("GetProfile", result.getString("experience"));
             } catch (ClientProtocolException e) {
                 Log.e("GetProfile", "Error: ClientProtocolException");
             } catch (IOException e) {
