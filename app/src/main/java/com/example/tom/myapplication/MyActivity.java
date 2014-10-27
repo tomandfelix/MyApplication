@@ -72,4 +72,11 @@ public class MyActivity extends Activity {
         EditText password = (EditText) findViewById(R.id.password);
         sh.createProfile(firstName.getText().toString(), lastName.getText().toString(), username.getText().toString(), email.getText().toString(), password.getText().toString());
     }
+
+    public void getProfile (View v) {
+        Log.d("getProfile", "getting Profile");
+        EditText username = (EditText) findViewById(R.id.username);
+        EditText password = (EditText) findViewById(R.id.password);
+        sh.getProfile(username.getText().toString(), password.getText().toString());
+    }
 }

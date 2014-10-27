@@ -37,11 +37,12 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="store profile"
-        android:id="@+id/button"
+        android:id="@+id/storeButton"
+        android:layout_marginBottom="50dp"
+        android:onClick="submitProfile"
         android:layout_alignParentBottom="true"
-        android:layout_centerHorizontal="true"
-        android:layout_marginBottom="54dp"
-        android:onClick="submitProfile" />
+        android:layout_alignParentStart="true"
+        android:layout_marginLeft="37dp" />
 
     <EditText
         android:layout_width="wrap_content"
@@ -64,4 +65,13 @@
         android:layout_below="@+id/lastName"
         android:layout_centerHorizontal="true"
         android:hint="Password" />
+
+    <Button
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Get Profile"
+        android:id="@+id/getButton"
+        android:layout_alignBottom="@+id/storeButton"
+        android:layout_alignParentEnd="true"
+        android:onClick="getProfile" />
 </RelativeLayout>

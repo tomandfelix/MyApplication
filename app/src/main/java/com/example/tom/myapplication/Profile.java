@@ -11,12 +11,33 @@ public class Profile {
     private String username;
     private String email;
 
-    public Profile(int id, String lastName, String firstName, String username, String email) {
+    public int getMoney() {
+        return money;
+    }
+
+    public void setMoney(int money) {
+        this.money = money;
+    }
+
+    public int getExperience() {
+        return experience;
+    }
+
+    public void setExperience(int experience) {
+        this.experience = experience;
+    }
+
+    private int money;
+    private int experience;
+
+    public Profile(int id, String firstName, String lastName, String username, String email, int money, int experience) {
         this.id = id;
         this.lastName = lastName;
         this.firstName = firstName;
         this.username = username;
         this.email = email;
+        this.money = money;
+        this.experience = experience;
     }
 
     public int getId() {

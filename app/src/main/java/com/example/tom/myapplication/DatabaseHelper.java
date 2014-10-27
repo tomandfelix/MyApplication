@@ -2,9 +2,12 @@ package com.example.tom.myapplication;
 
 import android.content.ContentValues;
 import android.content.Context;
+import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 import android.util.Log;
+
+import java.util.ArrayList;
 
 /**
  * Created by Tom on 6/10/2014.
@@ -22,6 +25,8 @@ public class DatabaseHelper extends SQLiteOpenHelper{
     private static final String KEY_LASTNAME = "lastname";
     private static final String KEY_USERNAME = "username";
     private static final String KEY_EMAIL = "email";
+    private static final String KEY_MONEY = "money";
+    private static final String KEY_EXPERIENCE = "experience";
 
 
 
@@ -32,7 +37,7 @@ public class DatabaseHelper extends SQLiteOpenHelper{
     @Override
     public void onCreate(SQLiteDatabase db) {
         db.execSQL("CREATE TABLE " + TABLE_LOGS + " (" + KEY_ID + " INTEGER PRIMARY KEY AUTOINCREMENT, " + KEY_ACTION + " TEXT, " + KEY_DATETIME + " DATETIME)");
-        db.execSQL("CREATE TABLE " + TABLE_PROFILES + " (" + KEY_ID + " INTEGER PRIMARY KEY NOT NULL UNIQUE, " + KEY_FIRSTNAME + " TEXT, " + KEY_LASTNAME + " TEXT, " + KEY_USERNAME + " TEXT, " + KEY_EMAIL + " TEXT)");
+        db.execSQL("CREATE TABLE " + TABLE_PROFILES + " (" + KEY_ID + " INTEGER PRIMARY KEY NOT NULL UNIQUE, " + KEY_FIRSTNAME + " TEXT, " + KEY_LASTNAME + " TEXT, " + KEY_USERNAME + " TEXT, " + KEY_EMAIL + " TEXT, " + KEY_MONEY + " INT, " + KEY_EXPERIENCE + " INT)");
     }
 
     @Override
@@ -51,16 +56,58 @@ public class DatabaseHelper extends SQLiteOpenHelper{
         db.insert(TABLE_LOGS, null, input);
     }
 
-    public void storeProfile(Profile input){
-        ContentValues value = new ContentValues();
-        if(input.getId() != 0) {
-            value.put(KEY_ID, input.getId());
-        }
-        value.put(KEY_FIRSTNAME, input.getFirstName());
-        value.put(KEY_LASTNAME, input.getLastName());
-        value.put(KEY_USERNAME, input.getUsername());
-        value.put(KEY_EMAIL, input.getEmail());
+    public boolean idPresent(int id) {
+        String query = "SELECT " + KEY_ID + " FROM " + TABLE_PROFILES + " WHERE " + KEY_ID + " = " + id;
         SQLiteDatabase db = getWritableDatabase();
-        db.insert(TABLE_PROFILES, null, value);
+        Cursor cursor = db.rawQuery(query, null);
+        if(cursor.moveToFirst()) {
+            return true;
+        } else {
+            return false;
+        }
     }
+
+    public void storeProfile(Profile input){
+        if(idPresent(input.getId())) {
+            updateProfile(input);
+        } else {
+            ContentValues value = new ContentValues();
+            if (input.getId() != 0) {
+                value.put(KEY_ID, input.getId());
+            }
+            value.put(KEY_FIRSTNAME, input.getFirstName());
+            value.put(KEY_LASTNAME, input.getLastName());
+            value.put(KEY_USERNAME, input.getUsername());
+            value.put(KEY_EMAIL, input.getEmail());
+            value.put(KEY_MONEY, input.getMoney());
+            value.put(KEY_EXPERIENCE, input.getExperience());
+            SQLiteDatabase db = getWritableDatabase();
+            db.insert(TABLE_PROFILES, null, value);
+        }
+    }
+
+    public void updateProfile(Profile input) {
+        ContentValues value = new ContentValues();
+        if(input.getFirstName() != null) {
+            value.put(KEY_FIRSTNAME, input.getFirstName());
+        }
+        if(input.getLastName() != null) {
+            value.put(KEY_LASTNAME, input.getLastName());
+        }
+        if(input.getUsername() != null) {
+            value.put(KEY_USERNAME, input.getUsername());
+        }
+        if(input.getEmail() != null) {
+            value.put(KEY_EMAIL, input.getEmail());
+        }
+        if(input.getMoney() != 0) {
+            value.put(KEY_MONEY, input.getMoney());
+        }
+        if(input.getExperience() != 0) {
+            value.put(KEY_EXPERIENCE, input.getExperience());
+        }
+        SQLiteDatabase db = getWritableDatabase();
+        db.update(TABLE_PROFILES, value, KEY_ID + " = ?", new String[]{"" + input.getId()});
+    }
+
 }
