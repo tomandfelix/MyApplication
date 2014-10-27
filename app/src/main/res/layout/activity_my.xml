@@ -74,4 +74,32 @@
         android:layout_alignBottom="@+id/storeButton"
         android:layout_alignParentEnd="true"
         android:onClick="getProfile" />
+
+    <Button
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Get Profile"
+        android:id="@+id/getOther"
+        android:layout_alignParentBottom="true"
+        android:layout_alignEnd="@+id/email"
+        android:onClick="getOtherProfile" />
+
+    <EditText
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:inputType="number"
+        android:ems="10"
+        android:id="@+id/id"
+        android:layout_alignTop="@+id/getOther"
+        android:layout_alignEnd="@+id/storeButton"
+        android:hint="id" />
+
+    <Button
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Leaderboard"
+        android:id="@+id/getLeaderboard"
+        android:layout_alignParentTop="true"
+        android:layout_alignParentStart="true"
+        android:onClick="getLeaderboard" />
 </RelativeLayout>

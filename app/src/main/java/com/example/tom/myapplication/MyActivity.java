@@ -19,6 +19,7 @@ public class MyActivity extends Activity {
         setContentView(R.layout.activity_my);
         dbh = new DatabaseHelper(this);
         sh = new ServerHelper(dbh);
+        sh.deleteProfile(1, "secret");
     }
 
     @Override
@@ -34,10 +35,7 @@ public class MyActivity extends Activity {
         // automatically handle clicks on the Home/Up button, so long
         // as you specify a parent activity in AndroidManifest.xml.
         int id = item.getItemId();
-        if (id == R.id.action_settings) {
-            return true;
-        }
-        return super.onOptionsItemSelected(item);
+        return (id == R.id.action_settings || super.onOptionsItemSelected(item));
     }
 
     public void submitProfile(View v) {
@@ -55,5 +53,17 @@ public class MyActivity extends Activity {
         EditText username = (EditText) findViewById(R.id.username);
         EditText password = (EditText) findViewById(R.id.password);
         sh.getProfile(username.getText().toString(), password.getText().toString());
+    }
+
+    public void getOtherProfile (View v) {
+        EditText id = (EditText) findViewById(R.id.id);
+        Log.d("getOtherProfile", "getting profile " + Integer.parseInt(id.getText().toString()));
+        sh.getOtherProfile(Integer.parseInt(id.getText().toString()));
+    }
+
+    public void getLeaderboard (View v) {
+        EditText id = (EditText) findViewById(R.id.id);
+        Log.d("getLeaderboard", "getting leaderboard for id " + Integer.parseInt(id.getText().toString()));
+        sh.getLeaderboard(Integer.parseInt(id.getText().toString()));
     }
 }

@@ -5,11 +5,11 @@ package com.example.tom.myapplication;
  * Profile class corresponds to profiles in the database
  */
 public class Profile {
-    private int id;
-    private String lastName;
-    private String firstName;
-    private String username;
-    private String email;
+    protected int id;
+    protected String lastName;
+    protected String firstName;
+    protected String username;
+    protected String email;
 
     public int getMoney() {
         return money;
@@ -79,5 +79,18 @@ public class Profile {
 
     public void setEmail(String email) {
         this.email = email;
+    }
+
+    @Override
+    public String toString() {
+        String info = "";
+        info+= "id:" + id;
+        info+= (firstName == null ? "":" firstname:" + firstName);
+        info+= (lastName == null ? "":" lastname:" + lastName);
+        info+= (username == null ? "":" username:" + username);
+        info+= (email == null ? "":" email:" + email);
+        info+= " money:" + money;
+        info+= " experience:" + experience;
+        return info;
     }
 }
