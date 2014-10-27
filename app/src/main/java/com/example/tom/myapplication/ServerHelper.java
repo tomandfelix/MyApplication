@@ -4,24 +4,17 @@ import android.os.AsyncTask;
 import android.util.Log;
 
 import org.apache.http.HttpResponse;
-import org.apache.http.NameValuePair;
 import org.apache.http.client.ClientProtocolException;
 import org.apache.http.client.HttpClient;
-import org.apache.http.client.entity.UrlEncodedFormEntity;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.DefaultHttpClient;
-import org.apache.http.message.BasicHeader;
-import org.apache.http.message.BasicNameValuePair;
-import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.util.ArrayList;
-import java.util.List;
 
 /**
  * Created by Tom on 20/10/2014.
@@ -99,12 +92,8 @@ public class ServerHelper {
                     result = new JSONObject(line);
                 }
                 in.close();
-                Log.d("GetProfile", result.getString("id"));
-                Log.d("GetProfile", result.getString("firstname"));
-                Log.d("GetProfile", result.getString("lastname"));
-                Log.d("GetProfile", result.getString("email"));
-                Log.d("GetProfile", result.getString("money"));
-                Log.d("GetProfile", result.getString("experience"));
+                Log.d("GetProfile", result.toString());
+                dbh.storeProfile(new Profile(result.getInt("id") , result.getString("firstname"), result.getString("lastname"), params[0], result.getString("email"), result.getInt("money"), result.getInt("experience")));
             } catch (ClientProtocolException e) {
                 Log.e("GetProfile", "Error: ClientProtocolException");
             } catch (IOException e) {
