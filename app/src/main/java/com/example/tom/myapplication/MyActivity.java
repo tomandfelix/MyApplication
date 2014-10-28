@@ -19,7 +19,6 @@ public class MyActivity extends Activity {
         setContentView(R.layout.activity_my);
         dbh = new DatabaseHelper(this);
         sh = new ServerHelper(dbh);
-        sh.deleteProfile(1, "secret");
     }
 
     @Override

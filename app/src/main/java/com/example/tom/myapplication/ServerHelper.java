@@ -21,7 +21,16 @@ import java.util.ArrayList;
 /**
  * Created by Tom on 20/10/2014.
  * Contains the asynchronous helper methods for communicating with the server
+ *
+ * Code to print full reply from server
  */
+
+/*String output = "";
+while ((line = in.readLine()) != null) {
+    output += line;
+}
+Log.e("OUTPUT", output);*/
+
 public class ServerHelper {
     private DatabaseHelper dbh;
 
@@ -47,6 +56,10 @@ public class ServerHelper {
 
     public void deleteProfile(int id, String password) {
         new DeleteProfile().execute("" + id, password);
+    }
+
+    public void getRank(int id) {
+        new GetRank().execute(id);
     }
 
     private class CreateProfile extends AsyncTask<String, Void, Profile> {
@@ -227,6 +240,42 @@ public class ServerHelper {
                 Log.e("DeleteProfile", "JSON error");
             }
             return null;
+        }
+    }
+
+    private class GetRank extends AsyncTask<Integer, Void, RankedProfile> {
+        @Override
+        public RankedProfile doInBackground(Integer...params) {
+            Log.d("ServerHelper", "AsyncTask GetRank started");
+            HttpClient client = new DefaultHttpClient();
+            HttpPost post = new HttpPost("http://eng.studev.groept.be/thesis/a14_stapp2/getRank.php");
+            JSONObject query = new JSONObject();
+            RankedProfile prof = null;
+            try {
+                query.put("id", params[0].toString());
+                post.setEntity(new StringEntity(query.toString()));
+                HttpResponse response = client.execute(post);
+                BufferedReader in = new BufferedReader(new InputStreamReader(response.getEntity().getContent()));
+                String line;
+                JSONObject result = new JSONObject();
+                if ((line = in.readLine()) != null) {
+                    result = new JSONObject(line);
+                }
+                in.close();
+                prof = new RankedProfile(params[0] , null, null, result.getString("username"), null, result.getInt("money"), result.getInt("experience"), result.getInt("rank"));
+            } catch (ClientProtocolException e) {
+                Log.e("GetRank", "Error: ClientProtocolException");
+            } catch (IOException e) {
+                Log.e("GetRank", "Error: IOException");
+            } catch (JSONException e) {
+                Log.e("GetRank", "JSON error");
+            }
+            return prof;
+        }
+
+        @Override
+        protected void onPostExecute(RankedProfile profile) {
+            Log.d("GetRank", profile.toString());
         }
     }
 }
