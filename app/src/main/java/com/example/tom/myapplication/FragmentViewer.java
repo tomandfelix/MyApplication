@@ -1,24 +1,38 @@
 package com.example.tom.myapplication;
 
-import android.app.Activity;
 import android.os.Bundle;
-import android.util.Log;
+import android.support.v4.app.Fragment;
+import android.support.v4.app.FragmentActivity;
+import android.support.v4.app.FragmentManager;
+import android.support.v4.app.FragmentPagerAdapter;
+import android.support.v4.view.PagerAdapter;
+import android.support.v4.view.ViewPager;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.EditText;
 
-public class MyActivity extends Activity {
-
+/**
+ * Created by Tom on 3/11/2014.
+ */
+public class FragmentViewer extends FragmentActivity {
+    private static final int NUM_PAGES = 3;
+    private ViewPager mPager;
+    private PagerAdapter mAdapter;
     private DatabaseHelper dbh;
     private ServerHelper sh;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_my);
+        setContentView(R.layout.pager);
         dbh = new DatabaseHelper(this);
         sh = new ServerHelper(dbh);
+        mAdapter = new FragmentAdapter(getSupportFragmentManager());
+        mPager = (ViewPager) findViewById(R.id.pager);
+        mPager.setAdapter(mAdapter);
+        mPager.setCurrentItem(1, false);
+
     }
 
     @Override
@@ -37,7 +51,7 @@ public class MyActivity extends Activity {
         return (id == R.id.action_settings || super.onOptionsItemSelected(item));
     }
 
-    public void submitProfile(View v) {
+    /*    public void submitProfile(View v) {
         Log.d("submitProfile", "storing profile");
         EditText firstName = (EditText) findViewById(R.id.firstName);
         EditText lastName = (EditText) findViewById(R.id.lastName);
@@ -64,5 +78,37 @@ public class MyActivity extends Activity {
         EditText id = (EditText) findViewById(R.id.id);
         Log.d("getLeaderboard", "getting leaderboard for id " + Integer.parseInt(id.getText().toString()));
         sh.getLeaderboard(Integer.parseInt(id.getText().toString()));
+    }*/
+
+    public void loginBtn(View v) {
+        //EditText username = (EditText) rootView.findViewById(R.layout.)
+    }
+
+    public void toLogin(View v) {
+        mPager.setCurrentItem(0, true);
+    }
+
+    public void newBtn(View v) {
+        mPager.setCurrentItem(2, true);
+    }
+
+    public void backBtn(View v) {
+        mPager.setCurrentItem(1, true);
+    }
+
+    private class FragmentAdapter extends FragmentPagerAdapter {
+        public FragmentAdapter(FragmentManager fm) {
+            super(fm);
+        }
+
+        @Override
+        public int getCount() {
+            return NUM_PAGES;
+        }
+
+        @Override
+        public Fragment getItem(int position) {
+            return FragmentProvider.init(position);
+        }
     }
 }

@@ -62,6 +62,14 @@ public class ServerHelper {
         new GetRank().execute(id);
     }
 
+    public void updateMoneyAndExperience(int id, int money, int experience) {
+        new UpdateMoneyAndExperience().execute(id, money, experience);
+    }
+
+    public void updateProfileSettings(int id, String password, String firstname, String lastname, String username, String email, String new_password) {
+        new UpdateProfileSettings().execute("" + id, password, firstname, lastname, username, email, new_password);
+    }
+
     private class CreateProfile extends AsyncTask<String, Void, Profile> {
         @Override
         protected Profile doInBackground(String... params) {
@@ -276,6 +284,65 @@ public class ServerHelper {
         @Override
         protected void onPostExecute(RankedProfile profile) {
             Log.d("GetRank", profile.toString());
+        }
+    }
+
+    private class UpdateMoneyAndExperience extends AsyncTask<Integer, Void, Void> {
+        @Override
+        public Void doInBackground(Integer... params) {
+            Log.d("ServerHelper", "AsyncTask UpdateMoneyAndExperience started");
+            HttpClient client = new DefaultHttpClient();
+            HttpPost post = new HttpPost("http://eng.studev.groept.be/thesis/a14_stapp2/updateMoneyAndExperience.php");
+            JSONObject query = new JSONObject();
+            try {
+                query.put("id", params[0]);
+                query.put("money", params[1]);
+                query.put("experience", params[2]);
+                post.setEntity(new StringEntity(query.toString()));
+                client.execute(post);
+            } catch (ClientProtocolException e) {
+                Log.e("UpdateMoneyAndExperience", "Error: ClientProtocolException");
+            } catch (IOException e) {
+                Log.e("UpdateMoneyAndExperience", "Error: IOException");
+            } catch (JSONException e) {
+                Log.e("UpdateMoneyAndExperience", "JSON error");
+            }
+            return null;
+        }
+    }
+
+    private class UpdateProfileSettings extends AsyncTask<String, Void, Void> {
+        @Override
+        public Void doInBackground(String...params) {
+            Log.d("ServerHelper", "AsyncTask UpdateProfileSettings started");
+            HttpClient client = new DefaultHttpClient();
+            HttpPost post = new HttpPost("http://eng.studev.groept.be/thesis/a14_stapp2/updateProfileSettings.php");
+            JSONObject query = new JSONObject();
+            try {
+                query.put("id", params[0]);
+                query.put("password", params[1]);
+                query.put("firstname", params[2]);
+                query.put("lastname", params[3]);
+                query.put("username", params[4]);
+                query.put("email", params[5]);
+                query.put("new_password", params[6]);
+                post.setEntity(new StringEntity(query.toString()));
+                HttpResponse response = client.execute(post);
+                BufferedReader in = new BufferedReader(new InputStreamReader(response.getEntity().getContent()));
+                String line;
+                String output = "";
+                while ((line = in.readLine()) != null) {
+                    output += line;
+                }
+                Log.e("OUTPUT", output);
+            } catch (ClientProtocolException e) {
+                Log.e("UpdateProfileSettings", "Error: ClientProtocolException");
+            } catch (IOException e) {
+                Log.e("UpdateProfileSettings", "Error: IOException");
+            } catch (JSONException e) {
+                Log.e("UpdateProfileSettings", "JSON error");
+            }
+            return null;
         }
     }
 }
