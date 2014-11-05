@@ -1,5 +1,6 @@
 package com.example.tom.myapplication;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentActivity;
@@ -7,8 +8,7 @@ import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentPagerAdapter;
 import android.support.v4.view.PagerAdapter;
 import android.support.v4.view.ViewPager;
-import android.view.Menu;
-import android.view.MenuItem;
+import android.util.Log;
 import android.view.View;
 import android.widget.EditText;
 
@@ -32,43 +32,9 @@ public class FragmentViewer extends FragmentActivity {
         mPager = (ViewPager) findViewById(R.id.pager);
         mPager.setAdapter(mAdapter);
         mPager.setCurrentItem(1, false);
-
     }
 
-    @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        // Inflate the menu; this adds items to the action bar if it is present.
-        getMenuInflater().inflate(R.menu.my, menu);
-        return true;
-    }
-
-    @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        // Handle action bar item clicks here. The action bar will
-        // automatically handle clicks on the Home/Up button, so long
-        // as you specify a parent activity in AndroidManifest.xml.
-        int id = item.getItemId();
-        return (id == R.id.action_settings || super.onOptionsItemSelected(item));
-    }
-
-    /*    public void submitProfile(View v) {
-        Log.d("submitProfile", "storing profile");
-        EditText firstName = (EditText) findViewById(R.id.firstName);
-        EditText lastName = (EditText) findViewById(R.id.lastName);
-        EditText username = (EditText) findViewById(R.id.username);
-        EditText email = (EditText) findViewById(R.id.email);
-        EditText password = (EditText) findViewById(R.id.password);
-        sh.createProfile(firstName.getText().toString(), lastName.getText().toString(), username.getText().toString(), email.getText().toString(), password.getText().toString());
-    }
-
-    public void getProfile (View v) {
-        Log.d("getProfile", "getting Profile");
-        EditText username = (EditText) findViewById(R.id.username);
-        EditText password = (EditText) findViewById(R.id.password);
-        sh.getProfile(username.getText().toString(), password.getText().toString());
-    }
-
-    public void getOtherProfile (View v) {
+    /*public void getOtherProfile (View v) {
         EditText id = (EditText) findViewById(R.id.id);
         Log.d("getOtherProfile", "getting profile " + Integer.parseInt(id.getText().toString()));
         sh.getOtherProfile(Integer.parseInt(id.getText().toString()));
@@ -81,18 +47,46 @@ public class FragmentViewer extends FragmentActivity {
     }*/
 
     public void loginBtn(View v) {
-        //EditText username = (EditText) rootView.findViewById(R.layout.)
+        EditText username = (EditText) findViewById(R.id.login_username);
+        EditText password = (EditText) findViewById(R.id.login_password);
+        sh.getProfile(username.getText().toString(), password.getText().toString(), new Function<Profile>() {
+            @Override
+            public void call(Profile param) {
+                Intent intent = new Intent(getBaseContext(), ProfileView.class);
+                intent.putExtra("profile", param);
+                startActivity(intent);
+                overridePendingTransition(R.anim.enter_top, R.anim.leave_bottom);
+            }
+        });
+    }
+
+
+    public void registerBtn(View v) {
+        EditText firstName = (EditText) findViewById(R.id.new_firstname);
+        EditText lastName = (EditText) findViewById(R.id.new_lastname);
+        EditText username = (EditText) findViewById(R.id.new_username);
+        EditText email = (EditText) findViewById(R.id.new_email);
+        EditText password = (EditText) findViewById(R.id.new_password);
+        sh.createProfile(firstName.getText().toString(), lastName.getText().toString(), username.getText().toString(), email.getText().toString(), password.getText().toString(), new Function<Profile>() {
+            @Override
+            public void call(Profile param) {
+                Intent intent = new Intent(getBaseContext(), ProfileView.class);
+                intent.putExtra("profile", param);
+                startActivity(intent);
+                overridePendingTransition(R.anim.enter_top, R.anim.leave_bottom);
+            }
+        });
     }
 
     public void toLogin(View v) {
         mPager.setCurrentItem(0, true);
     }
 
-    public void newBtn(View v) {
+    public void toNewProfile(View v) {
         mPager.setCurrentItem(2, true);
     }
 
-    public void backBtn(View v) {
+    public void toStart(View v) {
         mPager.setCurrentItem(1, true);
     }
 

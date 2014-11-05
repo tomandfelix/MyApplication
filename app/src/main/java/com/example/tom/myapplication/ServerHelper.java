@@ -17,6 +17,7 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
+import java.util.concurrent.Callable;
 
 /**
  * Created by Tom on 20/10/2014.
@@ -38,12 +39,14 @@ public class ServerHelper {
         this.dbh = dbh;
     }
 
-    public void createProfile(String firstName, String lastName, String username, String email, String password) {
-        new CreateProfile().execute(firstName, lastName, username, email, password);
+    public void createProfile(String firstName, String lastName, String username, String email, String password, Function<Profile> callback) {
+        CreateProfile temp = new CreateProfile(callback);
+        temp.execute(firstName, lastName, username, email, password);
     }
 
-    public void getProfile(String username, String password) {
-        new GetProfile().execute(username, password);
+    public void getProfile(String username, String password, Function<Profile> callback) {
+        GetProfile temp = new GetProfile(callback);
+        temp.execute(username, password);
     }
 
     public void getOtherProfile(int id) {
@@ -68,9 +71,17 @@ public class ServerHelper {
 
     public void updateProfileSettings(int id, String password, String firstname, String lastname, String username, String email, String new_password) {
         new UpdateProfileSettings().execute("" + id, password, firstname, lastname, username, email, new_password);
+        dbh.updateProfile(new Profile(id, firstname, lastname, username, email, -1, -1));
     }
 
     private class CreateProfile extends AsyncTask<String, Void, Profile> {
+        private Function<Profile> callback;
+
+        public CreateProfile(Function<Profile> callback) {
+            super();
+            this.callback = callback;
+        }
+
         @Override
         protected Profile doInBackground(String... params) {
             Log.d("ServerHelper", "AsyncTask CreateProfile started");
@@ -109,10 +120,19 @@ public class ServerHelper {
         protected void onPostExecute(Profile profile) {
             Log.d("CreateProfile", profile.toString());
             dbh.storeProfile(profile);
+            dbh.setSetting(dbh.OWNER, profile.getId());
+            callback.call(profile);
         }
     }
 
     private class GetProfile extends AsyncTask<String, Void, Profile> {
+        private Function<Profile> callback;
+
+        public GetProfile(Function<Profile> callback) {
+            super();
+            this.callback = callback;
+        }
+
         @Override
         protected Profile doInBackground(String... params) {
             Log.d("ServerHelper", "AsyncTask GetProfile started");
@@ -147,6 +167,8 @@ public class ServerHelper {
         protected void onPostExecute(Profile profile) {
             Log.d("GetProfile", profile.toString());
             dbh.storeProfile(profile);
+            dbh.setSetting(dbh.OWNER, profile.getId());
+            callback.call(profile);
         }
     }
 

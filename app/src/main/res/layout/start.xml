@@ -45,6 +45,6 @@
             android:layout_weight=".50"
             android:text="New"
             android:id="@+id/newBtn"
-            android:onClick="newBtn"/>
+            android:onClick="toNewProfile"/>
     </LinearLayout>
 </LinearLayout>

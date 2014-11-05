@@ -1,34 +1,20 @@
 package com.example.tom.myapplication;
 
+import android.os.Parcel;
+import android.os.Parcelable;
+
 /**
  * Created by Tom on 6/10/2014.
  * Profile class corresponds to profiles in the database
  */
-public class Profile {
+public class Profile implements Parcelable{
     protected int id;
     protected String lastName;
     protected String firstName;
     protected String username;
     protected String email;
-
-    public int getMoney() {
-        return money;
-    }
-
-    public void setMoney(int money) {
-        this.money = money;
-    }
-
-    public int getExperience() {
-        return experience;
-    }
-
-    public void setExperience(int experience) {
-        this.experience = experience;
-    }
-
-    private int money;
-    private int experience;
+    protected int money;
+    protected int experience;
 
     public Profile(int id, String firstName, String lastName, String username, String email, int money, int experience) {
         this.id = id;
@@ -81,6 +67,22 @@ public class Profile {
         this.email = email;
     }
 
+    public int getMoney() {
+        return money;
+    }
+
+    public void setMoney(int money) {
+        this.money = money;
+    }
+
+    public int getExperience() {
+        return experience;
+    }
+
+    public void setExperience(int experience) {
+        this.experience = experience;
+    }
+
     @Override
     public String toString() {
         String info = "";
@@ -93,4 +95,40 @@ public class Profile {
         info+= " experience:" + experience;
         return info;
     }
+
+    @Override
+    public int describeContents() {
+        return 0;
+    }
+
+    @Override
+    public void writeToParcel(Parcel dest, int flags) {
+        dest.writeInt(id);
+        dest.writeString(lastName);
+        dest.writeString(firstName);
+        dest.writeString(username);
+        dest.writeString(email);
+        dest.writeInt(money);
+        dest.writeInt(experience);
+    }
+
+    protected Profile(Parcel in) {
+        id = in.readInt();
+        lastName = in.readString();
+        firstName = in.readString();
+        username = in.readString();
+        email = in.readString();
+        money = in.readInt();
+        experience = in.readInt();
+    }
+
+    public static final Parcelable.Creator<Profile> CREATOR = new Parcelable.Creator<Profile>() {
+        public Profile createFromParcel(Parcel in) {
+            return new Profile(in);
+        }
+
+        public Profile[] newArray(int size) {
+            return new Profile[size];
+        }
+    };
 }
