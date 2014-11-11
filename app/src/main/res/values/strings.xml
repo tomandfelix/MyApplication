@@ -7,5 +7,10 @@
     <string name="title_activity_login">Login</string>
     <string name="title_activity_main">MainActivity</string>
     <string name="title_activity_profile_view">ProfileView</string>
-
+    <string-array name="sideMenu">
+        <item>Profile</item>
+        <item>Leaderboard</item>
+        <item>Settings</item>
+        <item>Logout</item>
+    </string-array>
 </resources>

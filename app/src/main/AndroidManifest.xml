@@ -20,7 +20,7 @@
             </intent-filter>
         </activity>
         <activity
-            android:name="com.example.tom.myapplication.ProfileView"
+            android:name=".Main"
             android:label="@string/title_activity_profile_view" >
         </activity>
     </application>

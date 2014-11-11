@@ -8,7 +8,6 @@ import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentPagerAdapter;
 import android.support.v4.view.PagerAdapter;
 import android.support.v4.view.ViewPager;
-import android.util.Log;
 import android.view.View;
 import android.widget.EditText;
 
@@ -52,7 +51,7 @@ public class FragmentViewer extends FragmentActivity {
         sh.getProfile(username.getText().toString(), password.getText().toString(), new Function<Profile>() {
             @Override
             public void call(Profile param) {
-                Intent intent = new Intent(getBaseContext(), ProfileView.class);
+                Intent intent = new Intent(getBaseContext(), Main.class);
                 intent.putExtra("profile", param);
                 startActivity(intent);
                 overridePendingTransition(R.anim.enter_top, R.anim.leave_bottom);
@@ -70,7 +69,7 @@ public class FragmentViewer extends FragmentActivity {
         sh.createProfile(firstName.getText().toString(), lastName.getText().toString(), username.getText().toString(), email.getText().toString(), password.getText().toString(), new Function<Profile>() {
             @Override
             public void call(Profile param) {
-                Intent intent = new Intent(getBaseContext(), ProfileView.class);
+                Intent intent = new Intent(getBaseContext(), Main.class);
                 intent.putExtra("profile", param);
                 startActivity(intent);
                 overridePendingTransition(R.anim.enter_top, R.anim.leave_bottom);
