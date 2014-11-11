@@ -11,6 +11,7 @@ import android.support.v4.view.ViewPager;
 import android.util.Log;
 import android.view.View;
 import android.widget.EditText;
+import android.widget.TextView;
 
 /**
  * Created by Tom on 3/11/2014.
@@ -47,15 +48,23 @@ public class FragmentViewer extends FragmentActivity {
     }*/
 
     public void loginBtn(View v) {
-        EditText username = (EditText) findViewById(R.id.login_username);
-        EditText password = (EditText) findViewById(R.id.login_password);
+        final EditText username = (EditText) findViewById(R.id.login_username);
+        final EditText password = (EditText) findViewById(R.id.login_password);
+        final TextView txtView = (TextView) findViewById(R.id.succes);
         sh.getProfile(username.getText().toString(), password.getText().toString(), new Function<Profile>() {
             @Override
             public void call(Profile param) {
-                Intent intent = new Intent(getBaseContext(), ProfileView.class);
-                intent.putExtra("profile", param);
-                startActivity(intent);
-                overridePendingTransition(R.anim.enter_top, R.anim.leave_bottom);
+                        if(param != null) {
+                            txtView.setText("Profile is being loaded");
+                            Intent intent = new Intent(getBaseContext(), ProfileView.class);
+                            intent.putExtra("profile", param);
+                            startActivity(intent);
+                            overridePendingTransition(R.anim.enter_top, R.anim.leave_bottom);
+                        }else {
+                            txtView.setText("No such profile excist, please try again");
+                            username.setText(null);
+                            password.setText(null);
+                        }
             }
         });
     }

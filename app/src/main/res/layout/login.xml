@@ -21,14 +21,32 @@
         android:hint="Password"
         android:inputType="textPassword"/>
 
-    <Button
+    <TextView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Login"
-        android:onClick="loginBtn"/>
-    <Button
+        android:layout_weight="1"
+        android:text="Fill in username and password"
+        android:id="@+id/succes" />
+
+
+    <LinearLayout
+        android:orientation="horizontal"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="Back"
-        android:onClick="toStart"/>
+        android:layout_height="wrap_content">
+        <Button
+            android:layout_width="0dip"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="Back"
+            android:onClick="toStart"/>
+
+        <Button
+            android:layout_width="0dip"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="Login"
+            android:onClick="loginBtn"/>
+
+        </LinearLayout>
+
 </LinearLayout>

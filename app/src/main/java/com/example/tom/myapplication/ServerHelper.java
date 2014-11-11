@@ -149,10 +149,17 @@ public class ServerHelper {
                 String line;
                 JSONObject result = new JSONObject();
                 while ((line = in.readLine()) != null) {
-                    result = new JSONObject(line);
+                        result = new JSONObject(line);
                 }
                 in.close();
-                prof = new Profile(result.getInt("id") , result.getString("firstname"), result.getString("lastname"), params[0], result.getString("email"), result.getInt("money"), result.getInt("experience"));
+                if(result.toString().contains("{}")) {
+                    prof = null;
+                }else{
+                    prof = new Profile(result.getInt("id"), result.getString("firstname"),
+                            result.getString("lastname"), params[0], result.getString("email"),
+                            result.getInt("money"), result.getInt("experience"));
+                }
+
             } catch (ClientProtocolException e) {
                 Log.e("GetProfile", "Error: ClientProtocolException");
             } catch (IOException e) {
@@ -165,9 +172,12 @@ public class ServerHelper {
 
         @Override
         protected void onPostExecute(Profile profile) {
-            Log.d("GetProfile", profile.toString());
-            dbh.storeProfile(profile);
-            dbh.setSetting(dbh.OWNER, profile.getId());
+            if( profile != null) {
+                Log.d("GetProfile", profile.toString());
+                dbh.storeProfile(profile);
+                dbh.setSetting(dbh.OWNER, profile.getId());
+
+            }
             callback.call(profile);
         }
     }
