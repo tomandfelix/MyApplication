@@ -21,10 +21,12 @@
         android:hint="Password"
         android:inputType="textPassword"/>
 
-    <View
+    <TextView
+        android:id="@+id/succes"
         android:layout_width="match_parent"
         android:layout_height="0dip"
-        android:layout_weight="1"/>
+        android:layout_weight="1"
+        android:text="Please fill in your username and password"/>
 
     <LinearLayout
         android:orientation="horizontal"

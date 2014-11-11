@@ -56,12 +56,12 @@ public class FragmentViewer extends FragmentActivity {
             public void call(Profile param) {
                         if(param != null) {
                             txtView.setText("Profile is being loaded");
-                            Intent intent = new Intent(getBaseContext(), ProfileView.class);
+                            Intent intent = new Intent(getBaseContext(), Main.class);
                             intent.putExtra("profile", param);
                             startActivity(intent);
                             overridePendingTransition(R.anim.enter_top, R.anim.leave_bottom);
                         }else {
-                            txtView.setText("No such profile excist, please try again");
+                            txtView.setText("No such profile exist, please try again");
                             username.setText(null);
                             password.setText(null);
                         }
@@ -79,7 +79,7 @@ public class FragmentViewer extends FragmentActivity {
         sh.createProfile(firstName.getText().toString(), lastName.getText().toString(), username.getText().toString(), email.getText().toString(), password.getText().toString(), new Function<Profile>() {
             @Override
             public void call(Profile param) {
-                Intent intent = new Intent(getBaseContext(), ProfileView.class);
+                Intent intent = new Intent(getBaseContext(), Main.class);
                 intent.putExtra("profile", param);
                 startActivity(intent);
                 overridePendingTransition(R.anim.enter_top, R.anim.leave_bottom);
