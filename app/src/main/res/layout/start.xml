@@ -36,7 +36,6 @@
             android:layout_height="wrap_content"
             android:layout_weight="0.50"
             android:text="Login"
-            android:id="@+id/toLogin"
             android:onClick="toLogin"/>
 
         <Button
@@ -44,7 +43,6 @@
             android:layout_height="wrap_content"
             android:layout_weight=".50"
             android:text="New"
-            android:id="@+id/newBtn"
             android:onClick="toNewProfile"/>
     </LinearLayout>
 </LinearLayout>
