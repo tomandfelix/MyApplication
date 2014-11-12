@@ -2,10 +2,10 @@ package com.example.tom.myapplication;
 
 import android.content.Intent;
 import android.os.Bundle;
-import android.support.v4.app.Fragment;
+import android.app.Fragment;
 import android.support.v4.app.FragmentActivity;
-import android.support.v4.app.FragmentManager;
-import android.support.v4.app.FragmentPagerAdapter;
+import android.app.FragmentManager;
+import android.support.v13.app.FragmentPagerAdapter;
 import android.support.v4.view.PagerAdapter;
 import android.support.v4.view.ViewPager;
 import android.util.Log;
@@ -29,7 +29,7 @@ public class FragmentViewer extends FragmentActivity {
         setContentView(R.layout.pager);
         dbh = new DatabaseHelper(this);
         sh = new ServerHelper(dbh);
-        mAdapter = new FragmentAdapter(getSupportFragmentManager());
+        mAdapter = new FragmentAdapter(getFragmentManager());
         mPager = (ViewPager) findViewById(R.id.pager);
         mPager.setAdapter(mAdapter);
         mPager.setCurrentItem(1, false);
