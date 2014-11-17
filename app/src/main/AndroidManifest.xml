@@ -28,8 +28,11 @@
             android:label="@string/title_activity_leaderboard_view" >
         </activity>
         <activity
-            android:name="com.example.tom.myapplication.Stranger_View"
+            android:name=".StrangerView"
             android:label="@string/title_activity_stranger__view" >
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value="com.example.tom.myapplication.LeaderboardView"/>
         </activity>
     </application>
 

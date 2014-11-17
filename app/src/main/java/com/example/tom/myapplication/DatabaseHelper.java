@@ -28,6 +28,7 @@ public class DatabaseHelper extends SQLiteOpenHelper{
     private static final String KEY_EMAIL = "email";
     private static final String KEY_MONEY = "money";
     private static final String KEY_EXPERIENCE = "experience";
+    private static final String KEY_RANK = "rank";
     private static final String KEY_SETTING = "name";
     private static final String KEY_VALUE = "value";
     public static final String OWNER = "owner";
@@ -45,7 +46,7 @@ public class DatabaseHelper extends SQLiteOpenHelper{
     @Override
     public void onCreate(SQLiteDatabase db) {
         db.execSQL("CREATE TABLE " + TABLE_LOGS + " (" + KEY_ID + " INTEGER PRIMARY KEY AUTOINCREMENT, " + KEY_ACTION + " TEXT, " + KEY_DATETIME + " DATETIME)");
-        db.execSQL("CREATE TABLE " + TABLE_PROFILES + " (" + KEY_ID + " INTEGER PRIMARY KEY NOT NULL UNIQUE, " + KEY_FIRSTNAME + " TEXT, " + KEY_LASTNAME + " TEXT, " + KEY_USERNAME + " TEXT, " + KEY_EMAIL + " TEXT, " + KEY_MONEY + " INT, " + KEY_EXPERIENCE + " INT)");
+        db.execSQL("CREATE TABLE " + TABLE_PROFILES + " (" + KEY_ID + " INTEGER PRIMARY KEY NOT NULL UNIQUE, " + KEY_FIRSTNAME + " TEXT, " + KEY_LASTNAME + " TEXT, " + KEY_USERNAME + " TEXT, " + KEY_EMAIL + " TEXT, " + KEY_MONEY + " INT, " + KEY_EXPERIENCE + " INT, " + KEY_RANK + " INT)");
         db.execSQL("CREATE TABLE " + TABLE_SETTINGS + " (" + KEY_SETTING + " TEXT PRIMARY KEY NOT NULL UNIQUE, " + KEY_VALUE + " INTEGER NOT NULL)");
         ContentValues values = new ContentValues(2);
         values.put(KEY_SETTING, OWNER);
@@ -99,6 +100,7 @@ public class DatabaseHelper extends SQLiteOpenHelper{
             value.put(KEY_EMAIL, input.getEmail());
             value.put(KEY_MONEY, input.getMoney());
             value.put(KEY_EXPERIENCE, input.getExperience());
+            if(input instanceof RankedProfile) {value.put(KEY_RANK, ((RankedProfile) input).getRank());}
             SQLiteDatabase db = getWritableDatabase();
             db.insert(TABLE_PROFILES, null, value);
         }
@@ -131,18 +133,27 @@ public class DatabaseHelper extends SQLiteOpenHelper{
             if(input.getExperience() != -1) {
                 value.put(KEY_EXPERIENCE, input.getExperience());
             }
+            if(input instanceof RankedProfile) {
+                if(((RankedProfile) input).getRank() != -1) {
+                    value.put(KEY_RANK, ((RankedProfile) input).getRank());
+                }
+            }
             SQLiteDatabase db = getWritableDatabase();
             db.update(TABLE_PROFILES, value, KEY_ID + " = ?", new String[]{"" + input.getId()});
         }
     }
 
     public Profile getProfile(int id) {
-        String query = "SELECT " + KEY_FIRSTNAME + ", " + KEY_LASTNAME + ", " + KEY_USERNAME + ", " + KEY_EMAIL + ", " + KEY_MONEY + ", " + KEY_EXPERIENCE + " FROM " + TABLE_PROFILES + " WHERE " + KEY_ID + " = ?";
+        String query = "SELECT " + KEY_FIRSTNAME + ", " + KEY_LASTNAME + ", " + KEY_USERNAME + ", " + KEY_EMAIL + ", " + KEY_MONEY + ", " + KEY_EXPERIENCE + ", " + KEY_RANK + " FROM " + TABLE_PROFILES + " WHERE " + KEY_ID + " = ?";
         SQLiteDatabase db = getReadableDatabase();
         Cursor cursor = db.rawQuery(query, new String[] {Integer.toString(id)});
         if(cursor != null && cursor.getCount() > 0) {
             cursor.moveToFirst();
-            return new Profile(id, cursor.getString(0), cursor.getString(1), cursor.getString(2), cursor.getString(3), cursor.getInt(4), cursor.getInt(5));
+            if(cursor.getInt(6) > 0) {
+                return new RankedProfile(id, cursor.getString(0), cursor.getString(1), cursor.getString(2), cursor.getString(3), cursor.getInt(4), cursor.getInt(5), cursor.getInt(6));
+            } else {
+                return new Profile(id, cursor.getString(0), cursor.getString(1), cursor.getString(2), cursor.getString(3), cursor.getInt(4), cursor.getInt(5));
+            }
         } else {
             return null;
         }

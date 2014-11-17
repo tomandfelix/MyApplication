@@ -72,8 +72,9 @@ public class ServerHelper {
         new DeleteProfile().execute("" + id, password);
     }
 
-    public void getRank(int id) {
-        new GetRank().execute(id);
+    public void getRank(int id, Function<RankedProfile> callback) {
+        GetRank temp = new GetRank(callback);
+        temp.execute(id);
     }
 
     public void updateMoneyAndExperience(int id, int money, int experience) {
@@ -325,6 +326,11 @@ public class ServerHelper {
     }
 
     private class GetRank extends AsyncTask<Integer, Void, RankedProfile> {
+        private Function<RankedProfile> callback;
+
+        public GetRank(Function<RankedProfile> callback) {
+            this.callback = callback;
+        }
         @Override
         public RankedProfile doInBackground(Integer...params) {
             Log.d("ServerHelper", "AsyncTask GetRank started");
@@ -339,11 +345,13 @@ public class ServerHelper {
                 BufferedReader in = new BufferedReader(new InputStreamReader(response.getEntity().getContent()));
                 String line;
                 JSONObject result = new JSONObject();
-                if ((line = in.readLine()) != null) {
+                while ((line = in.readLine()) != null) {
                     result = new JSONObject(line);
                 }
                 in.close();
-                prof = new RankedProfile(params[0] , null, null, result.getString("username"), null, result.getInt("money"), result.getInt("experience"), result.getInt("rank"));
+                if(! result.toString().contains("{}")) {
+                    prof = new RankedProfile(params[0], null, null, result.getString("username"), null, result.getInt("money"), result.getInt("experience"), result.getInt("rank"));
+                }
             } catch (ClientProtocolException e) {
                 Log.e("GetRank", "Error: ClientProtocolException");
             } catch (IOException e) {
@@ -357,6 +365,8 @@ public class ServerHelper {
         @Override
         protected void onPostExecute(RankedProfile profile) {
             Log.d("GetRank", profile.toString());
+            DatabaseHelper.getInstance().storeProfile(profile);
+            callback.call(profile);
         }
     }
 
