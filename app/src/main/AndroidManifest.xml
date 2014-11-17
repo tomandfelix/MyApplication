@@ -20,8 +20,16 @@
             </intent-filter>
         </activity>
         <activity
-            android:name=".Main"
+            android:name="com.example.tom.myapplication.ProfileView"
             android:label="@string/title_activity_profile_view" >
+        </activity>
+        <activity
+            android:name="com.example.tom.myapplication.LeaderboardView"
+            android:label="@string/title_activity_leaderboard_view" >
+        </activity>
+        <activity
+            android:name="com.example.tom.myapplication.Stranger_View"
+            android:label="@string/title_activity_stranger__view" >
         </activity>
     </application>
 

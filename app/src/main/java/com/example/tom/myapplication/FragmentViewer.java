@@ -8,7 +8,6 @@ import android.app.FragmentManager;
 import android.support.v13.app.FragmentPagerAdapter;
 import android.support.v4.view.PagerAdapter;
 import android.support.v4.view.ViewPager;
-import android.util.Log;
 import android.view.View;
 import android.widget.EditText;
 import android.widget.TextView;
@@ -20,15 +19,12 @@ public class FragmentViewer extends FragmentActivity {
     private static final int NUM_PAGES = 3;
     private ViewPager mPager;
     private PagerAdapter mAdapter;
-    private DatabaseHelper dbh;
-    private ServerHelper sh;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.pager);
-        dbh = new DatabaseHelper(this);
-        sh = new ServerHelper(dbh);
+        new DatabaseHelper(this);
         mAdapter = new FragmentAdapter(getFragmentManager());
         mPager = (ViewPager) findViewById(R.id.pager);
         mPager.setAdapter(mAdapter);
@@ -51,12 +47,12 @@ public class FragmentViewer extends FragmentActivity {
         final EditText username = (EditText) findViewById(R.id.login_username);
         final EditText password = (EditText) findViewById(R.id.login_password);
         final TextView txtView = (TextView) findViewById(R.id.succes);
-        sh.getProfile(username.getText().toString(), password.getText().toString(), new Function<Profile>() {
+        ServerHelper.getInstance().getProfile(username.getText().toString(), password.getText().toString(), new Function<Profile>() {
             @Override
             public void call(Profile param) {
                         if(param != null) {
                             txtView.setText("Profile is being loaded");
-                            Intent intent = new Intent(getBaseContext(), Main.class);
+                            Intent intent = new Intent(getBaseContext(), ProfileView.class);
                             intent.putExtra("profile", param);
                             startActivity(intent);
                             overridePendingTransition(R.anim.enter_top, R.anim.leave_bottom);
@@ -76,10 +72,10 @@ public class FragmentViewer extends FragmentActivity {
         EditText username = (EditText) findViewById(R.id.new_username);
         EditText email = (EditText) findViewById(R.id.new_email);
         EditText password = (EditText) findViewById(R.id.new_password);
-        sh.createProfile(firstName.getText().toString(), lastName.getText().toString(), username.getText().toString(), email.getText().toString(), password.getText().toString(), new Function<Profile>() {
+        ServerHelper.getInstance().createProfile(firstName.getText().toString(), lastName.getText().toString(), username.getText().toString(), email.getText().toString(), password.getText().toString(), new Function<Profile>() {
             @Override
             public void call(Profile param) {
-                Intent intent = new Intent(getBaseContext(), Main.class);
+                Intent intent = new Intent(getBaseContext(), ProfileView.class);
                 intent.putExtra("profile", param);
                 startActivity(intent);
                 overridePendingTransition(R.anim.enter_top, R.anim.leave_bottom);

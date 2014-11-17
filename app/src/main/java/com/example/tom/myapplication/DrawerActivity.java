@@ -1,77 +1,72 @@
 package com.example.tom.myapplication;
 
 import android.app.Activity;
-import android.app.Fragment;
-import android.app.FragmentManager;
+import android.content.Intent;
 import android.content.res.Configuration;
 import android.os.Bundle;
 import android.support.v4.app.ActionBarDrawerToggle;
+import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
-import android.util.Log;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
 
-public class Main extends Activity {
-    private String[] menuItems;
-    private Fragment[] fragments;
-    int currFragment;
-    private FragmentManager fragmentManager;
-    private ActionBarDrawerToggle toggle;
+public abstract class DrawerActivity extends Activity {
+    protected String[] menuItems;
+    protected ActionBarDrawerToggle toggle;
+    protected int index;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-
-        setContentView(R.layout.activity_with_menu);
-        Profile profile = getIntent().getParcelableExtra("profile");
+        index = savedInstanceState.getInt("ListIndex");
 
         menuItems = getResources().getStringArray(R.array.sideMenu);
-        fragments = new Fragment[menuItems.length];
-        fragments[0] = ProfileFragment.init(profile);
-        currFragment = 0;
-
-        fragmentManager = getFragmentManager();
-        getActionBar().setTitle(menuItems[currFragment]);
-        fragmentManager.beginTransaction().add(R.id.content_frame, fragments[0]).commit();
+        getActionBar().setTitle(menuItems[index]);
 
         ListView listView = (ListView) findViewById(R.id.menulist);
-        listView.setAdapter(new ArrayAdapter<String>(this, R.layout.list_item, menuItems));
-        listView.setItemChecked(0, true);
+        listView.setAdapter(new ArrayAdapter<String>(this, R.layout.drawer_item, menuItems));
+        listView.setItemChecked(index, true);
         listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView parent, View view, int position, long id) {
                 ListView tempListView = (ListView) findViewById(R.id.menulist);
                 tempListView.setItemChecked(position, true);
-                if(position != currFragment) {
-                    if(fragments[position] == null) {
-                        switch(position) {
-                            case 0:
-                                fragments[0] = new ProfileFragment();
-                                break;
-                            case 1:
-                                fragments[1] = new LeaderBoardFragment();
-                                break;
-                            default:
-                                return;
-                        }
-                    }
-                    fragmentManager.beginTransaction().replace(R.id.content_frame, fragments[position]).commit();
-                    currFragment = position;
-                }
                 DrawerLayout tempDrawerLayout = (DrawerLayout) findViewById(R.id.drawer);
                 tempDrawerLayout.closeDrawer(tempListView);
+                if(position != index) {
+                    Intent intent;
+                    switch(position) {
+                        case 1:
+                            intent = new Intent(getBaseContext(), LeaderboardView.class);
+                            intent.setFlags(Intent.FLAG_ACTIVITY_NO_ANIMATION);
+                            startActivity(intent);
+                            break;
+                        case 3:
+                            intent = new Intent(getBaseContext(), FragmentViewer.class);
+                            startActivity(intent);
+                            overridePendingTransition(R.anim.enter_bottom, R.anim.leave_top);
+                            break;
+                        case 0:
+                        default:
+                            intent = new Intent(getBaseContext(), ProfileView.class);
+                            intent.setFlags(Intent.FLAG_ACTIVITY_NO_ANIMATION);
+                            startActivity(intent);
+                            break;
+                    }
+                }
             }
         });
 
         DrawerLayout drawerLayout = (DrawerLayout) findViewById(R.id.drawer);
-        toggle = new ActionBarDrawerToggle(this, drawerLayout, R.drawable.ic_launcher, R.string.app_name, R.string.app_name) {
+        drawerLayout.setDrawerShadow(R.drawable.drawer_shadow, GravityCompat.START);
+        toggle = new ActionBarDrawerToggle(this, drawerLayout, R.drawable.ic_drawer, R.string.app_name, R.string.app_name) {
             @Override
             public void onDrawerClosed(View view) {
                 super.onDrawerClosed(view);
-                getActionBar().setTitle(menuItems[currFragment]);
+                getActionBar().setTitle(menuItems[index]);
             }
 
             @Override

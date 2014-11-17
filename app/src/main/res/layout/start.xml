@@ -7,23 +7,20 @@
     android:layout_height="match_parent">
     <ImageView
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
+        android:layout_height="0dip"
         android:layout_weight="0.30"
-        android:id="@+id/groept_logo"
         android:src="@drawable/groept_logo"/>
 
     <ImageView
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
+        android:layout_height="0dip"
         android:layout_weight="0.30"
-        android:id="@+id/kul_logo"
         android:src="@drawable/kuleuven_logo"/>
 
     <ImageView
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
+        android:layout_height="0dip"
         android:layout_weight="0.30"
-        android:id="@+id/shimmer_logo"
         android:src="@drawable/shimmer_logo"/>
 
     <LinearLayout

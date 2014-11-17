@@ -13,6 +13,7 @@ import android.util.Log;
  * Works the local database for the application
  */
 public class DatabaseHelper extends SQLiteOpenHelper{
+    private static DatabaseHelper dbh = null;
     private static final int DATABASE_VERSION = 1;
     private static final String DATABASE_NAME = "data.sqlite";
     private static final String TABLE_LOGS = "logs";
@@ -32,10 +33,13 @@ public class DatabaseHelper extends SQLiteOpenHelper{
     public static final String OWNER = "owner";
     public static final String NOTIF = "notification";
 
-
+    public static DatabaseHelper getInstance() {
+        return dbh;
+    }
 
     public DatabaseHelper(Context context) {
         super(context, DATABASE_NAME, null, DATABASE_VERSION);
+        dbh = this;
     }
 
     @Override
@@ -132,6 +136,18 @@ public class DatabaseHelper extends SQLiteOpenHelper{
         }
     }
 
+    public Profile getProfile(int id) {
+        String query = "SELECT " + KEY_FIRSTNAME + ", " + KEY_LASTNAME + ", " + KEY_USERNAME + ", " + KEY_EMAIL + ", " + KEY_MONEY + ", " + KEY_EXPERIENCE + " FROM " + TABLE_PROFILES + " WHERE " + KEY_ID + " = ?";
+        SQLiteDatabase db = getReadableDatabase();
+        Cursor cursor = db.rawQuery(query, new String[] {Integer.toString(id)});
+        if(cursor != null && cursor.getCount() > 0) {
+            cursor.moveToFirst();
+            return new Profile(id, cursor.getString(0), cursor.getString(1), cursor.getString(2), cursor.getString(3), cursor.getInt(4), cursor.getInt(5));
+        } else {
+            return null;
+        }
+    }
+
     public int getSetting(String name) {
         String query = "SELECT " + KEY_VALUE + " FROM " + TABLE_SETTINGS + " WHERE " + KEY_SETTING + " = ?";
         SQLiteDatabase db = getReadableDatabase();
@@ -149,5 +165,4 @@ public class DatabaseHelper extends SQLiteOpenHelper{
         SQLiteDatabase db = getWritableDatabase();
         db.update(TABLE_SETTINGS, input, KEY_SETTING + " = ?", new String[]{name});
     }
-
 }
