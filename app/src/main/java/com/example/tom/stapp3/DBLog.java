@@ -1,4 +1,4 @@
-package com.example.tom.myapplication;
+package com.example.tom.stapp3;
 
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
@@ -38,12 +38,6 @@ public class DBLog {
 
     public Date getDatetime() {
         return datetime;
-    }
-
-    public String getDateTimeString() {
-        DateFormat df = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss");
-        return df.format(datetime);
-
     }
 
     public void setDatetime(Date datetime) {

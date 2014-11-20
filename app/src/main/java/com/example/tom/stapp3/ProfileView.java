@@ -1,4 +1,4 @@
-package com.example.tom.myapplication;
+package com.example.tom.stapp3;
 
 import android.os.Bundle;
 import android.widget.TextView;
@@ -28,7 +28,7 @@ public class ProfileView extends DrawerActivity {
                         updateVisual(profile);
                     }
                 }
-            });
+            }, false);
         }
     }
 

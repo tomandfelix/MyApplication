@@ -29,7 +29,8 @@ android:layout_height="fill_parent">
             <EditText
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:maxLines="1"
+                android:singleLine="true"
+                android:imeOptions="actionNext"
                 android:id="@+id/new_firstname"
                 android:hint="John"
                 android:inputType="textPersonName"/>
@@ -51,7 +52,8 @@ android:layout_height="fill_parent">
             <EditText
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:maxLines="1"
+                android:singleLine="true"
+                android:imeOptions="actionNext"
                 android:id="@+id/new_lastname"
                 android:hint="Doe"
                 android:inputType="textPersonName"/>
@@ -73,7 +75,8 @@ android:layout_height="fill_parent">
             <EditText
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:maxLines="1"
+                android:singleLine="true"
+                android:imeOptions="actionNext"
                 android:id="@+id/new_username"
                 android:hint="John_Doe_123"/>
         </TableRow>
@@ -94,7 +97,8 @@ android:layout_height="fill_parent">
             <EditText
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:maxLines="1"
+                android:singleLine="true"
+                android:imeOptions="actionNext"
                 android:id="@+id/new_email"
                 android:hint="john.doe@example.com"
                 android:inputType="textEmailAddress"/>
@@ -116,7 +120,8 @@ android:layout_height="fill_parent">
             <EditText
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:maxLines="1"
+                android:singleLine="true"
+                android:imeOptions="actionDone"
                 android:id="@+id/new_password"
                 android:hint="secret"
                 android:inputType="textPassword"/>

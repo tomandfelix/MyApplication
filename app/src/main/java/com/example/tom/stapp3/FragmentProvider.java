@@ -1,4 +1,4 @@
-package com.example.tom.myapplication;
+package com.example.tom.stapp3;
 
 import android.os.Bundle;
 import android.app.Fragment;
@@ -31,13 +31,13 @@ public class FragmentProvider extends Fragment{
         View layoutView;
         switch(position) {
             case 0:
-                layoutView = inflater.inflate(R.layout.login, container, false);
+                layoutView = inflater.inflate(R.layout.login_fragment, container, false);
                 break;
             case 2:
-                layoutView = inflater.inflate(R.layout.new_profile, container, false);
+                layoutView = inflater.inflate(R.layout.register_fragment, container, false);
                 break;
             case 1:default :
-                layoutView = inflater.inflate(R.layout.start, container, false);
+                layoutView = inflater.inflate(R.layout.start_fragment, container, false);
                 break;
         }
         return layoutView;

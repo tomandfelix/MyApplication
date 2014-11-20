@@ -1,4 +1,4 @@
-package com.example.tom.myapplication;
+package com.example.tom.stapp3;
 
 /**
  * Created by Tom on 5/11/2014.

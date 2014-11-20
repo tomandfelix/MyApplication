@@ -4,7 +4,7 @@ android {
     compileSdkVersion 21
     buildToolsVersion '21.1.0'
     defaultConfig {
-        applicationId "com.example.tom.myapplication"
+        applicationId 'com.tomandfelix.stapp3'
         minSdkVersion 15
         targetSdkVersion 21
         versionCode 1

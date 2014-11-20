@@ -9,14 +9,16 @@
     <EditText
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:maxLines="1"
+        android:singleLine="true"
+        android:imeOptions="actionNext"
         android:id="@+id/login_username"
         android:hint="Username"/>
 
     <EditText
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:maxLines="1"
+        android:singleLine="true"
+        android:imeOptions="actionDone"
         android:id="@+id/login_password"
         android:hint="Password"
         android:inputType="textPassword"/>

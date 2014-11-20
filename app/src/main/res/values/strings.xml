@@ -1,13 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
 
-    <string name="app_name">My Application</string>
-    <string name="hello_world">Hello world!</string>
+    <string name="app_name">StApp3</string>
     <string name="action_settings">Settings</string>
-    <string name="title_activity_login">Login</string>
-    <string name="title_activity_main">MainActivity</string>
-    <string name="title_activity_profile_view">ProfileView</string>
-    <string name="title_activity_leaderboard_view">LeaderBoardView</string>
+    <string name="title_login_fragment">Login</string>
+    <string name="title_register_fragment">Register</string>
+    <string name="title_activity_profile_view">Profile</string>
+    <string name="title_activity_leaderboard_view">Leaderboard</string>
 
     <string-array name="sideMenu">
         <item>Profile</item>
@@ -15,7 +14,5 @@
         <item>Settings</item>
         <item>Logout</item>
     </string-array>
-
-    <string name="title_activity_stranger__view">Stranger_View</string>
 
 </resources>

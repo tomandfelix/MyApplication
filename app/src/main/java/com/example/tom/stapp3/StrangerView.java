@@ -1,9 +1,8 @@
-package com.example.tom.myapplication;
+package com.example.tom.stapp3;
 
 import android.app.Activity;
 import android.os.Bundle;
 import android.support.v4.app.NavUtils;
-import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.TextView;
 
@@ -17,19 +16,12 @@ public class StrangerView extends Activity {
         setContentView(R.layout.stranger_view);
         getActionBar().setDisplayHomeAsUpEnabled(true);
         strangerId = getIntent().getIntExtra("strangerId", -1);
-
-        if(DatabaseHelper.getInstance().idPresent(strangerId)) {
-            Profile profile = DatabaseHelper.getInstance().getProfile(strangerId);
-            updateVisual(profile);
-
-        }
-
-        ServerHelper.getInstance().getRank(strangerId, new Function<RankedProfile>() {
+        ServerHelper.getInstance().getOtherProfile(strangerId, new Function<Profile>() {
             @Override
-            public void call(RankedProfile param) {
+            public void call(Profile param) {
                 updateVisual(param);
             }
-        });
+        }, false);
     }
 
     @Override
@@ -48,9 +40,7 @@ public class StrangerView extends Activity {
         TextView money = (TextView) findViewById(R.id.stranger_money);
         TextView experience = (TextView) findViewById(R.id.stranger_experience);
 
-        if(profile instanceof RankedProfile) {
-            rank.setText("Rank: " + ((RankedProfile) profile).getRank());
-        }
+        rank.setText("Rank: " + profile.getRank());
         username.setText(profile.getUsername());
         money.setText("Money: " + profile.getMoney());
         experience.setText("Experience: " + profile.getExperience());

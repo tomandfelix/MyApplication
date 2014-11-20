@@ -1,7 +1,6 @@
-package com.example.tom.myapplication;
+package com.example.tom.stapp3;
 
 import android.os.AsyncTask;
-import android.provider.ContactsContract;
 import android.util.Log;
 
 import org.apache.http.HttpResponse;
@@ -18,7 +17,8 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
-import java.util.concurrent.Callable;
+import java.util.Date;
+import java.util.concurrent.TimeUnit;
 
 /**
  * Created by Tom on 20/10/2014.
@@ -43,27 +43,56 @@ public class ServerHelper {
         return INSTANCE;
     }
 
+    private int minutesAgo(Date input) {
+        return Math.round(TimeUnit.MILLISECONDS.toMinutes(new Date().getTime() - input.getTime()));
+    }
+
     public void createProfile(String firstName, String lastName, String username, String email, String password, Function<Profile> callback) {
         CreateProfile temp = new CreateProfile(callback);
         temp.execute(firstName, lastName, username, email, password);
     }
 
-    public void getProfile(String username, String password, Function<Profile> callback) {
-        GetProfile temp = new GetProfile(callback);
-        temp.execute(username, password);
+    public void getProfile(String username, String password, Function<Profile> callback, boolean forceUpdate) {
+        Profile tempProf;
+        if(! forceUpdate && (tempProf = DatabaseHelper.getInstance().getProfile(username)) != null && minutesAgo(tempProf.getLastUpdate()) < 10) {
+            callback.call(tempProf);
+        } else {
+            GetProfile temp = new GetProfile(callback);
+            temp.execute(username, password);
+        }
     }
 
-    public void getOtherProfile(int id, Function<Profile> callback) {
-        GetOtherProfile temp = new GetOtherProfile(callback);
-        temp.execute(id);
+    public void getOtherProfile(int id, Function<Profile> callback, boolean forceupdate) {
+        Profile tempProf;
+        if(! forceupdate && (tempProf = DatabaseHelper.getInstance().getProfile(id)) != null && minutesAgo(tempProf.getLastUpdate()) < 10) {
+            callback.call(tempProf);
+        } else {
+            GetOtherProfile temp = new GetOtherProfile(callback);
+            temp.execute(id);
+        }
     }
 
-    public void getLeaderboardById(int id, Function<ArrayList<RankedProfile>> callback) {
-        GetLeaderboard temp = new GetLeaderboard(callback, "id");
-        temp.execute(id);
+    public void getLeaderboardById(int id, Function<ArrayList<Profile>> callback, boolean forceupdate) {
+        //TODO second getLeaderboard should get local data, but contacts server.
+        Profile fromId = null;
+        ArrayList<Profile> tempProf = null;
+        boolean update = false;
+        if(! forceupdate && ( fromId = DatabaseHelper.getInstance().getProfile(id)) != null && minutesAgo( fromId.getLastUpdate()) < 10 && (tempProf = DatabaseHelper.getInstance().getLeaderboardByRank(fromId.getRank())) != null) {
+            for(Profile p : tempProf) {
+                update = update || minutesAgo(p.getLastUpdate()) >= 10;
+            }
+        } else {
+            update = true;
+        }
+        if(! update) {
+            callback.call(tempProf);
+        } else {
+            GetLeaderboard temp = new GetLeaderboard(callback, "id");
+            temp.execute(id);
+        }
     }
 
-    public void getLeaderboardByRank(int rank, Function<ArrayList<RankedProfile>> callback) {
+    public void getLeaderboardByRank(int rank, Function<ArrayList<Profile>> callback) {
         GetLeaderboard temp = new GetLeaderboard(callback, "rank");
         temp.execute(rank);
     }
@@ -72,18 +101,13 @@ public class ServerHelper {
         new DeleteProfile().execute("" + id, password);
     }
 
-    public void getRank(int id, Function<RankedProfile> callback) {
-        GetRank temp = new GetRank(callback);
-        temp.execute(id);
-    }
-
     public void updateMoneyAndExperience(int id, int money, int experience) {
         new UpdateMoneyAndExperience().execute(id, money, experience);
     }
 
     public void updateProfileSettings(int id, String password, String firstname, String lastname, String username, String email, String new_password) {
         new UpdateProfileSettings().execute("" + id, password, firstname, lastname, username, email, new_password);
-        DatabaseHelper.getInstance().updateProfile(new Profile(id, firstname, lastname, username, email, -1, -1));
+        DatabaseHelper.getInstance().updateProfile(new Profile(id, firstname, lastname, username, email, -1, -1, -1, null));
     }
 
     private class CreateProfile extends AsyncTask<String, Void, Profile> {
@@ -112,12 +136,13 @@ public class ServerHelper {
                 BufferedReader in = new BufferedReader(new InputStreamReader(response.getEntity().getContent()));
                 String line;
                 JSONObject result = new JSONObject();
-                if((line = in.readLine()) != null) {
+                while((line = in.readLine()) != null) {
                     result = new JSONObject(line);
                 }
-                int id = result.getInt("id");
                 in.close();
-                prof = new Profile(id , params[0], params[1], params[2], params[3], 0, 0);
+                if(! result.toString().contains("{}")) {
+                    prof = new Profile(result.getInt("id") , params[0], params[1], params[2], params[3], 0, 0, result.getInt("rank"), new Date());
+                }
             } catch (ClientProtocolException e) {
                 Log.e("CreateProfile", "Error: ClientProtocolException");
             } catch (IOException e) {
@@ -165,11 +190,8 @@ public class ServerHelper {
                 }
                 in.close();
                 if(! result.toString().contains("{}")) {
-                    prof = new Profile(result.getInt("id"), result.getString("firstname"),
-                            result.getString("lastname"), params[0], result.getString("email"),
-                            result.getInt("money"), result.getInt("experience"));
+                    prof = new Profile(result.getInt("id"), result.getString("firstname"), result.getString("lastname"), params[0], result.getString("email"),result.getInt("money"), result.getInt("experience"), result.getInt("rank"), new Date());
                 }
-
             } catch (ClientProtocolException e) {
                 Log.e("GetProfile", "Error: ClientProtocolException");
             } catch (IOException e) {
@@ -219,7 +241,7 @@ public class ServerHelper {
                 }
                 in.close();
                 if(! result.toString().contains("{}")) {
-                    prof = new Profile(params[0], null, null, result.getString("username"), null, result.getInt("money"), result.getInt("experience"));
+                    prof = new Profile(params[0], null, null, result.getString("username"), null, result.getInt("money"), result.getInt("experience"), result.getInt("rank"), new Date());
                 }
             } catch (ClientProtocolException e) {
                 Log.e("GetOtherProfile", "Error: ClientProtocolException");
@@ -241,22 +263,22 @@ public class ServerHelper {
         }
     }
 
-    private class GetLeaderboard extends AsyncTask<Integer, Void, ArrayList<RankedProfile>> {
-        private Function<ArrayList<RankedProfile>> callback;
+    private class GetLeaderboard extends AsyncTask<Integer, Void, ArrayList<Profile>> {
+        private Function<ArrayList<Profile>> callback;
         private String inputType;
 
-        public GetLeaderboard(Function<ArrayList<RankedProfile>> callback, String inputType) {
+        public GetLeaderboard(Function<ArrayList<Profile>> callback, String inputType) {
             super();
             this.callback = callback;
             this.inputType = inputType;
         }
         @Override
-        protected ArrayList<RankedProfile> doInBackground(Integer... params) {
+        protected ArrayList<Profile> doInBackground(Integer... params) {
             Log.d("ServerHelper", "AsyncTask GetLeaderboard started");
             HttpClient client = new DefaultHttpClient();
             HttpPost post = new HttpPost("http://eng.studev.groept.be/thesis/a14_stapp2/getLeaderboard.php");
             JSONObject query = new JSONObject();
-            ArrayList<RankedProfile> prof = new ArrayList<RankedProfile>();
+            ArrayList<Profile> prof = new ArrayList<Profile>();
             try {
                 if(inputType.equals("id")) {
                     query.put("id", params[0].toString());
@@ -277,7 +299,7 @@ public class ServerHelper {
                 } else {
                     for (int i = 0; i < result.length(); i++) {
                         JSONObject temp = result.getJSONObject(i);
-                        prof.add(new RankedProfile(temp.getInt("id"), null, null, temp.getString("username"), null, temp.getInt("money"), temp.getInt("experience"), temp.getInt("rank")));
+                        prof.add(new Profile(temp.getInt("id"), null, null, temp.getString("username"), null, temp.getInt("money"), temp.getInt("experience"), temp.getInt("rank"), new Date()));
                     }
                 }
             } catch (ClientProtocolException e) {
@@ -291,11 +313,11 @@ public class ServerHelper {
         }
 
         @Override
-        public void onPostExecute(ArrayList<RankedProfile> profiles) {
+        public void onPostExecute(ArrayList<Profile> profiles) {
             if(profiles != null) {
-                for(RankedProfile rProf : profiles) {
-                    DatabaseHelper.getInstance().storeProfile(rProf);
-                    Log.d("GetLeaderboard", rProf.toString());
+                for(Profile prof : profiles) {
+                    DatabaseHelper.getInstance().storeProfile(prof);
+                    Log.d("GetLeaderboard", prof.toString());
                 }
             }
             callback.call(profiles);
@@ -322,51 +344,6 @@ public class ServerHelper {
                 Log.e("DeleteProfile", "JSON error");
             }
             return null;
-        }
-    }
-
-    private class GetRank extends AsyncTask<Integer, Void, RankedProfile> {
-        private Function<RankedProfile> callback;
-
-        public GetRank(Function<RankedProfile> callback) {
-            this.callback = callback;
-        }
-        @Override
-        public RankedProfile doInBackground(Integer...params) {
-            Log.d("ServerHelper", "AsyncTask GetRank started");
-            HttpClient client = new DefaultHttpClient();
-            HttpPost post = new HttpPost("http://eng.studev.groept.be/thesis/a14_stapp2/getRank.php");
-            JSONObject query = new JSONObject();
-            RankedProfile prof = null;
-            try {
-                query.put("id", params[0].toString());
-                post.setEntity(new StringEntity(query.toString()));
-                HttpResponse response = client.execute(post);
-                BufferedReader in = new BufferedReader(new InputStreamReader(response.getEntity().getContent()));
-                String line;
-                JSONObject result = new JSONObject();
-                while ((line = in.readLine()) != null) {
-                    result = new JSONObject(line);
-                }
-                in.close();
-                if(! result.toString().contains("{}")) {
-                    prof = new RankedProfile(params[0], null, null, result.getString("username"), null, result.getInt("money"), result.getInt("experience"), result.getInt("rank"));
-                }
-            } catch (ClientProtocolException e) {
-                Log.e("GetRank", "Error: ClientProtocolException");
-            } catch (IOException e) {
-                Log.e("GetRank", "Error: IOException");
-            } catch (JSONException e) {
-                Log.e("GetRank", "JSON error");
-            }
-            return prof;
-        }
-
-        @Override
-        protected void onPostExecute(RankedProfile profile) {
-            Log.d("GetRank", profile.toString());
-            DatabaseHelper.getInstance().storeProfile(profile);
-            callback.call(profile);
         }
     }
 

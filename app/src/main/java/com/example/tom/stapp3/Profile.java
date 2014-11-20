@@ -1,7 +1,9 @@
-package com.example.tom.myapplication;
+package com.example.tom.stapp3;
 
 import android.os.Parcel;
 import android.os.Parcelable;
+
+import java.util.Date;
 
 /**
  * Created by Tom on 6/10/2014.
@@ -15,8 +17,10 @@ public class Profile implements Parcelable{
     protected String email;
     protected int money;
     protected int experience;
+    private int rank;
+    private Date lastUpdate;
 
-    public Profile(int id, String firstName, String lastName, String username, String email, int money, int experience) {
+    public Profile(int id, String firstName, String lastName, String username, String email, int money, int experience, int rank, Date lastUpdate) {
         this.id = id;
         this.lastName = lastName;
         this.firstName = firstName;
@@ -24,6 +28,9 @@ public class Profile implements Parcelable{
         this.email = email;
         this.money = money;
         this.experience = experience;
+        this.rank = rank;
+        this.lastUpdate = lastUpdate;
+
     }
 
     public int getId() {
@@ -83,16 +90,34 @@ public class Profile implements Parcelable{
         this.experience = experience;
     }
 
+    public int getRank() {
+        return rank;
+    }
+
+    public void setRank(int rank) {
+        this.rank = rank;
+    }
+
+    public Date getLastUpdate() {
+        return lastUpdate;
+    }
+
+    public void setLastUpdate(Date lastUpdate) {
+        this.lastUpdate = lastUpdate;
+    }
+
     @Override
     public String toString() {
         String info = "";
-        info+= "id:" + id;
-        info+= (firstName == null ? "":" firstname:" + firstName);
-        info+= (lastName == null ? "":" lastname:" + lastName);
-        info+= (username == null ? "":" username:" + username);
-        info+= (email == null ? "":" email:" + email);
-        info+= " money:" + money;
-        info+= " experience:" + experience;
+        info += "id:" + id;
+        info += (firstName == null ? "":" firstname:" + firstName);
+        info += (lastName == null ? "":" lastname:" + lastName);
+        info += (username == null ? "":" username:" + username);
+        info += (email == null ? "":" email:" + email);
+        info += " money:" + money;
+        info += " experience:" + experience;
+        info += "rank:" + rank;
+        info += "last updated:" + lastUpdate.toString();
         return info;
     }
 
@@ -110,6 +135,8 @@ public class Profile implements Parcelable{
         dest.writeString(email);
         dest.writeInt(money);
         dest.writeInt(experience);
+        dest.writeInt(rank);
+        dest.writeLong(lastUpdate.getTime());
     }
 
     protected Profile(Parcel in) {
@@ -120,6 +147,8 @@ public class Profile implements Parcelable{
         email = in.readString();
         money = in.readInt();
         experience = in.readInt();
+        rank = in.readInt();
+        lastUpdate = new Date(in.readLong());
     }
 
     public static final Parcelable.Creator<Profile> CREATOR = new Parcelable.Creator<Profile>() {

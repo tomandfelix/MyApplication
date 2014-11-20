@@ -1,4 +1,4 @@
-package com.example.tom.myapplication;
+package com.example.tom.stapp3;
 
 import android.content.Intent;
 import android.os.Bundle;
@@ -31,18 +31,6 @@ public class FragmentViewer extends FragmentActivity {
         mPager.setCurrentItem(1, false);
     }
 
-    /*public void getOtherProfile (View v) {
-        EditText id = (EditText) findViewById(R.id.id);
-        Log.d("getOtherProfile", "getting profile " + Integer.parseInt(id.getText().toString()));
-        sh.getOtherProfile(Integer.parseInt(id.getText().toString()));
-    }
-
-    public void getLeaderboard (View v) {
-        EditText id = (EditText) findViewById(R.id.id);
-        Log.d("getLeaderboard", "getting leaderboard for id " + Integer.parseInt(id.getText().toString()));
-        sh.getLeaderboard(Integer.parseInt(id.getText().toString()));
-    }*/
-
     public void loginBtn(View v) {
         final EditText username = (EditText) findViewById(R.id.login_username);
         final EditText password = (EditText) findViewById(R.id.login_password);
@@ -62,7 +50,7 @@ public class FragmentViewer extends FragmentActivity {
                             password.setText(null);
                         }
             }
-        });
+        }, true);
     }
 
 
