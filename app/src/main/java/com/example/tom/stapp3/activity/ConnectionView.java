@@ -22,7 +22,9 @@ import android.util.Log;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
+import android.widget.Button;
 import android.widget.ListView;
+import android.widget.ProgressBar;
 
 import com.example.tom.stapp3.R;
 import com.example.tom.stapp3.driver.ShimmerService;
@@ -37,6 +39,8 @@ public class ConnectionView extends DrawerActivity {
     private static Context context;
     private static ShimmerService mService;
     private boolean mServiceBind = false;
+    private static ProgressBar progressBar;
+    private static Button stopButton;
     private boolean mServiceFirstTime = true;
     private static String mConnectedDeviceName = null;
     private static boolean mEnableLogging = false;
@@ -63,6 +67,10 @@ public class ConnectionView extends DrawerActivity {
                     }
                     break;
                 case Shimmer.MESSAGE_READ:
+                    if(progressBar.getVisibility() == View.VISIBLE) {
+                        progressBar.setVisibility(View.INVISIBLE);
+                        stopButton.setVisibility(View.VISIBLE);
+                    }
                     break;
                 case Shimmer.MESSAGE_ACK_RECEIVED:
                     break;
@@ -102,6 +110,8 @@ public class ConnectionView extends DrawerActivity {
 
         currentlyVisible = ("onCreate");
         DatabaseHelper.getInstance(this).setAddress("");
+        progressBar = (ProgressBar) findViewById(R.id.connection_progress);
+        stopButton = (Button) findViewById(R.id.stop_day);
 
         //start service if needed
         if(!isMyServiceRunning()) {
@@ -144,7 +154,7 @@ public class ConnectionView extends DrawerActivity {
 
         //Populate the listView
         ListView deviceList = (ListView) findViewById(R.id.paired);
-        deviceList.setAdapter(new ArrayAdapter<String>(this, R.layout.drawer_item, deviceNames));
+        deviceList.setAdapter(new ArrayAdapter<String>(this, R.layout.devices_item, deviceNames));
 
         deviceList.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
@@ -154,6 +164,8 @@ public class ConnectionView extends DrawerActivity {
                 DatabaseHelper.getInstance(getApplicationContext()).setAddress(address);
                 mService.connectShimmer(address, "Device");
                 mService.setGraphHandler(mHandler);
+                findViewById(R.id.paired).setVisibility(View.INVISIBLE);
+                progressBar.setVisibility(View.VISIBLE);
             }
         });
     }
@@ -227,6 +239,24 @@ public class ConnectionView extends DrawerActivity {
                     }
                 }
                 break;
+        }
+    }
+
+    public void startDay(View v) {
+        v.setVisibility(View.INVISIBLE);
+        findViewById(R.id.paired).setVisibility(View.VISIBLE);
+        DatabaseHelper.getInstance(this).startDay();
+    }
+
+    public void stopDay(View v) {
+        if(DatabaseHelper.getInstance(this).tryEndDay()) {
+            v.setVisibility(View.INVISIBLE);
+            findViewById(R.id.start_day).setVisibility(View.VISIBLE);
+            mConnectedDeviceName = null;
+            mService.disconnectAllDevices();
+            DatabaseHelper.getInstance(getApplicationContext()).setAddress("");
+            mService.logAchievedScore();
+            stopService(new Intent(this, ShimmerService.class));
         }
     }
 }

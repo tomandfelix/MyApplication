@@ -56,7 +56,7 @@ public class ShimmerService extends Service {
     private double delta_t = 0.0;
     private double previous_sit_achievedScore = 0.0;
     private final IBinder mBinder = new LocalBinder();
-    private String isStanding = "stand";
+    private String isStanding = DatabaseHelper.LOG_STAND;
     private double S[] = { 219.2, 98.4, 98.6, 1089.4, 1951.5 };
     private double gmeans[][] = { { 77.2, -113.9, -85.7, 823.4, 3917.8 },
             { -17.1, -382.8, 14.4, 4134.7, 5058.4 } };
@@ -131,7 +131,7 @@ public class ShimmerService extends Service {
 
         setEnableLogging(true);
         String address = DatabaseHelper.getInstance(getApplicationContext()).getAddress();
-        Log.d("ShimmerService", "address: '" + address + "'");
+        Log.d("ShimmerService", "address: " + address);
 
         if (!address.equals("")) {
             final String addressToConnect = address;
@@ -289,7 +289,7 @@ public class ShimmerService extends Service {
                             .equals("Device connection was lost")) {
                         // String address = Logging.readAddressFile();
 
-                        DatabaseHelper.getInstance(getApplicationContext()).addLog(new DBLog("sensor_disconnect", new Date(), null));
+                        DatabaseHelper.getInstance(getApplicationContext()).addConDiscon(false);
 
                         // Logging.getUniqueInstance(getApplicationContext())
                         // .closeDatabase();
@@ -324,7 +324,7 @@ public class ShimmerService extends Service {
 
                     } else if (msg.getData().getString(Shimmer.TOAST)
                             .contains("is now Streaming")) {
-                        DatabaseHelper.getInstance(getApplicationContext()).addLog(new DBLog("sensor_connect", new Date(), null));
+                        DatabaseHelper.getInstance(getApplicationContext()).addConDiscon(true);
 
                     }
                     break;
@@ -847,6 +847,39 @@ public class ShimmerService extends Service {
         Log.d("ShimmerTest", "Test");
     }
 
+    public void logAchievedScore() {
+        DBLog last = DatabaseHelper.getInstance(getApplicationContext()).getLastLog();
+        if(last != null) {
+            if(last.getAction().equals(DatabaseHelper.LOG_START_DAY)) {
+                achievedScore = 0.0;
+            } else if(last.getAction().equals(DatabaseHelper.LOG_OVERTIME)) {
+                DBLog lastSitStand = DatabaseHelper.getInstance(getApplicationContext()).getLastSitStand();
+                if(lastSitStand != null) {
+                    previous_sit_achievedScore = Double.parseDouble(last.getMetadata().split("\\|")[1]) - Double.parseDouble(lastSitStand.getMetadata().split("\\|")[1]);
+                    achievedScore = Double.parseDouble(last.getMetadata().split("\\|")[1]);
+                    startTime = last.getDatetime();
+                    double delta_t = (new Date()).getTime() - startTime.getTime();
+                    achievedScore += (Math.pow((1440.0 * 60000.0 / delta_t) - 1, k) * (100.0 / Math.pow(47.0, k))) - previous_sit_achievedScore;
+                }
+            } else {
+                String[] metadata = last.getMetadata().split("\\|");
+                achievedScore = Double.parseDouble(metadata[1]);
+                startTime = last.getDatetime();
+                // calculate the achievedscore from the last state until now
+                delta_t = (new Date()).getTime() - startTime.getTime();
+                achievedScore += (double) ((ppmax * delta_t) / _30mn_to_ms);
+            }
+        }
+        double achievedScorePercentage = 0.0;
+        DBLog first = DatabaseHelper.getInstance(getApplicationContext()).getFirstRecordOfDay();
+        if(first != null) {
+            double connectionTime = (new Date()).getTime() - first.getDatetime().getTime();
+            double maxScoreToBeAchieved = (double) (ppmax * connectionTime) / _30mn_to_ms;
+            achievedScorePercentage = achievedScore * 100 / maxScoreToBeAchieved;
+            DatabaseHelper.getInstance(getApplicationContext()).addEndDay(achievedScore, achievedScorePercentage, connectionTime);
+        }
+    }
+
     public void logData(ObjectCluster objectCluster) {
 
         ObjectCluster objectClusterLog = objectCluster;
@@ -881,7 +914,7 @@ public class ShimmerService extends Service {
 
                 Collection<FormatCluster> dataFormats = objectClusterLog.mPropertyCluster
                         .get(mSensorNames[r]);
-                FormatCluster formatCluster = (FormatCluster) returnFormatCluster(dataFormats, mSensorFormats[r], mSensorUnits[r]); // retrieve the calibrated data
+                FormatCluster formatCluster = returnFormatCluster(dataFormats, mSensorFormats[r], mSensorUnits[r]); // retrieve the calibrated data
                 if (mSensorNames[r].equals("Accelerometer X")
                         || mSensorNames[r].equals("Accelerometer Y")
                         || mSensorNames[r].equals("Accelerometer Z")) {
@@ -961,24 +994,25 @@ public class ShimmerService extends Service {
                     for (int j = 0; j < 5; j++) {
                         sumResult = sumResult
                                 + Math.pow(
-                                ((double) ((tempList.get(j) - gmeans[i][j]) / S[j])),
+                                (tempList.get(j) - gmeans[i][j]) / S[j],
                                 2.0);
                     }
                     D.add((-0.69314718) - 0.5 * (sumResult + logDetSigma));
                 }
                 if (D.get(0) > D.get(1)) {
-                    isStanding = "sit";
+                    isStanding = DatabaseHelper.LOG_SIT;
                 } else {
-                    isStanding = "stand";
+                    isStanding = DatabaseHelper.LOG_STAND;
                 }
 
                 if (resultFirstWrite == true) {
                     DBLog log = DatabaseHelper.getInstance(getApplicationContext()).getLastLog();
+                    Log.d("SERVICE", log.toString());
 
                     if (log != null) {
                         // after changing something in the log_begin_newday, it
                         // should never come to this blog
-                        if (log.getAction().equals("begin_day")) {
+                        if (log.getAction().equals(DatabaseHelper.LOG_START_DAY)) {
 
                             resultFirstWrite = false;
                             startTime = new Date();
@@ -986,14 +1020,14 @@ public class ShimmerService extends Service {
                             delta_t = 0;
                             achievedScore = 0.0;
                             previous_sit_achievedScore = 0.0;
-                            DatabaseHelper.getInstance(getApplicationContext()).addLog(new DBLog(isStanding, new Date(), null));
+                            DatabaseHelper.getInstance(getApplicationContext()).addSitStand(isStanding.equals(DatabaseHelper.LOG_STAND), delta_t + "|" + achievedScore);
 
-                        } else if (log.getAction().equals("sit_overtime")) {
+                        } else if (log.getAction().equals(DatabaseHelper.LOG_OVERTIME)) {
 
                             try {
                                 resultFirstWrite = false;
                                 firstWriteSitOvertime = false;
-                                previousResult = "sit";
+                                previousResult = DatabaseHelper.LOG_SIT;
                                 DBLog lastsitstandlog = DatabaseHelper.getInstance(getApplicationContext()).getLastSitStand();
 
                                 if (lastsitstandlog != null) {
@@ -1026,7 +1060,7 @@ public class ShimmerService extends Service {
                                 previous_sit_achievedScore = 0.0;
                                 long sit_overtime_ms_from70 = startTime.getTime()
                                         + _30mn_to_ms;
-                                if (log.getAction().equals("sit")
+                                if (log.getAction().equals(DatabaseHelper.LOG_SIT)
                                         && System.currentTimeMillis() > sit_overtime_ms_from70) {
                                     Calendar calendar = Calendar.getInstance();
                                     calendar.setTimeInMillis(sit_overtime_ms_from70);
@@ -1034,7 +1068,7 @@ public class ShimmerService extends Service {
                                     delta_t = _30mn_to_ms;
                                     previous_sit_achievedScore = (ppmax * delta_t) / _30mn_to_ms;
                                     achievedScore += previous_sit_achievedScore;
-                                    DatabaseHelper.getInstance(getApplicationContext()).addLog(new DBLog("sit_overtime", new Date(), delta_t + "|" + achievedScore));
+                                    DatabaseHelper.getInstance(getApplicationContext()).addSitOvertime(delta_t + "|" + achievedScore);
                                 }
 
                             } catch (Exception e) {
@@ -1050,7 +1084,7 @@ public class ShimmerService extends Service {
                         delta_t = 0;
                         achievedScore = 0.0;
                         previous_sit_achievedScore = 0.0;
-                        DatabaseHelper.getInstance(getApplicationContext()).addLog(new DBLog(isStanding, new Date(), delta_t + "|" + achievedScore));
+                        DatabaseHelper.getInstance(getApplicationContext()).addSitStand(isStanding.equals(DatabaseHelper.LOG_STAND), delta_t + "|" + achievedScore);
                     }
 
                 } else { // resultFirstWrite = false
@@ -1060,7 +1094,7 @@ public class ShimmerService extends Service {
                         // set firstWroteSitOvertime back to true
                         firstWriteSitOvertime = true;
                         warningSound = true;
-                        // if (isStanding.equals("sit")) {
+                        // if (isStanding.equals(DatabaseHelper.LOG_SIT)) {
                         // configurationAlert(isStanding,
                         // R.drawable.icon_sitting_green, "alert");
                         // } else {
@@ -1070,7 +1104,7 @@ public class ShimmerService extends Service {
                         // calculate achieved score and log
 
                         delta_t = System.currentTimeMillis() - startTime.getTime();
-                        if (isStanding.equals("sit")) {
+                        if (isStanding.equals(DatabaseHelper.LOG_SIT)) {
                             achievedScore += (double) (ppmax * delta_t)
                                     / (_30mn_to_ms);
                         } else {
@@ -1089,10 +1123,10 @@ public class ShimmerService extends Service {
                         // user change state
                         previousResult = isStanding;
                         startTime = new Date();
-                        DatabaseHelper.getInstance(getApplicationContext()).addLog(new DBLog(isStanding, new Date(), delta_t + "|" + achievedScore));
+                        DatabaseHelper.getInstance(getApplicationContext()).addSitStand(isStanding.equals(DatabaseHelper.LOG_STAND), delta_t + "|" + achievedScore);
                     }
 
-                    if (firstWriteSitOvertime && isStanding.equals("sit")) {
+                    if (firstWriteSitOvertime && isStanding.equals(DatabaseHelper.LOG_SIT)) {
                         if (System.currentTimeMillis() > startTime.getTime()
                                 + _25mn_to_ms
                                 && System.currentTimeMillis() < startTime.getTime()
@@ -1110,7 +1144,7 @@ public class ShimmerService extends Service {
                             delta_t = System.currentTimeMillis() - startTime.getTime();
                             previous_sit_achievedScore = (double) ((ppmax * delta_t) / (_30mn_to_ms));
                             achievedScore += previous_sit_achievedScore;
-                            DatabaseHelper.getInstance(getApplicationContext()).addLog(new DBLog("sit_overtime", new Date(), delta_t + "|" + achievedScore));
+                            DatabaseHelper.getInstance(getApplicationContext()).addSitOvertime(delta_t + "|" + achievedScore);
                             /*configurationAlert("Tijd om recht te staan!",
                                     R.drawable.icon_sitting_red, "alert");*/
                         }
@@ -1146,7 +1180,7 @@ public class ShimmerService extends Service {
         FormatCluster returnFormatCluster = null;
 
         while (iFormatCluster.hasNext()) {
-            formatCluster = (FormatCluster) iFormatCluster.next();
+            formatCluster = iFormatCluster.next();
             if (formatCluster.mFormat == format
                     && formatCluster.mUnits == units) {
                 returnFormatCluster = formatCluster;

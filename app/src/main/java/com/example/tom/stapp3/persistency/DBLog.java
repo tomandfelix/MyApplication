@@ -42,4 +42,9 @@ public class DBLog {
     public void setMetadata(String metadata) {
         this.metadata = metadata;
     }
+
+    @Override
+    public String toString() {
+        return action + " " + datetime.toString() + " " + metadata;
+    }
 }

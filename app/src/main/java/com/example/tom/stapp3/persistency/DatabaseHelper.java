@@ -11,6 +11,7 @@ import com.example.tom.stapp3.BuildConfig;
 
 import java.io.File;
 import java.text.DateFormat;
+import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
@@ -24,6 +25,7 @@ import java.util.concurrent.TimeUnit;
 public class DatabaseHelper extends SQLiteOpenHelper{
     private static DatabaseHelper uniqueInstance = null;
     private static final int DATABASE_VERSION = 1;
+    private static final DateFormat df = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss.SSS");
     private static final String DATABASE_NAME = "data.sqlite";
     private static final String TABLE_LOGS = "logs";
     private static final String TABLE_PROFILES = "profiles";
@@ -46,6 +48,13 @@ public class DatabaseHelper extends SQLiteOpenHelper{
     public static final String OWNER = "owner";
     public static final String NOTIF = "notification";
     public static final String ADDRESS = "mac_address";
+    public static final String LOG_SIT = "sit";
+    public static final String LOG_OVERTIME = "sit_overtime";
+    public static final String LOG_STAND = "stand";
+    public static final String LOG_START_DAY = "begin_day";
+    public static final String LOG_STOP_DAY = "end_day";
+    public static final String LOG_ACH_SCORE = "achieved_score";
+    public static final String LOG_ACH_SCORE_PERC = "achieved_score_percent";
 
     public static DatabaseHelper getInstance(Context context) {
         if(uniqueInstance == null) {
@@ -96,29 +105,31 @@ public class DatabaseHelper extends SQLiteOpenHelper{
     }
 
     private String dateToString(Date date) {
-        DateFormat df = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss");
         return df.format(date);
     }
 
     private Date stringToDate(String dateString) {
-        return new Date(Integer.parseInt(dateString.substring(0, 4)), Integer.parseInt(dateString.substring(5, 7)), Integer.parseInt(dateString.substring(8, 10)), Integer.parseInt(dateString.substring(11, 13)), Integer.parseInt(dateString.substring(14, 16)), Integer.parseInt(dateString.substring(17, 19)));
+        try {
+            return df.parse(dateString);
+        } catch (ParseException e) {
+            e.printStackTrace();
+        }
+        return null;
     }
 
     //--------------------------------------------------------LOGS------------------------------------------------------------------------------
 
-    public void addLog(DBLog log) {
-        Log.d("addLog", "adding a log");
+    private void addLog(DBLog log) {
         ContentValues input = new ContentValues(2);
         input.put(KEY_ACTION, log.getAction());
         input.put(KEY_DATETIME, dateToString(log.getDatetime()));
-        input.put(KEY_METADATA, log.getMetadata());
+        input.put(KEY_METADATA, log.getMetadata() == null ? "" : log.getMetadata());
         SQLiteDatabase db = getWritableDatabase();
         db.insert(TABLE_LOGS, null, input);
     }
 
     public DBLog getLastLog() {
-        Log.d("dayStarted", "checking");
-        String query = "SELECT " + KEY_ACTION + ", " + KEY_DATETIME + ", " + KEY_METADATA +  " FROM " + TABLE_LOGS + " WHERE " + KEY_ACTION + " IN('sit', 'stand', 'begin_day', 'sit_overtime') ORDER BY " + KEY_ID + " DESC LIMIT 1";
+        String query = "SELECT " + KEY_ACTION + ", " + KEY_DATETIME + ", " + KEY_METADATA +  " FROM " + TABLE_LOGS + " WHERE " + KEY_ACTION + " IN('" + LOG_SIT + "', '" + LOG_STAND + "', '" + LOG_START_DAY + "', '" + LOG_OVERTIME + "') ORDER BY " + KEY_ID + " DESC LIMIT 1";
         SQLiteDatabase db = getReadableDatabase();
         Cursor cursor = db.rawQuery(query, null);
         if(cursor != null && cursor.getCount() > 0) {
@@ -130,8 +141,7 @@ public class DatabaseHelper extends SQLiteOpenHelper{
     }
 
     public DBLog getLastSitStand() {
-        Log.d("dayStarted", "checking");
-        String query = "SELECT " + KEY_ACTION + ", " + KEY_DATETIME + ", " + KEY_METADATA + " FROM " + TABLE_LOGS + " WHERE " + KEY_ACTION + " IN('sit', 'stand') ORDER BY " + KEY_ID + " DESC LIMIT 1";
+        String query = "SELECT " + KEY_ACTION + ", " + KEY_DATETIME + ", " + KEY_METADATA + " FROM " + TABLE_LOGS + " WHERE " + KEY_ACTION + " IN('" + LOG_SIT + "', '" + LOG_STAND + "') ORDER BY " + KEY_ID + " DESC LIMIT 1";
         SQLiteDatabase db = getReadableDatabase();
         Cursor cursor = db.rawQuery(query, null);
         if(cursor != null && cursor.getCount() > 0) {
@@ -142,14 +152,43 @@ public class DatabaseHelper extends SQLiteOpenHelper{
         }
     }
 
-    public Date dayStarted() {
-        Log.d("dayStarted", "checking");
-        String query = "SELECT " + KEY_ACTION + ", " + KEY_DATETIME + " FROM " + TABLE_LOGS + " WHERE " + KEY_ACTION + " IN('begin_day', 'end_day') ORDER BY " + KEY_ID + " DESC LIMIT 1";
+    public DBLog getFirstRecordOfDay() {
+        String query = "SELECT " + KEY_ACTION + ", " + KEY_DATETIME + ", " + KEY_METADATA + " FROM " + TABLE_LOGS + " WHERE " + KEY_ACTION + " IN('" + LOG_SIT + "', '" + LOG_STAND + "') AND " + KEY_ID + " > (SELECT " + KEY_ID + " FROM " + TABLE_LOGS + " WHERE " + KEY_ACTION + " = '" + LOG_START_DAY + "' ORDER BY " + KEY_ID + " DESC LIMIT 1) ORDER BY " + KEY_ID + " ASC LIMIT 1";
         SQLiteDatabase db = getReadableDatabase();
         Cursor cursor = db.rawQuery(query, null);
         if(cursor != null && cursor.getCount() > 0) {
             cursor.moveToFirst();
-            return cursor.getString(0).equals("begin_day") ? stringToDate(cursor.getString(1)) : null;
+            return new DBLog(cursor.getString(0), stringToDate(cursor.getString(1)), cursor.getString(2));
+        } else {
+            return null;
+        }
+    }
+
+    public void startDay() {
+        addLog(new DBLog(LOG_START_DAY, new Date(), null));
+        addLog(new DBLog(LOG_STAND, new Date(), "0.0|0.0"));
+    }
+
+    public void addSitStand(boolean standing, String metadata) {
+        addLog(new DBLog(standing ? LOG_STAND : LOG_SIT, new Date(), metadata));
+    }
+
+    public void addSitOvertime(String metadata) {
+        addLog(new DBLog(LOG_OVERTIME, new Date(), metadata));
+    }
+
+    public void addConDiscon(boolean connect) {
+        addLog(new DBLog(connect ? "sensor_connect" : "sensor_diconnect", new Date(), null));
+    }
+
+    public Date dayStarted() {
+        Log.d("dayStarted", "checking");
+        String query = "SELECT " + KEY_ACTION + ", " + KEY_DATETIME + " FROM " + TABLE_LOGS + " WHERE " + KEY_ACTION + " IN('" + LOG_START_DAY + "', '" + LOG_STOP_DAY + "') ORDER BY " + KEY_ID + " DESC LIMIT 1";
+        SQLiteDatabase db = getReadableDatabase();
+        Cursor cursor = db.rawQuery(query, null);
+        if(cursor != null && cursor.getCount() > 0) {
+            cursor.moveToFirst();
+            return cursor.getString(0).equals(LOG_START_DAY) ? stringToDate(cursor.getString(1)) : null;
         } else {
             return null;
         }
@@ -157,11 +196,16 @@ public class DatabaseHelper extends SQLiteOpenHelper{
 
     public boolean tryEndDay() {
         Log.d("tryEndDay", "trying to end day");
-        if(dayStarted() != null && secondsAgo(dayStarted()) >= 36000) {
-            addLog(new DBLog("end_day", new Date(), null));
+        if((dayStarted() != null && secondsAgo(dayStarted()) >= 36000) || BuildConfig.DEBUG) {
             return true;
         }
         return false;
+    }
+
+    public void addEndDay(double achieved, double percent, double connectionTime) {
+        addLog(new DBLog(LOG_ACH_SCORE, new Date(), Double.toString(achieved)));
+        addLog(new DBLog(LOG_ACH_SCORE_PERC, new Date(), Double.toString(percent)));
+        addLog(new DBLog(LOG_STOP_DAY, new Date(), Double.toString(connectionTime)));
     }
 
     //--------------------------------------------------------PROFILES--------------------------------------------------------------------------
