@@ -1,9 +1,8 @@
-package com.example.tom.stapp3;
+package com.example.tom.stapp3.activity;
 
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -13,10 +12,17 @@ import android.widget.HeaderViewListAdapter;
 import android.widget.ListView;
 import android.widget.TextView;
 
+import com.example.tom.stapp3.persistency.DatabaseHelper;
+import com.example.tom.stapp3.Function;
+import com.example.tom.stapp3.persistency.Profile;
+import com.example.tom.stapp3.R;
+import com.example.tom.stapp3.persistency.ServerHelper;
+
 import java.util.ArrayList;
 
 /**
  * Created by Tom on 17/11/2014.
+ * This is the class that will display the leaderboard
  */
 public class LeaderboardView extends DrawerActivity {
     private ListView leaderboardList;
@@ -29,10 +35,10 @@ public class LeaderboardView extends DrawerActivity {
         if(savedInstanceState == null) {
             savedInstanceState = new Bundle();
         }
-        savedInstanceState.putInt("ListIndex", 1);
+        savedInstanceState.putInt("ListIndex", LEADERBOARD);
         super.onCreate(savedInstanceState);
         leaderboardList = (ListView) findViewById(R.id.leaderboard_list);
-        ServerHelper.getInstance().getLeaderboardById(DatabaseHelper.getInstance().getSetting(DatabaseHelper.OWNER), new Function<ArrayList<Profile>>() {
+        ServerHelper.getInstance(this).getLeaderboardById(DatabaseHelper.getInstance(this).getSetting(DatabaseHelper.OWNER), new Function<ArrayList<Profile>>() {
             @Override
             public void call(ArrayList<Profile> param) {
                 list = param;
@@ -52,25 +58,25 @@ public class LeaderboardView extends DrawerActivity {
                         int startRank;
                         int endRank;
                         if(position == 0 && (startRank = list.get(0).getRank()) != 1) {
-                            ServerHelper.getInstance().getLeaderboardByRank(startRank - 2, new Function<ArrayList<Profile>>() {
+                            ServerHelper.getInstance(getApplicationContext()).getLeaderboardByRank(startRank - 2, new Function<ArrayList<Profile>>() {
                                 @Override
                                 public void call(ArrayList<Profile> param) {
                                     list.addAll(0, param);
                                     ((ArrayAdapter) ((HeaderViewListAdapter) leaderboardList.getAdapter()).getWrappedAdapter()).notifyDataSetChanged();
                                 }
-                            });
+                            }, false);
                         } else if (position == list.size() + 1 && (endRank = list.get(list.size() - 1).getRank()) % 10 == 0) {
-                            ServerHelper.getInstance().getLeaderboardByRank(endRank + 1, new Function<ArrayList<Profile>>() {
+                            ServerHelper.getInstance(getApplicationContext()).getLeaderboardByRank(endRank + 1, new Function<ArrayList<Profile>>() {
                                 @Override
                                 public void call(ArrayList<Profile> param) {
                                     list.addAll(param);
                                     ((ArrayAdapter) ((HeaderViewListAdapter) leaderboardList.getAdapter()).getWrappedAdapter()).notifyDataSetChanged();
                                 }
-                            });
+                            }, false);
                         } else  if(position > 0 && position <= list.size()) {
                             int destId = list.get(position - 1).getId();
                             Intent intent;
-                            if(destId == DatabaseHelper.getInstance().getSetting(DatabaseHelper.OWNER)) {
+                            if(destId == DatabaseHelper.getInstance(getApplicationContext()).getSetting(DatabaseHelper.OWNER)) {
                                 intent = new Intent(getBaseContext(), ProfileView.class);
                             } else {
                                 intent = new Intent(getBaseContext(), StrangerView.class);
@@ -98,7 +104,7 @@ public class LeaderboardView extends DrawerActivity {
         @Override
         public View getView(int position, View convertView, ViewGroup parent) {
             if(convertView == null) {
-                LayoutInflater inflater = (LayoutInflater) getContext().getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+                LayoutInflater inflater = (LayoutInflater) getContext().getSystemService(LAYOUT_INFLATER_SERVICE);
                 convertView = inflater.inflate(itemLayoutId, null);
             }
 

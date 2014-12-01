@@ -1,4 +1,4 @@
-package com.example.tom.stapp3;
+package com.example.tom.stapp3.persistency;
 
 import android.content.ContentValues;
 import android.content.Context;
@@ -7,10 +7,14 @@ import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 import android.util.Log;
 
+import com.example.tom.stapp3.BuildConfig;
+
+import java.io.File;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.concurrent.TimeUnit;
 
 
 /**
@@ -18,7 +22,7 @@ import java.util.Date;
  * Works the local database for the application
  */
 public class DatabaseHelper extends SQLiteOpenHelper{
-    private static DatabaseHelper dbh = null;
+    private static DatabaseHelper uniqueInstance = null;
     private static final int DATABASE_VERSION = 1;
     private static final String DATABASE_NAME = "data.sqlite";
     private static final String TABLE_LOGS = "logs";
@@ -27,6 +31,7 @@ public class DatabaseHelper extends SQLiteOpenHelper{
     private static final String KEY_ID = "id";
     private static final String KEY_ACTION = "action";
     private static final String KEY_DATETIME = "datetime";
+    private static final String KEY_METADATA = "metadata";
     private static final String KEY_FIRSTNAME = "firstname";
     private static final String KEY_LASTNAME = "lastname";
     private static final String KEY_USERNAME = "username";
@@ -36,31 +41,45 @@ public class DatabaseHelper extends SQLiteOpenHelper{
     private static final String KEY_RANK = "rank";
     private static final String KEY_UPDATED = "lastUpdated";
     private static final String KEY_SETTING = "name";
-    private static final String KEY_VALUE = "value";
+    private static final String KEY_VALUE_INT = "intValue";
+    private static final String KEY_VALUE_STRING = "stringValue";
     public static final String OWNER = "owner";
     public static final String NOTIF = "notification";
+    public static final String ADDRESS = "mac_address";
 
-    public static DatabaseHelper getInstance() {
-        return dbh;
+    public static DatabaseHelper getInstance(Context context) {
+        if(uniqueInstance == null) {
+            uniqueInstance = new DatabaseHelper(context.getApplicationContext());
+        }
+        return uniqueInstance;
     }
 
-    public DatabaseHelper(Context context) {
+    private DatabaseHelper(Context context) {
         super(context, DATABASE_NAME, null, DATABASE_VERSION);
-        dbh = this;
+    }
+
+    public void setReadable() {
+        SQLiteDatabase db = getWritableDatabase();
+        if(BuildConfig.DEBUG) {
+            new File(db.getPath()).setReadable(true, false);
+        }
     }
 
     @Override
     public void onCreate(SQLiteDatabase db) {
-        db.execSQL("CREATE TABLE " + TABLE_LOGS + " (" + KEY_ID + " INTEGER PRIMARY KEY AUTOINCREMENT, " + KEY_ACTION + " TEXT, " + KEY_DATETIME + " DATETIME)");
+        db.execSQL("CREATE TABLE " + TABLE_LOGS + " (" + KEY_ID + " INTEGER PRIMARY KEY AUTOINCREMENT, " + KEY_ACTION + " TEXT, " + KEY_DATETIME + " DATETIME, " + KEY_METADATA + " TEXT)");
         db.execSQL("CREATE TABLE " + TABLE_PROFILES + " (" + KEY_ID + " INTEGER PRIMARY KEY NOT NULL UNIQUE, " + KEY_FIRSTNAME + " TEXT, " + KEY_LASTNAME + " TEXT, " + KEY_USERNAME + " TEXT, " + KEY_EMAIL + " TEXT, " + KEY_MONEY + " INT, " + KEY_EXPERIENCE + " INT, " + KEY_RANK + " INT, " + KEY_UPDATED + " DATETIME)");
-        db.execSQL("CREATE TABLE " + TABLE_SETTINGS + " (" + KEY_SETTING + " TEXT PRIMARY KEY NOT NULL UNIQUE, " + KEY_VALUE + " INTEGER NOT NULL)");
+        db.execSQL("CREATE TABLE " + TABLE_SETTINGS + " (" + KEY_SETTING + " TEXT PRIMARY KEY NOT NULL UNIQUE, " + KEY_VALUE_INT + " INTEGER, " + KEY_VALUE_STRING + " TEXT)");
         ContentValues values = new ContentValues(2);
         values.put(KEY_SETTING, OWNER);
-        values.put(KEY_VALUE, -1);
+        values.put(KEY_VALUE_INT, -1);
         db.insert(TABLE_SETTINGS, null, values);
         values.clear();
         values.put(KEY_SETTING, NOTIF);
-        values.put(KEY_VALUE, 0);
+        values.put(KEY_VALUE_INT, 0);
+        db.insert(TABLE_SETTINGS, null, values);
+        values.put(KEY_SETTING, ADDRESS);
+        values.put(KEY_VALUE_STRING, "");
         db.insert(TABLE_SETTINGS, null, values);
     }
 
@@ -72,6 +91,10 @@ public class DatabaseHelper extends SQLiteOpenHelper{
         onCreate(db);
     }
 
+    private int secondsAgo(Date input) {
+        return Math.round(TimeUnit.MILLISECONDS.toSeconds(new Date().getTime() - input.getTime()));
+    }
+
     private String dateToString(Date date) {
         DateFormat df = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss");
         return df.format(date);
@@ -81,14 +104,67 @@ public class DatabaseHelper extends SQLiteOpenHelper{
         return new Date(Integer.parseInt(dateString.substring(0, 4)), Integer.parseInt(dateString.substring(5, 7)), Integer.parseInt(dateString.substring(8, 10)), Integer.parseInt(dateString.substring(11, 13)), Integer.parseInt(dateString.substring(14, 16)), Integer.parseInt(dateString.substring(17, 19)));
     }
 
+    //--------------------------------------------------------LOGS------------------------------------------------------------------------------
+
     public void addLog(DBLog log) {
         Log.d("addLog", "adding a log");
         ContentValues input = new ContentValues(2);
         input.put(KEY_ACTION, log.getAction());
         input.put(KEY_DATETIME, dateToString(log.getDatetime()));
+        input.put(KEY_METADATA, log.getMetadata());
         SQLiteDatabase db = getWritableDatabase();
         db.insert(TABLE_LOGS, null, input);
     }
+
+    public DBLog getLastLog() {
+        Log.d("dayStarted", "checking");
+        String query = "SELECT " + KEY_ACTION + ", " + KEY_DATETIME + ", " + KEY_METADATA +  " FROM " + TABLE_LOGS + " WHERE " + KEY_ACTION + " IN('sit', 'stand', 'begin_day', 'sit_overtime') ORDER BY " + KEY_ID + " DESC LIMIT 1";
+        SQLiteDatabase db = getReadableDatabase();
+        Cursor cursor = db.rawQuery(query, null);
+        if(cursor != null && cursor.getCount() > 0) {
+            cursor.moveToFirst();
+            return new DBLog(cursor.getString(0), stringToDate(cursor.getString(1)), cursor.getString(2));
+        } else {
+            return null;
+        }
+    }
+
+    public DBLog getLastSitStand() {
+        Log.d("dayStarted", "checking");
+        String query = "SELECT " + KEY_ACTION + ", " + KEY_DATETIME + ", " + KEY_METADATA + " FROM " + TABLE_LOGS + " WHERE " + KEY_ACTION + " IN('sit', 'stand') ORDER BY " + KEY_ID + " DESC LIMIT 1";
+        SQLiteDatabase db = getReadableDatabase();
+        Cursor cursor = db.rawQuery(query, null);
+        if(cursor != null && cursor.getCount() > 0) {
+            cursor.moveToFirst();
+            return new DBLog(cursor.getString(0), stringToDate(cursor.getString(1)), cursor.getString(2));
+        } else {
+            return null;
+        }
+    }
+
+    public Date dayStarted() {
+        Log.d("dayStarted", "checking");
+        String query = "SELECT " + KEY_ACTION + ", " + KEY_DATETIME + " FROM " + TABLE_LOGS + " WHERE " + KEY_ACTION + " IN('begin_day', 'end_day') ORDER BY " + KEY_ID + " DESC LIMIT 1";
+        SQLiteDatabase db = getReadableDatabase();
+        Cursor cursor = db.rawQuery(query, null);
+        if(cursor != null && cursor.getCount() > 0) {
+            cursor.moveToFirst();
+            return cursor.getString(0).equals("begin_day") ? stringToDate(cursor.getString(1)) : null;
+        } else {
+            return null;
+        }
+    }
+
+    public boolean tryEndDay() {
+        Log.d("tryEndDay", "trying to end day");
+        if(dayStarted() != null && secondsAgo(dayStarted()) >= 36000) {
+            addLog(new DBLog("end_day", new Date(), null));
+            return true;
+        }
+        return false;
+    }
+
+    //--------------------------------------------------------PROFILES--------------------------------------------------------------------------
 
     public void storeProfile(Profile input){
         if(getProfile(input.getId()) != null) {
@@ -188,8 +264,10 @@ public class DatabaseHelper extends SQLiteOpenHelper{
         return prof;
     }
 
+    //--------------------------------------------------------SETTINGS--------------------------------------------------------------------------
+
     public int getSetting(String name) {
-        String query = "SELECT " + KEY_VALUE + " FROM " + TABLE_SETTINGS + " WHERE " + KEY_SETTING + " = ?";
+        String query = "SELECT " + KEY_VALUE_INT + " FROM " + TABLE_SETTINGS + " WHERE " + KEY_SETTING + " = ?";
         SQLiteDatabase db = getReadableDatabase();
         Cursor cursor = db.rawQuery(query, new String[]{name});
         if(cursor != null && cursor.getCount() > 0) {
@@ -199,10 +277,30 @@ public class DatabaseHelper extends SQLiteOpenHelper{
             return -1;
         }
     }
+
     public void setSetting(String name, int value) {
         ContentValues input = new ContentValues(1);
-        input.put(KEY_VALUE, value);
+        input.put(KEY_VALUE_INT, value);
         SQLiteDatabase db = getWritableDatabase();
         db.update(TABLE_SETTINGS, input, KEY_SETTING + " = ?", new String[]{name});
+    }
+
+    public String getAddress() {
+        String query = "SELECT " + KEY_VALUE_STRING + " FROM " + TABLE_SETTINGS + " WHERE " + KEY_SETTING + " = ?";
+        SQLiteDatabase db = getReadableDatabase();
+        Cursor cursor = db.rawQuery(query, new String[]{ADDRESS});
+        if(cursor != null && cursor.getCount() > 0) {
+            cursor.moveToFirst();
+            return cursor.getString(0);
+        } else {
+            return null;
+        }
+    }
+
+    public void setAddress(String address) {
+        ContentValues input = new ContentValues(1);
+        input.put(KEY_VALUE_STRING, address);
+        SQLiteDatabase db = getWritableDatabase();
+        db.update(TABLE_SETTINGS, input, KEY_SETTING + " = ?", new String[]{ADDRESS});
     }
 }

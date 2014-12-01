@@ -1,4 +1,4 @@
-package com.example.tom.stapp3;
+package com.example.tom.stapp3.activity;
 
 import android.app.Activity;
 import android.content.Intent;
@@ -7,16 +7,28 @@ import android.os.Bundle;
 import android.support.v4.app.ActionBarDrawerToggle;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
+import android.util.Log;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
 
+import com.example.tom.stapp3.R;
+
+/**
+ * Created by Tom on 18/11/2014.
+ * Base class for every activity that needs a side menu, this class takes care of this menu and the event handling for it
+ */
 public abstract class DrawerActivity extends Activity {
     protected String[] menuItems;
     protected ActionBarDrawerToggle toggle;
     protected int index;
+    protected final static int PROFILE = 0;
+    protected final static int CONNECTION = 1;
+    protected final static int LEADERBOARD = 2;
+    protected final static int SETTINGS = 3;
+    protected final static int LOGOUT = 4;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -24,9 +36,11 @@ public abstract class DrawerActivity extends Activity {
         index = savedInstanceState.getInt("ListIndex");
 
         menuItems = getResources().getStringArray(R.array.sideMenu);
-        getActionBar().setTitle(menuItems[index]);
-
+        if(getActionBar() != null) {
+            getActionBar().setTitle(menuItems[index]);
+        }
         ListView listView = (ListView) findViewById(R.id.menulist);
+        if(listView == null) Log.e("ListView", "Listview is null");
         listView.setAdapter(new ArrayAdapter<String>(this, R.layout.drawer_item, menuItems));
         listView.setItemChecked(index, true);
         listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
@@ -39,17 +53,22 @@ public abstract class DrawerActivity extends Activity {
                 if(position != index) {
                     Intent intent;
                     switch(position) {
-                        case 1:
+                        case CONNECTION:
+                            intent = new Intent(getBaseContext(), ConnectionView.class);
+                            intent.setFlags(Intent.FLAG_ACTIVITY_NO_ANIMATION);
+                            startActivity(intent);
+                            break;
+                        case LEADERBOARD:
                             intent = new Intent(getBaseContext(), LeaderboardView.class);
                             intent.setFlags(Intent.FLAG_ACTIVITY_NO_ANIMATION);
                             startActivity(intent);
                             break;
-                        case 3:
+                        case LOGOUT:
                             intent = new Intent(getBaseContext(), FragmentViewer.class);
                             startActivity(intent);
                             overridePendingTransition(R.anim.enter_bottom, R.anim.leave_top);
                             break;
-                        case 0:
+                        case PROFILE:
                         default:
                             intent = new Intent(getBaseContext(), ProfileView.class);
                             intent.setFlags(Intent.FLAG_ACTIVITY_NO_ANIMATION);

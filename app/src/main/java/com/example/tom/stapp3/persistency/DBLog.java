@@ -1,4 +1,4 @@
-package com.example.tom.stapp3;
+package com.example.tom.stapp3.persistency;
 
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
@@ -9,23 +9,14 @@ import java.util.Date;
  * The class that corresponds to the logs in the database
  */
 public class DBLog {
-    private int id;
     private String action;
     private Date datetime;
+    private String metadata;
 
-    public DBLog(int id, String action, Date datetime) {
-        this.id = id;
+    public DBLog(String action, Date datetime, String metadata) {
         this.action = action;
         this.datetime = datetime;
-    }
-
-    public int getId() {
-
-        return id;
-    }
-
-    public void setId(int id) {
-        this.id = id;
+        this.metadata = metadata;
     }
 
     public String getAction() {
@@ -42,5 +33,13 @@ public class DBLog {
 
     public void setDatetime(Date datetime) {
         this.datetime = datetime;
+    }
+
+    public String getMetadata() {
+        return metadata;
+    }
+
+    public void setMetadata(String metadata) {
+        this.metadata = metadata;
     }
 }

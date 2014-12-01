@@ -1,4 +1,4 @@
-package com.example.tom.stapp3;
+package com.example.tom.stapp3.activity;
 
 import android.os.Bundle;
 import android.app.Fragment;
@@ -6,8 +6,11 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
+import com.example.tom.stapp3.R;
+
 /**
  * Created by Tom on 3/11/2014.
+ * This class will create the proper fragment for the viewpager in FragmentViewer
  */
 public class FragmentProvider extends Fragment{
     int position;

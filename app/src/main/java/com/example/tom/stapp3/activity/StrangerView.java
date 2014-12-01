@@ -1,4 +1,4 @@
-package com.example.tom.stapp3;
+package com.example.tom.stapp3.activity;
 
 import android.app.Activity;
 import android.os.Bundle;
@@ -6,17 +6,23 @@ import android.support.v4.app.NavUtils;
 import android.view.MenuItem;
 import android.widget.TextView;
 
+import com.example.tom.stapp3.Function;
+import com.example.tom.stapp3.R;
+import com.example.tom.stapp3.persistency.Profile;
+import com.example.tom.stapp3.persistency.ServerHelper;
+
 
 public class StrangerView extends Activity {
-    private int strangerId;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.stranger_view);
-        getActionBar().setDisplayHomeAsUpEnabled(true);
-        strangerId = getIntent().getIntExtra("strangerId", -1);
-        ServerHelper.getInstance().getOtherProfile(strangerId, new Function<Profile>() {
+        if(getActionBar() != null) {
+            getActionBar().setDisplayHomeAsUpEnabled(true);
+        }
+        int strangerId = getIntent().getIntExtra("strangerId", -1);
+        ServerHelper.getInstance(this).getOtherProfile(strangerId, new Function<Profile>() {
             @Override
             public void call(Profile param) {
                 updateVisual(param);

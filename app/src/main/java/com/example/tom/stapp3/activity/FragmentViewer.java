@@ -1,4 +1,4 @@
-package com.example.tom.stapp3;
+package com.example.tom.stapp3.activity;
 
 import android.content.Intent;
 import android.os.Bundle;
@@ -12,30 +12,36 @@ import android.view.View;
 import android.widget.EditText;
 import android.widget.TextView;
 
+import com.example.tom.stapp3.persistency.DatabaseHelper;
+import com.example.tom.stapp3.Function;
+import com.example.tom.stapp3.persistency.Profile;
+import com.example.tom.stapp3.R;
+import com.example.tom.stapp3.persistency.ServerHelper;
+
 /**
  * Created by Tom on 3/11/2014.
+ * This is the first activity, it is a viewpager with 3 fragments: login, start and register
  */
 public class FragmentViewer extends FragmentActivity {
     private static final int NUM_PAGES = 3;
     private ViewPager mPager;
-    private PagerAdapter mAdapter;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.pager);
-        new DatabaseHelper(this);
-        mAdapter = new FragmentAdapter(getFragmentManager());
+        PagerAdapter mAdapter = new FragmentAdapter(getFragmentManager());
         mPager = (ViewPager) findViewById(R.id.pager);
         mPager.setAdapter(mAdapter);
         mPager.setCurrentItem(1, false);
+        DatabaseHelper.getInstance(this).setReadable();
     }
 
     public void loginBtn(View v) {
         final EditText username = (EditText) findViewById(R.id.login_username);
         final EditText password = (EditText) findViewById(R.id.login_password);
         final TextView txtView = (TextView) findViewById(R.id.succes);
-        ServerHelper.getInstance().getProfile(username.getText().toString(), password.getText().toString(), new Function<Profile>() {
+        ServerHelper.getInstance(this).getProfile(username.getText().toString(), password.getText().toString(), new Function<Profile>() {
             @Override
             public void call(Profile param) {
                         if(param != null) {
@@ -60,7 +66,7 @@ public class FragmentViewer extends FragmentActivity {
         EditText username = (EditText) findViewById(R.id.new_username);
         EditText email = (EditText) findViewById(R.id.new_email);
         EditText password = (EditText) findViewById(R.id.new_password);
-        ServerHelper.getInstance().createProfile(firstName.getText().toString(), lastName.getText().toString(), username.getText().toString(), email.getText().toString(), password.getText().toString(), new Function<Profile>() {
+        ServerHelper.getInstance(this).createProfile(firstName.getText().toString(), lastName.getText().toString(), username.getText().toString(), email.getText().toString(), password.getText().toString(), new Function<Profile>() {
             @Override
             public void call(Profile param) {
                 Intent intent = new Intent(getBaseContext(), ProfileView.class);

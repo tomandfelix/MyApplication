@@ -1,7 +1,10 @@
-package com.example.tom.stapp3;
+package com.example.tom.stapp3.persistency;
 
+import android.content.Context;
 import android.os.AsyncTask;
 import android.util.Log;
+
+import com.example.tom.stapp3.Function;
 
 import org.apache.http.HttpResponse;
 import org.apache.http.client.ClientProtocolException;
@@ -35,12 +38,18 @@ in.close();
 Log.e("OUTPUT", output);*/
 
 public class ServerHelper {
-    private static final ServerHelper INSTANCE = new ServerHelper();
+    private static ServerHelper uniqueInstance;
+    private Context context;
 
-    private ServerHelper() {}
+    private ServerHelper(Context context) {
+        this.context = context;
+    }
 
-    public static ServerHelper getInstance() {
-        return INSTANCE;
+    public static ServerHelper getInstance(Context context) {
+        if(uniqueInstance == null) {
+            uniqueInstance = new ServerHelper(context);
+        }
+        return uniqueInstance;
     }
 
     private int minutesAgo(Date input) {
@@ -54,7 +63,7 @@ public class ServerHelper {
 
     public void getProfile(String username, String password, Function<Profile> callback, boolean forceUpdate) {
         Profile tempProf;
-        if(! forceUpdate && (tempProf = DatabaseHelper.getInstance().getProfile(username)) != null && minutesAgo(tempProf.getLastUpdate()) < 10) {
+        if(! forceUpdate && (tempProf = DatabaseHelper.getInstance(context).getProfile(username)) != null && minutesAgo(tempProf.getLastUpdate()) < 10) {
             callback.call(tempProf);
         } else {
             GetProfile temp = new GetProfile(callback);
@@ -64,7 +73,7 @@ public class ServerHelper {
 
     public void getOtherProfile(int id, Function<Profile> callback, boolean forceupdate) {
         Profile tempProf;
-        if(! forceupdate && (tempProf = DatabaseHelper.getInstance().getProfile(id)) != null && minutesAgo(tempProf.getLastUpdate()) < 10) {
+        if(! forceupdate && (tempProf = DatabaseHelper.getInstance(context).getProfile(id)) != null && minutesAgo(tempProf.getLastUpdate()) < 10) {
             callback.call(tempProf);
         } else {
             GetOtherProfile temp = new GetOtherProfile(callback);
@@ -73,11 +82,10 @@ public class ServerHelper {
     }
 
     public void getLeaderboardById(int id, Function<ArrayList<Profile>> callback, boolean forceupdate) {
-        //TODO second getLeaderboard should get local data, but contacts server.
         Profile fromId = null;
         ArrayList<Profile> tempProf = null;
         boolean update = false;
-        if(! forceupdate && ( fromId = DatabaseHelper.getInstance().getProfile(id)) != null && minutesAgo( fromId.getLastUpdate()) < 10 && (tempProf = DatabaseHelper.getInstance().getLeaderboardByRank(fromId.getRank())) != null) {
+        if(! forceupdate && ( fromId = DatabaseHelper.getInstance(context).getProfile(id)) != null && minutesAgo( fromId.getLastUpdate()) < 10 && (tempProf = DatabaseHelper.getInstance(context).getLeaderboardByRank(fromId.getRank())) != null) {
             for(Profile p : tempProf) {
                 update = update || minutesAgo(p.getLastUpdate()) >= 10;
             }
@@ -92,9 +100,22 @@ public class ServerHelper {
         }
     }
 
-    public void getLeaderboardByRank(int rank, Function<ArrayList<Profile>> callback) {
-        GetLeaderboard temp = new GetLeaderboard(callback, "rank");
-        temp.execute(rank);
+    public void getLeaderboardByRank(int rank, Function<ArrayList<Profile>> callback, boolean forceUpdate) {
+        ArrayList<Profile> tempProf = null;
+        boolean update = false;
+        if(!forceUpdate && (tempProf = DatabaseHelper.getInstance(context).getLeaderboardByRank(rank)) != null) {
+            for( Profile p : tempProf) {
+                update = update || minutesAgo(p.getLastUpdate()) >= 10;
+            }
+        } else {
+            update = true;
+        }
+        if(! update) {
+            callback.call(tempProf);
+        } else {
+            GetLeaderboard temp = new GetLeaderboard(callback, "rank");
+            temp.execute(rank);
+        }
     }
 
     public void deleteProfile(int id, String password) {
@@ -107,7 +128,7 @@ public class ServerHelper {
 
     public void updateProfileSettings(int id, String password, String firstname, String lastname, String username, String email, String new_password) {
         new UpdateProfileSettings().execute("" + id, password, firstname, lastname, username, email, new_password);
-        DatabaseHelper.getInstance().updateProfile(new Profile(id, firstname, lastname, username, email, -1, -1, -1, null));
+        DatabaseHelper.getInstance(context).updateProfile(new Profile(id, firstname, lastname, username, email, -1, -1, -1, null));
     }
 
     private class CreateProfile extends AsyncTask<String, Void, Profile> {
@@ -156,8 +177,8 @@ public class ServerHelper {
         @Override
         protected void onPostExecute(Profile profile) {
             Log.d("CreateProfile", profile.toString());
-            DatabaseHelper.getInstance().storeProfile(profile);
-            DatabaseHelper.getInstance().setSetting(DatabaseHelper.OWNER, profile.getId());
+            DatabaseHelper.getInstance(context).storeProfile(profile);
+            DatabaseHelper.getInstance(context).setSetting(DatabaseHelper.OWNER, profile.getId());
             callback.call(profile);
         }
     }
@@ -206,8 +227,8 @@ public class ServerHelper {
         protected void onPostExecute(Profile profile) {
             if( profile != null) {
                 Log.d("GetProfile", profile.toString());
-                DatabaseHelper.getInstance().storeProfile(profile);
-                DatabaseHelper.getInstance().setSetting(DatabaseHelper.OWNER, profile.getId());
+                DatabaseHelper.getInstance(context).storeProfile(profile);
+                DatabaseHelper.getInstance(context).setSetting(DatabaseHelper.OWNER, profile.getId());
 
             }
             callback.call(profile);
@@ -257,7 +278,7 @@ public class ServerHelper {
         protected void onPostExecute(Profile profile) {
             if(profile != null) {
                 Log.d("GetOtherProfile", profile.toString());
-                DatabaseHelper.getInstance().storeProfile(profile);
+                DatabaseHelper.getInstance(context).storeProfile(profile);
             }
             callback.call(profile);
         }
@@ -316,7 +337,7 @@ public class ServerHelper {
         public void onPostExecute(ArrayList<Profile> profiles) {
             if(profiles != null) {
                 for(Profile prof : profiles) {
-                    DatabaseHelper.getInstance().storeProfile(prof);
+                    DatabaseHelper.getInstance(context).storeProfile(prof);
                     Log.d("GetLeaderboard", prof.toString());
                 }
             }

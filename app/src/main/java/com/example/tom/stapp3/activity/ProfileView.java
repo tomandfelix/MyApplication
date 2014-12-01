@@ -1,10 +1,18 @@
-package com.example.tom.stapp3;
+package com.example.tom.stapp3.activity;
 
 import android.os.Bundle;
+import android.util.Log;
 import android.widget.TextView;
+
+import com.example.tom.stapp3.persistency.DatabaseHelper;
+import com.example.tom.stapp3.Function;
+import com.example.tom.stapp3.persistency.Profile;
+import com.example.tom.stapp3.R;
+import com.example.tom.stapp3.persistency.ServerHelper;
 
 /**
  * Created by Tom on 17/11/2014.
+ * The activity that shows you your own profile
  */
 public class ProfileView extends DrawerActivity {
     @Override
@@ -13,15 +21,15 @@ public class ProfileView extends DrawerActivity {
         if(savedInstanceState == null) {
             savedInstanceState = new Bundle();
         }
-        savedInstanceState.putInt("ListIndex", 0);
+        savedInstanceState.putInt("ListIndex", PROFILE);
         super.onCreate(savedInstanceState);
 
         Profile profile = getIntent().getParcelableExtra("profile");
         if(profile != null) {
             updateVisual(profile);
         } else {
-            updateVisual(DatabaseHelper.getInstance().getProfile(DatabaseHelper.getInstance().getSetting(DatabaseHelper.OWNER)));
-            ServerHelper.getInstance().getOtherProfile(DatabaseHelper.getInstance().getSetting(DatabaseHelper.OWNER), new Function<Profile>() {
+            updateVisual(DatabaseHelper.getInstance(this).getProfile(DatabaseHelper.getInstance(this).getSetting(DatabaseHelper.OWNER)));
+            ServerHelper.getInstance(this).getOtherProfile(DatabaseHelper.getInstance(this).getSetting(DatabaseHelper.OWNER), new Function<Profile>() {
                 @Override
                 public void call(Profile profile) {
                     if(profile != null) {

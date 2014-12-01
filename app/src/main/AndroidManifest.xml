@@ -4,6 +4,8 @@
 
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+    <uses-permission android:name="android.permission.BLUETOOTH"/>
+    <uses-permission android:name="android.permission.BLUETOOTH_ADMIN"/>
 
     <application
         android:allowBackup="true"
@@ -11,7 +13,7 @@
         android:label="@string/app_name"
         android:theme="@style/AppTheme" >
         <activity
-            android:name="com.example.tom.stapp3.FragmentViewer"
+            android:name=".activity.FragmentViewer"
             android:label="Stapp 3" >
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -20,19 +22,26 @@
             </intent-filter>
         </activity>
         <activity
-            android:name="com.example.tom.stapp3.ProfileView"
+            android:name=".activity.ProfileView"
             android:label="@string/title_activity_profile_view" >
         </activity>
         <activity
-            android:name="com.example.tom.stapp3.LeaderboardView"
+            android:name=".activity.LeaderboardView"
             android:label="@string/title_activity_leaderboard_view" >
         </activity>
-        <activity
-            android:name="com.example.tom.stapp3.StrangerView" >
+        <activity android:name=".activity.StrangerView" >
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
-                android:value="com.example.tom.stapp3.LeaderboardView"/>
+                android:value="com.example.tom.stapp3.LeaderboardView" />
         </activity>
+        <activity
+            android:name=".activity.ConnectionView"
+            android:label="@string/title_activity_connection_view" >
+        </activity>
+        <service
+            android:enabled="true"
+            android:name=".driver.ShimmerService">
+        </service>
     </application>
 
 </manifest>

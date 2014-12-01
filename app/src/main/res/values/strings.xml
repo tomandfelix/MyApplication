@@ -7,9 +7,11 @@
     <string name="title_register_fragment">Register</string>
     <string name="title_activity_profile_view">Profile</string>
     <string name="title_activity_leaderboard_view">Leaderboard</string>
+    <string name="title_activity_connection_view">Connection</string>
 
     <string-array name="sideMenu">
         <item>Profile</item>
+        <item>Connection</item>
         <item>Leaderboard</item>
         <item>Settings</item>
         <item>Logout</item>

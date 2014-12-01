@@ -1,4 +1,4 @@
-package com.example.tom.stapp3;
+package com.example.tom.stapp3.persistency;
 
 import android.os.Parcel;
 import android.os.Parcelable;
