@@ -34,12 +34,12 @@ public class ConnectionView extends DrawerActivity {
 
     private BluetoothAdapter mBluetoothAdapter = null;
     public static String currentlyVisible;
-    private static Context context;
+    private static View progress;
+    private static View stopBtn;
     private static ShimmerService mService;
-    private boolean mServiceBind = false;
     private boolean mServiceFirstTime = true;
+    private static boolean progressVisible = false;
     private static String mConnectedDeviceName = null;
-    private static boolean mEnableLogging = false;
     private String[] deviceNames;
     private final static int REQUEST_ENABLE_BT = 1; //this id will be returned after the activity for enabling bluetooth finishes
 
@@ -63,6 +63,11 @@ public class ConnectionView extends DrawerActivity {
                     }
                     break;
                 case Shimmer.MESSAGE_READ:
+                    if (progressVisible) {
+                        progressVisible = false;
+                        progress.setVisibility(View.INVISIBLE);
+                        stopBtn.setVisibility(View.VISIBLE);
+                    }
                     break;
                 case Shimmer.MESSAGE_ACK_RECEIVED:
                     break;
@@ -80,14 +85,12 @@ public class ConnectionView extends DrawerActivity {
             LocalBinder binder = (LocalBinder) service;
             Log.d("SERVICE", "service connected");
             mService = binder.getService();
-            mServiceBind = true;
             mService.setGraphHandler(mHandler);
         }
 
         @Override
         public void onServiceDisconnected(ComponentName name) {
             Log.d("SERVICE", "service disconnected");
-            mServiceBind = false;
         }
     };
 
@@ -122,7 +125,6 @@ public class ConnectionView extends DrawerActivity {
             finish();
         }
 
-        ConnectionView.context = getApplicationContext();
         Intent intent = new Intent(this, ShimmerService.class);
         PendingIntent pIntent = PendingIntent.getService(this, 0, intent, 0);
         AlarmManager alarm = (AlarmManager) getSystemService(Context.ALARM_SERVICE);
@@ -142,9 +144,12 @@ public class ConnectionView extends DrawerActivity {
             deviceNames[0] = "No devices Found";
         }
 
+        progress = findViewById(R.id.connection_progress);
+        stopBtn = findViewById(R.id.stop_day);
+
         //Populate the listView
         ListView deviceList = (ListView) findViewById(R.id.paired);
-        deviceList.setAdapter(new ArrayAdapter<String>(this, R.layout.drawer_item, deviceNames));
+        deviceList.setAdapter(new ArrayAdapter<>(this, R.layout.devices_item, deviceNames));
 
         deviceList.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
@@ -154,8 +159,40 @@ public class ConnectionView extends DrawerActivity {
                 DatabaseHelper.getInstance(getApplicationContext()).setAddress(address);
                 mService.connectShimmer(address, "Device");
                 mService.setGraphHandler(mHandler);
+                findViewById(R.id.paired).setVisibility(View.INVISIBLE);
+                progress.setVisibility(View.VISIBLE);
+                progressVisible = true;
             }
         });
+        switch(DatabaseHelper.getInstance(this).getStatus()) {
+            case DatabaseHelper.STATUS_STOPPED:
+                findViewById(R.id.start_day).setVisibility(View.VISIBLE);
+                break;
+            case DatabaseHelper.STATUS_STARTED:
+                findViewById(R.id.paired).setVisibility(View.VISIBLE);
+                break;
+            case DatabaseHelper.STATUS_CONNECTING:
+                findViewById(R.id.connection_progress).setVisibility(View.VISIBLE);
+                break;
+            case DatabaseHelper.STATUS_CONNCTED:
+                findViewById(R.id.stop_day).setVisibility(View.VISIBLE);
+                break;
+        }
+    }
+
+    public void startDay(View v) {
+        v.setVisibility(View.INVISIBLE);
+        DatabaseHelper.getInstance(this).startDay();
+        findViewById(R.id.paired).setVisibility(View.VISIBLE);
+    }
+
+    public void stopDay(View v) {
+        mConnectedDeviceName = null;
+        mService.disconnectAllDevices();
+        findViewById(R.id.stop_day).setVisibility(View.INVISIBLE);
+        findViewById(R.id.start_day).setVisibility(View.VISIBLE);
+        DatabaseHelper.getInstance(this).setAddress("");
+        mService.logAchievedScore();
     }
 
     @Override
@@ -172,7 +209,6 @@ public class ConnectionView extends DrawerActivity {
     @Override
     public void onResume() {
         super.onResume();
-        ConnectionView.context = getApplicationContext();
         Intent intent = new Intent(this, ShimmerService.class);
         getApplicationContext().bindService(intent, mTestServiceConnection, Context.BIND_AUTO_CREATE);
         currentlyVisible = ("onResume");
@@ -221,9 +257,8 @@ public class ConnectionView extends DrawerActivity {
                 break;
             case 6: //LOG FILE SHIMMER
                 if(resultCode == Activity.RESULT_OK) {
-                    mEnableLogging = data.getExtras().getBoolean("LogFileEnableLogging");
-                    if(mEnableLogging) {
-                        mService.setEnableLogging(mEnableLogging);
+                    if(data.getExtras().getBoolean("LogFileEnableLogging")) {
+                        mService.setEnableLogging(true);
                     }
                 }
                 break;

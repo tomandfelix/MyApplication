@@ -830,7 +830,7 @@ public class Shimmer {
 								/*
 								 * else if
 								 * (mCurrentCommand==STOP_STREAMING_COMMAND) {
-								 * 
+								 *
 								 * mStreaming=false; mTransactionCompleted=true;
 								 * mWaitForAck=false; packetStack.clear();
 								 * if(mInStream.available()>0){ //this is to
@@ -851,12 +851,12 @@ public class Shimmer {
 								 * bundle.putString("Bluetooth Address",
 								 * mMyBluetoothAddress); msg.setData(bundle);
 								 * mHandler.sendMessage(msg);
-								 * 
-								 * 
+								 *
+								 *
 								 * Log.d("Shimmer","Streaming Stop Done" +
 								 * "Bytes still available:" +
 								 * Integer.toString(mInStream.available()));
-								 * 
+								 *
 								 * }
 								 */
                                 else if (mCurrentCommand == SET_SAMPLING_RATE_COMMAND) {
@@ -1716,20 +1716,7 @@ public class Shimmer {
                         if (mSync) { // if the stack is full
                             if (mWaitForAck
                                     && tb[0] == ACK_COMMAND_PROCESSED
-                                    && packetStack.size() == mPacketSize + 1) { // this
-                                // is
-                                // to
-                                // handle
-                                // acks
-                                // during
-                                // mid
-                                // stream,
-                                // acks
-                                // only
-                                // are
-                                // received
-                                // between
-                                // packets.
+                                    && packetStack.size() == mPacketSize + 1) { // this is to handle acks during mid stream, acks only are received between packets.
                                 if (mCurrentCommand == SET_BLINK_LED) {
                                     Log.d("ShimmerCMD",
                                             "LED_BLINK_ACK_DETECTED");
@@ -1776,20 +1763,7 @@ public class Shimmer {
                                 packetStack.push((tb[0])); // push new sensor
                                 // data into the
                                 // stack
-                                if (packetStack.size() > mPacketSize + 1) { // if
-                                    // the
-                                    // stack
-                                    // has
-                                    // reached
-                                    // the
-                                    // packet
-                                    // size
-                                    // remove
-                                    // an
-                                    // element
-                                    // from
-                                    // the
-                                    // stack
+                                if (packetStack.size() > mPacketSize + 1) { // if the stack has reached the packet size remove an element from the stack
                                     packetStack.removeElementAt(0);
 
                                     Log.d("ShimmerCMD", "Throwing Data");
@@ -1798,17 +1772,7 @@ public class Shimmer {
                         } else if (!mSync) {
                             if (mWaitForAck
                                     && tb[0] == ACK_COMMAND_PROCESSED
-                                    && packetStack.size() == 0) { // this is to
-                                // handle
-                                // acks
-                                // during
-                                // mid
-                                // stream,
-                                // acks only
-                                // are
-                                // received
-                                // between
-                                // packets.
+                                    && packetStack.size() == 0) { // this is to handle acks during mid stream, acks only are received between packets.
                                 if (mCurrentCommand == SET_BLINK_LED) {
                                     Log.d("ShimmerCMD",
                                             "LED_BLINK_ACK_DETECTED");
@@ -1855,20 +1819,7 @@ public class Shimmer {
                                     packetStack.clear();
                                 }
 
-                                if (packetStack.size() > mPacketSize) { // if
-                                    // the
-                                    // stack
-                                    // has
-                                    // reached
-                                    // the
-                                    // packet
-                                    // size
-                                    // remove
-                                    // an
-                                    // element
-                                    // from
-                                    // the
-                                    // stack
+                                if (packetStack.size() > mPacketSize) { // if the stack has reached the packet size remove an element from the stack
                                     packetStack.removeElementAt(0);
                                     Log.d("ShimmerCMD", "Throwing Data");
                                 }
@@ -1923,7 +1874,6 @@ public class Shimmer {
             }
             if (mmSocket != null) {
                 try {
-                    int mBluetoothLib = 0;
                     mmSocket.close();
                 } catch (IOException e) {
                     e.printStackTrace();

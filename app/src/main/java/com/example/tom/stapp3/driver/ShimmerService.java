@@ -23,7 +23,7 @@ import com.example.tom.stapp3.activity.ConnectionView;
 import com.example.tom.stapp3.persistency.DBLog;
 import com.example.tom.stapp3.persistency.DatabaseHelper;
 import com.google.common.collect.Multimap;
-
+@SuppressWarnings("unused")
 public class ShimmerService extends Service {
     private static final String TAG = "MyService";
     private static boolean mEnableLogging = false;
@@ -35,7 +35,7 @@ public class ShimmerService extends Service {
     private String[] mSensorNames;
     private String[] mSensorFormats;
     private String[] mSensorUnits;
-    private String previousResult = "";
+    private boolean previousResult;
     private final double logDetSigma = 58.2792;
     private final long _30mn_to_ms = 30 * 60 * 1000;
     private final long _25mn_to_ms = 25 * 60 * 1000;
@@ -45,22 +45,22 @@ public class ShimmerService extends Service {
     private double rmsY = 0.0;
     private double lengthXYZ = 0.0;
     private double meanLength = 0.0;
-    private ArrayList<Double> tempList = new ArrayList<Double>();
-    private ArrayList<Double> accYList = new ArrayList<Double>();
-    private ArrayList<Double> accZList = new ArrayList<Double>();
-    private ArrayList<Double> accXList = new ArrayList<Double>();
-    private ArrayList<Double> lengthList = new ArrayList<Double>();
+    private ArrayList<Double> tempList = new ArrayList<>();
+    private ArrayList<Double> accYList = new ArrayList<>();
+    private ArrayList<Double> accZList = new ArrayList<>();
+    private ArrayList<Double> accXList = new ArrayList<>();
+    private ArrayList<Double> lengthList = new ArrayList<>();
     private final double ppmax = 100.0;
     private final double k = 1.5;
     private double achievedScore = 0.0;
     private double delta_t = 0.0;
     private double previous_sit_achievedScore = 0.0;
     private final IBinder mBinder = new LocalBinder();
-    private String isStanding = "stand";
+    private boolean isStanding = true;
     private double S[] = { 219.2, 98.4, 98.6, 1089.4, 1951.5 };
     private double gmeans[][] = { { 77.2, -113.9, -85.7, 823.4, 3917.8 },
             { -17.1, -382.8, 14.4, 4134.7, 5058.4 } };
-    public HashMap<String, Object> mMultiShimmer = new HashMap<String, Object>(
+    public HashMap<String, Object> mMultiShimmer = new HashMap<>(
             7);
     public Shimmer myShimmer = null;
     private Handler mHandlerGraph = null;
@@ -100,20 +100,15 @@ public class ShimmerService extends Service {
         // Toast.makeText(this, "My Service Stopped", Toast.LENGTH_LONG).show();
         Log.d(TAG, "onDestroy");
         Collection<Object> colS = mMultiShimmer.values();
-        Iterator<Object> iterator = colS.iterator();
-        while (iterator.hasNext()) {
-            Shimmer stemp = (Shimmer) iterator.next();
-            stemp.stop();
+        for(Object stemp : colS){
+            ((Shimmer) stemp).stop();
         }
-
     }
 
     public void disconnectAllDevices() {
         Collection<Object> colS = mMultiShimmer.values();
-        Iterator<Object> iterator = colS.iterator();
-        while (iterator.hasNext()) {
-            Shimmer stemp = (Shimmer) iterator.next();
-            stemp.stop();
+        for(Object stemp : colS) {
+            ((Shimmer) stemp).stop();
         }
         mMultiShimmer.clear();
         // mLogShimmer.clear();
@@ -142,7 +137,7 @@ public class ShimmerService extends Service {
                 this.connectShimmer(address, "Device");
             } else {
 
-                if ((myShimmer != null)
+                if (myShimmer != null
                         && (myShimmer.getShimmerState() == Shimmer.STATE_NONE)) {
                     new AsyncTask<URL, Integer, Long>() {
                         // This method is called when the thread runs
@@ -186,7 +181,7 @@ public class ShimmerService extends Service {
 
                     }.execute();
 
-                } else if ((myShimmer != null)
+                } else if (myShimmer != null
                         && (myShimmer.getShimmerState() == Shimmer.STATE_CONNECTED)
                         && (!DeviceIsStreaming(addressToConnect))) {
                     new AsyncTask<URL, Integer, Long>() {
@@ -217,7 +212,7 @@ public class ShimmerService extends Service {
 
     public void checkShimmerConnection() {
         String address = DatabaseHelper.getInstance(getApplicationContext()).getAddress();
-        if (address != "") {
+        if (address != null && !address.equals("")) {
             connectShimmer(address, "Device");
             Shimmer stemp = (Shimmer) (mMultiShimmer.get(address));
             while (!(stemp.getShimmerState() == Shimmer.STATE_CONNECTED)) {
@@ -245,18 +240,15 @@ public class ShimmerService extends Service {
     public void onStop() {
         Log.d(TAG, "onDestroy");
         Collection<Object> colS = mMultiShimmer.values();
-        Iterator<Object> iterator = colS.iterator();
-        while (iterator.hasNext()) {
-            Shimmer stemp = (Shimmer) iterator.next();
-            stemp.stop();
+        for(Object stempO : colS) {
+            ((Shimmer) stempO).stop();
         }
     }
 
     public void toggleAllLEDS() {
         Collection<Object> colS = mMultiShimmer.values();
-        Iterator<Object> iterator = colS.iterator();
-        while (iterator.hasNext()) {
-            Shimmer stemp = (Shimmer) iterator.next();
+        for(Object stempO : colS) {
+            Shimmer stemp = (Shimmer) stempO;
             if (stemp.getShimmerState() == Shimmer.STATE_CONNECTED) {
                 stemp.toggleLed();
             }
@@ -270,7 +262,7 @@ public class ShimmerService extends Service {
                 case Shimmer.MESSAGE_READ:
                     if ((msg.obj instanceof ObjectCluster)) { // within each msg an object can be include, objectclusters are used to represent the data structure of the shimmer device
                         ObjectCluster objectCluster = (ObjectCluster) msg.obj;
-                        if (mEnableLogging == true) {
+                        if (mEnableLogging) {
                             logData(objectCluster);
                         }
                         if (mHandlerGraph != null) {
@@ -289,7 +281,7 @@ public class ShimmerService extends Service {
                             .equals("Device connection was lost")) {
                         // String address = Logging.readAddressFile();
 
-                        DatabaseHelper.getInstance(getApplicationContext()).addLog(new DBLog("sensor_disconnect", new Date(), null));
+                        DatabaseHelper.getInstance(getApplicationContext()).addConnectionStatus(false);
 
                         // Logging.getUniqueInstance(getApplicationContext())
                         // .closeDatabase();
@@ -310,22 +302,8 @@ public class ShimmerService extends Service {
                         // mLogShimmer.clear();
                         // }
                     } else if (msg.getData().getString(Shimmer.TOAST)
-                            .contains("Unable to connect device")) {
-
-                        // String address = Logging.readAddressFile();
-                        // shimmerLog1 = (Logging) mLogShimmer.get(address);
-                        // if (shimmerLog1 != null) {
-                        // shimmerLog1.closeDatabase();
-                        // mLogShimmer.clear();
-                        // }
-
-                        // Logging.getUniqueInstance(getApplicationContext())
-                        // .closeDatabase();
-
-                    } else if (msg.getData().getString(Shimmer.TOAST)
                             .contains("is now Streaming")) {
-                        DatabaseHelper.getInstance(getApplicationContext()).addLog(new DBLog("sensor_connect", new Date(), null));
-
+                        DatabaseHelper.getInstance(getApplicationContext()).addConnectionStatus(true);
                     }
                     break;
                 case Shimmer.MESSAGE_STATE_CHANGE:
@@ -372,7 +350,7 @@ public class ShimmerService extends Service {
                 case Shimmer.MESSAGE_STOP_STREAMING_COMPLETE:
                     String address = msg.getData().getString("Bluetooth Address");
                     boolean stop = msg.getData().getBoolean("Stop Streaming");
-                    if (stop == true) {
+                    if (stop) {
                         closeAndRemoveFile(address);
                     }
                     break;
@@ -383,13 +361,10 @@ public class ShimmerService extends Service {
     public void stopStreamingAllDevices() {
         // TODO Auto-generated method stub
         Collection<Object> colS = mMultiShimmer.values();
-        Iterator<Object> iterator = colS.iterator();
-        while (iterator.hasNext()) {
-            Shimmer stemp = (Shimmer) iterator.next();
-
+        for(Object stempO : colS) {
+            Shimmer stemp = (Shimmer) stempO;
             if (stemp.getShimmerState() == Shimmer.STATE_CONNECTED) {
                 stemp.stopStreaming();
-
             }
         }
     }
@@ -397,9 +372,8 @@ public class ShimmerService extends Service {
     public void startStreamingAllDevices() {
         // TODO Auto-generated method stub
         Collection<Object> colS = mMultiShimmer.values();
-        Iterator<Object> iterator = colS.iterator();
-        while (iterator.hasNext()) {
-            Shimmer stemp = (Shimmer) iterator.next();
+        for(Object stempO : colS) {
+            Shimmer stemp = (Shimmer) stempO;
             if (stemp.getShimmerState() == Shimmer.STATE_CONNECTED) {
                 stemp.startStreaming();
             }
@@ -418,9 +392,8 @@ public class ShimmerService extends Service {
     public void setAllSampingRate(double samplingRate) {
         // TODO Auto-generated method stub
         Collection<Object> colS = mMultiShimmer.values();
-        Iterator<Object> iterator = colS.iterator();
-        while (iterator.hasNext()) {
-            Shimmer stemp = (Shimmer) iterator.next();
+        for(Object stempO : colS) {
+            Shimmer stemp = (Shimmer) stempO;
             if (stemp.getShimmerState() == Shimmer.STATE_CONNECTED) {
                 stemp.writeSamplingRate(samplingRate);
             }
@@ -430,9 +403,8 @@ public class ShimmerService extends Service {
     public void setAllAccelRange(int accelRange) {
         // TODO Auto-generated method stub
         Collection<Object> colS = mMultiShimmer.values();
-        Iterator<Object> iterator = colS.iterator();
-        while (iterator.hasNext()) {
-            Shimmer stemp = (Shimmer) iterator.next();
+        for(Object stempO : colS) {
+            Shimmer stemp = (Shimmer) stempO;
             if (stemp.getShimmerState() == Shimmer.STATE_CONNECTED) {
                 stemp.writeAccelRange(accelRange);
             }
@@ -442,9 +414,8 @@ public class ShimmerService extends Service {
     public void setAllGSRRange(int gsrRange) {
         // TODO Auto-generated method stub
         Collection<Object> colS = mMultiShimmer.values();
-        Iterator<Object> iterator = colS.iterator();
-        while (iterator.hasNext()) {
-            Shimmer stemp = (Shimmer) iterator.next();
+        for(Object stempO : colS) {
+            Shimmer stemp = (Shimmer) stempO;
             if (stemp.getShimmerState() == Shimmer.STATE_CONNECTED) {
                 stemp.writeGSRRange(gsrRange);
             }
@@ -454,9 +425,8 @@ public class ShimmerService extends Service {
     public void setAllEnabledSensors(int enabledSensors) {
         // TODO Auto-generated method stub
         Collection<Object> colS = mMultiShimmer.values();
-        Iterator<Object> iterator = colS.iterator();
-        while (iterator.hasNext()) {
-            Shimmer stemp = (Shimmer) iterator.next();
+        for(Object stempO : colS) {
+            Shimmer stemp = (Shimmer) stempO;
             if (stemp.getShimmerState() == Shimmer.STATE_CONNECTED) {
                 stemp.writeEnabledSensors(enabledSensors);
             }
@@ -466,9 +436,8 @@ public class ShimmerService extends Service {
     public void setEnabledSensors(int enabledSensors, String bluetoothAddress) {
         // TODO Auto-generated method stub
         Collection<Object> colS = mMultiShimmer.values();
-        Iterator<Object> iterator = colS.iterator();
-        while (iterator.hasNext()) {
-            Shimmer stemp = (Shimmer) iterator.next();
+        for(Object stempO : colS) {
+            Shimmer stemp = (Shimmer) stempO;
             if (stemp.getShimmerState() == Shimmer.STATE_CONNECTED
                     && stemp.getBluetoothAddress().equals(bluetoothAddress)) {
                 stemp.writeEnabledSensors(enabledSensors);
@@ -479,9 +448,8 @@ public class ShimmerService extends Service {
     public void toggleLED(String bluetoothAddress) {
         // TODO Auto-generated method stub
         Collection<Object> colS = mMultiShimmer.values();
-        Iterator<Object> iterator = colS.iterator();
-        while (iterator.hasNext()) {
-            Shimmer stemp = (Shimmer) iterator.next();
+        for(Object stempO : colS) {
+            Shimmer stemp = (Shimmer) stempO;
             if (stemp.getShimmerState() == Shimmer.STATE_CONNECTED
                     && stemp.getBluetoothAddress().equals(bluetoothAddress)) {
                 stemp.toggleLed();
@@ -492,9 +460,8 @@ public class ShimmerService extends Service {
     public void writePMux(String bluetoothAddress, int setBit) {
         // TODO Auto-generated method stub
         Collection<Object> colS = mMultiShimmer.values();
-        Iterator<Object> iterator = colS.iterator();
-        while (iterator.hasNext()) {
-            Shimmer stemp = (Shimmer) iterator.next();
+        for(Object stempO : colS) {
+            Shimmer stemp = (Shimmer) stempO;
             if (stemp.getShimmerState() == Shimmer.STATE_CONNECTED
                     && stemp.getBluetoothAddress().equals(bluetoothAddress)) {
                 stemp.writePMux(setBit);
@@ -505,9 +472,8 @@ public class ShimmerService extends Service {
     public void write5VReg(String bluetoothAddress, int setBit) {
         // TODO Auto-generated method stub
         Collection<Object> colS = mMultiShimmer.values();
-        Iterator<Object> iterator = colS.iterator();
-        while (iterator.hasNext()) {
-            Shimmer stemp = (Shimmer) iterator.next();
+        for(Object stempO : colS) {
+            Shimmer stemp = (Shimmer) stempO;
             if (stemp.getShimmerState() == Shimmer.STATE_CONNECTED
                     && stemp.getBluetoothAddress().equals(bluetoothAddress)) {
                 stemp.writeFiveVoltReg(setBit);
@@ -518,10 +484,9 @@ public class ShimmerService extends Service {
     public int getEnabledSensors(String bluetoothAddress) {
         // TODO Auto-generated method stub
         Collection<Object> colS = mMultiShimmer.values();
-        Iterator<Object> iterator = colS.iterator();
         int enabledSensors = 0;
-        while (iterator.hasNext()) {
-            Shimmer stemp = (Shimmer) iterator.next();
+        for(Object stempO : colS) {
+            Shimmer stemp = (Shimmer) stempO;
             if (stemp.getShimmerState() == Shimmer.STATE_CONNECTED
                     && stemp.getBluetoothAddress().equals(bluetoothAddress)) {
                 enabledSensors = stemp.getEnabledSensors();
@@ -533,9 +498,8 @@ public class ShimmerService extends Service {
     public void writeSamplingRate(String bluetoothAddress, double samplingRate) {
         // TODO Auto-generated method stub
         Collection<Object> colS = mMultiShimmer.values();
-        Iterator<Object> iterator = colS.iterator();
-        while (iterator.hasNext()) {
-            Shimmer stemp = (Shimmer) iterator.next();
+        for(Object stempO : colS) {
+            Shimmer stemp = (Shimmer) stempO;
             if (stemp.getShimmerState() == Shimmer.STATE_CONNECTED
                     && stemp.getBluetoothAddress().equals(bluetoothAddress)) {
                 stemp.writeSamplingRate(samplingRate);
@@ -546,9 +510,8 @@ public class ShimmerService extends Service {
     public void writeAccelRange(String bluetoothAddress, int accelRange) {
         // TODO Auto-generated method stub
         Collection<Object> colS = mMultiShimmer.values();
-        Iterator<Object> iterator = colS.iterator();
-        while (iterator.hasNext()) {
-            Shimmer stemp = (Shimmer) iterator.next();
+        for(Object stempO : colS) {
+            Shimmer stemp = (Shimmer) stempO;
             if (stemp.getShimmerState() == Shimmer.STATE_CONNECTED
                     && stemp.getBluetoothAddress().equals(bluetoothAddress)) {
                 stemp.writeAccelRange(accelRange);
@@ -559,9 +522,8 @@ public class ShimmerService extends Service {
     public void writeGSRRange(String bluetoothAddress, int gsrRange) {
         // TODO Auto-generated method stub
         Collection<Object> colS = mMultiShimmer.values();
-        Iterator<Object> iterator = colS.iterator();
-        while (iterator.hasNext()) {
-            Shimmer stemp = (Shimmer) iterator.next();
+        for(Object stempO : colS) {
+            Shimmer stemp = (Shimmer) stempO;
             if (stemp.getShimmerState() == Shimmer.STATE_CONNECTED
                     && stemp.getBluetoothAddress().equals(bluetoothAddress)) {
                 stemp.writeGSRRange(gsrRange);
@@ -573,10 +535,9 @@ public class ShimmerService extends Service {
         // TODO Auto-generated method stub
 
         Collection<Object> colS = mMultiShimmer.values();
-        Iterator<Object> iterator = colS.iterator();
         double SRate = -1;
-        while (iterator.hasNext()) {
-            Shimmer stemp = (Shimmer) iterator.next();
+        for(Object stempO : colS) {
+            Shimmer stemp = (Shimmer) stempO;
             if (stemp.getShimmerState() == Shimmer.STATE_CONNECTED
                     && stemp.getBluetoothAddress().equals(bluetoothAddress)) {
                 SRate = stemp.getSamplingRate();
@@ -588,10 +549,9 @@ public class ShimmerService extends Service {
     public int getAccelRange(String bluetoothAddress) {
         // TODO Auto-generated method stub
         Collection<Object> colS = mMultiShimmer.values();
-        Iterator<Object> iterator = colS.iterator();
         int aRange = -1;
-        while (iterator.hasNext()) {
-            Shimmer stemp = (Shimmer) iterator.next();
+        for(Object stempO : colS) {
+            Shimmer stemp = (Shimmer) stempO;
             if (stemp.getShimmerState() == Shimmer.STATE_CONNECTED
                     && stemp.getBluetoothAddress().equals(bluetoothAddress)) {
                 aRange = stemp.getAccelRange();
@@ -604,10 +564,9 @@ public class ShimmerService extends Service {
 
         // TODO Auto-generated method stub
         Collection<Object> colS = mMultiShimmer.values();
-        Iterator<Object> iterator = colS.iterator();
         int status = -1;
-        while (iterator.hasNext()) {
-            Shimmer stemp = (Shimmer) iterator.next();
+        for(Object stempO : colS) {
+            Shimmer stemp = (Shimmer) stempO;
             if (stemp.getBluetoothAddress().equals(bluetoothAddress)) {
                 status = stemp.getShimmerState();
                 Log.d("ShimmerState", Integer.toString(status));
@@ -620,10 +579,9 @@ public class ShimmerService extends Service {
     public int getGSRRange(String bluetoothAddress) {
         // TODO Auto-generated method stub
         Collection<Object> colS = mMultiShimmer.values();
-        Iterator<Object> iterator = colS.iterator();
         int gRange = -1;
-        while (iterator.hasNext()) {
-            Shimmer stemp = (Shimmer) iterator.next();
+        for(Object stempO : colS) {
+            Shimmer stemp = (Shimmer) stempO;
             if (stemp.getShimmerState() == Shimmer.STATE_CONNECTED
                     && stemp.getBluetoothAddress().equals(bluetoothAddress)) {
                 gRange = stemp.getGSRRange();
@@ -635,10 +593,9 @@ public class ShimmerService extends Service {
     public int get5VReg(String bluetoothAddress) {
         // TODO Auto-generated method stub
         Collection<Object> colS = mMultiShimmer.values();
-        Iterator<Object> iterator = colS.iterator();
         int fiveVReg = -1;
-        while (iterator.hasNext()) {
-            Shimmer stemp = (Shimmer) iterator.next();
+        for(Object stempO : colS) {
+            Shimmer stemp = (Shimmer) stempO;
             if (stemp.getShimmerState() == Shimmer.STATE_CONNECTED
                     && stemp.getBluetoothAddress().equals(bluetoothAddress)) {
                 fiveVReg = stemp.get5VReg();
@@ -650,10 +607,9 @@ public class ShimmerService extends Service {
     public boolean isLowPowerMagEnabled(String bluetoothAddress) {
         // TODO Auto-generated method stub
         Collection<Object> colS = mMultiShimmer.values();
-        Iterator<Object> iterator = colS.iterator();
         boolean enabled = false;
-        while (iterator.hasNext()) {
-            Shimmer stemp = (Shimmer) iterator.next();
+        for(Object stempO : colS) {
+            Shimmer stemp = (Shimmer) stempO;
             if (stemp.getShimmerState() == Shimmer.STATE_CONNECTED
                     && stemp.getBluetoothAddress().equals(bluetoothAddress)) {
                 enabled = stemp.isLowPowerMagEnabled();
@@ -665,10 +621,9 @@ public class ShimmerService extends Service {
     public int getpmux(String bluetoothAddress) {
         // TODO Auto-generated method stub
         Collection<Object> colS = mMultiShimmer.values();
-        Iterator<Object> iterator = colS.iterator();
         int pmux = -1;
-        while (iterator.hasNext()) {
-            Shimmer stemp = (Shimmer) iterator.next();
+        for(Object stempO : colS) {
+            Shimmer stemp = (Shimmer) stempO;
             if (stemp.getShimmerState() == Shimmer.STATE_CONNECTED
                     && stemp.getBluetoothAddress().equals(bluetoothAddress)) {
                 pmux = stemp.getPMux();
@@ -680,9 +635,8 @@ public class ShimmerService extends Service {
     public void startStreaming(String bluetoothAddress) {
         // TODO Auto-generated method stub
         Collection<Object> colS = mMultiShimmer.values();
-        Iterator<Object> iterator = colS.iterator();
-        while (iterator.hasNext()) {
-            Shimmer stemp = (Shimmer) iterator.next();
+        for(Object stempO : colS) {
+            Shimmer stemp = (Shimmer) stempO;
             if (stemp.getShimmerState() == Shimmer.STATE_CONNECTED
                     && stemp.getBluetoothAddress().equals(bluetoothAddress)) {
                 stemp.startStreaming();
@@ -693,9 +647,8 @@ public class ShimmerService extends Service {
     public void stopStreaming(String bluetoothAddress) {
         // TODO Auto-generated method stub
         Collection<Object> colS = mMultiShimmer.values();
-        Iterator<Object> iterator = colS.iterator();
-        while (iterator.hasNext()) {
-            Shimmer stemp = (Shimmer) iterator.next();
+        for(Object stempO : colS) {
+            Shimmer stemp = (Shimmer) stempO;
             if (stemp.getShimmerState() == Shimmer.STATE_CONNECTED
                     && stemp.getBluetoothAddress().equals(bluetoothAddress)) {
                 stemp.stopStreaming();
@@ -767,9 +720,8 @@ public class ShimmerService extends Service {
 
     public void disconnectShimmer(String bluetoothAddress) {
         Collection<Object> colS = mMultiShimmer.values();
-        Iterator<Object> iterator = colS.iterator();
-        while (iterator.hasNext()) {
-            Shimmer stemp = (Shimmer) iterator.next();
+        for(Object stempO : colS) {
+            Shimmer stemp = (Shimmer) stempO;
             if (stemp.getShimmerState() == Shimmer.STATE_CONNECTED
                     && stemp.getBluetoothAddress().equals(bluetoothAddress)) {
                 stemp.stop();
@@ -788,9 +740,8 @@ public class ShimmerService extends Service {
     public boolean DevicesConnected(String bluetoothAddress) {
         boolean deviceConnected = false;
         Collection<Object> colS = mMultiShimmer.values();
-        Iterator<Object> iterator = colS.iterator();
-        while (iterator.hasNext()) {
-            Shimmer stemp = (Shimmer) iterator.next();
+        for(Object stempO : colS) {
+            Shimmer stemp = (Shimmer) stempO;
             if (stemp.getShimmerState() == Shimmer.STATE_CONNECTED
                     && stemp.getBluetoothAddress().equals(bluetoothAddress)) {
                 deviceConnected = true;
@@ -802,10 +753,9 @@ public class ShimmerService extends Service {
     public boolean DeviceIsStreaming(String bluetoothAddress) {
         boolean deviceStreaming = false;
         Collection<Object> colS = mMultiShimmer.values();
-        Iterator<Object> iterator = colS.iterator();
-        while (iterator.hasNext()) {
-            Shimmer stemp = (Shimmer) iterator.next();
-            if (stemp.getStreamingStatus() == true
+        for(Object stempO : colS) {
+            Shimmer stemp = (Shimmer) stempO;
+            if (stemp.getStreamingStatus()
                     && stemp.getBluetoothAddress().equals(bluetoothAddress)) {
                 deviceStreaming = true;
             }
@@ -816,9 +766,8 @@ public class ShimmerService extends Service {
     public boolean GetInstructionStatus(String bluetoothAddress) {
         boolean instructionStatus = false;
         Collection<Object> colS = mMultiShimmer.values();
-        Iterator<Object> iterator = colS.iterator();
-        while (iterator.hasNext()) {
-            Shimmer stemp = (Shimmer) iterator.next();
+        for(Object stempO : colS) {
+            Shimmer stemp = (Shimmer) stempO;
             if (stemp.getBluetoothAddress().equals(bluetoothAddress)) {
                 instructionStatus = stemp.getInstructionStatus();
             }
@@ -847,13 +796,46 @@ public class ShimmerService extends Service {
         Log.d("ShimmerTest", "Test");
     }
 
+    public void logAchievedScore() {
+        DBLog last = DatabaseHelper.getInstance(getApplicationContext()).getLastLog();
+        Date stopTime = new Date();
+        if(last != null) {
+            if(last.getAction().equals(DatabaseHelper.LOG_START_DAY)) {
+                achievedScore = 0.0;
+            } else if(last.getAction().equals(DatabaseHelper.LOG_OVERTIME)) {
+                DBLog lastSitStand = DatabaseHelper.getInstance(getApplicationContext()).getLastSitStand();
+                if(lastSitStand != null) {
+                    previous_sit_achievedScore = Double.parseDouble(last.getMetadata().split("\\|")[1]) - Double.parseDouble(lastSitStand.getMetadata().split("\\|")[1]);
+                    achievedScore = Double.parseDouble(last.getMetadata().split("\\|")[1]);
+                    startTime = last.getDatetime();
+                    double delta_t = stopTime.getTime() - startTime.getTime();
+                    achievedScore += (Math.pow((1440.0 * 60000.0 / delta_t) - 1, k) * (100.0 / Math.pow(47.0, k))) - previous_sit_achievedScore;
+                }
+            } else {
+                String[] metadata = last.getMetadata().split("\\|");
+                achievedScore = Double.parseDouble(metadata[1]);
+                startTime = last.getDatetime();
+                // calculate the achievedscore from the last state until now
+                delta_t = stopTime.getTime() - startTime.getTime();
+                achievedScore += (ppmax * delta_t) / _30mn_to_ms;
+            }
+        }
+        double achievedScorePercentage = 0.0;
+        DBLog first = DatabaseHelper.getInstance(getApplicationContext()).getFirstRecordOfDay();
+        if(first != null) {
+            double connectionTime = stopTime.getTime() - first.getDatetime().getTime();
+            double maxScoreToBeAchieved = (ppmax * connectionTime) / _30mn_to_ms;
+            achievedScorePercentage = achievedScore * 100 / maxScoreToBeAchieved;
+            DatabaseHelper.getInstance(getApplicationContext()).endDay(stopTime, achievedScore, achievedScorePercentage, connectionTime);
+        }
+    }
+
     public void logData(ObjectCluster objectCluster) {
 
-        ObjectCluster objectClusterLog = objectCluster;
         try {
-            if (mFirstWrite == true) {
+            if (mFirstWrite) {
                 // First retrieve all the unique keys from the objectClusterLog
-                Multimap<String, FormatCluster> m = objectClusterLog.mPropertyCluster;
+                Multimap<String, FormatCluster> m = objectCluster.mPropertyCluster;
 
                 mSensorNames = new String[m.size()];
                 mSensorFormats = new String[m.size()];
@@ -862,7 +844,7 @@ public class ShimmerService extends Service {
                 int p = 0;
                 for (String key : m.keys()) {
                     // first check that there are no repeat entries
-                    if (compareStringArray(mSensorNames, key) == true) {
+                    if (compareStringArray(mSensorNames, key)) {
                         for (FormatCluster formatCluster : m.get(key)) {
                             mSensorFormats[p] = formatCluster.mFormat;
                             mSensorUnits[p] = formatCluster.mUnits;
@@ -879,9 +861,9 @@ public class ShimmerService extends Service {
             lengthXYZ = 0.0;
             for (int r = 0; r < mSensorNames.length; r++) {
 
-                Collection<FormatCluster> dataFormats = objectClusterLog.mPropertyCluster
+                Collection<FormatCluster> dataFormats = objectCluster.mPropertyCluster
                         .get(mSensorNames[r]);
-                FormatCluster formatCluster = (FormatCluster) returnFormatCluster(dataFormats, mSensorFormats[r], mSensorUnits[r]); // retrieve the calibrated data
+                FormatCluster formatCluster = returnFormatCluster(dataFormats, mSensorFormats[r], mSensorUnits[r]); // retrieve the calibrated data
                 if (mSensorNames[r].equals("Accelerometer X")
                         || mSensorNames[r].equals("Accelerometer Y")
                         || mSensorNames[r].equals("Accelerometer Z")) {
@@ -954,31 +936,27 @@ public class ShimmerService extends Service {
                 tempList.add(meanLength);
                 // do the calculation to get label as standing or sitting
 
-                ArrayList<Double> D = new ArrayList<Double>();
+                ArrayList<Double> D = new ArrayList<>();
                 D.clear();
                 for (int i = 0; i < 2; i++) {
                     double sumResult = 0.0;
                     for (int j = 0; j < 5; j++) {
                         sumResult = sumResult
                                 + Math.pow(
-                                ((double) ((tempList.get(j) - gmeans[i][j]) / S[j])),
+                                (tempList.get(j) - gmeans[i][j]) / S[j],
                                 2.0);
                     }
                     D.add((-0.69314718) - 0.5 * (sumResult + logDetSigma));
                 }
-                if (D.get(0) > D.get(1)) {
-                    isStanding = "sit";
-                } else {
-                    isStanding = "stand";
-                }
+                isStanding = !(D.get(0) > D.get(1));
 
-                if (resultFirstWrite == true) {
+                if (resultFirstWrite) {
                     DBLog log = DatabaseHelper.getInstance(getApplicationContext()).getLastLog();
 
                     if (log != null) {
                         // after changing something in the log_begin_newday, it
                         // should never come to this blog
-                        if (log.getAction().equals("begin_day")) {
+                        if (log.getAction().equals(DatabaseHelper.LOG_START_DAY)) {
 
                             resultFirstWrite = false;
                             startTime = new Date();
@@ -986,14 +964,14 @@ public class ShimmerService extends Service {
                             delta_t = 0;
                             achievedScore = 0.0;
                             previous_sit_achievedScore = 0.0;
-                            DatabaseHelper.getInstance(getApplicationContext()).addLog(new DBLog(isStanding, new Date(), null));
+                            DatabaseHelper.getInstance(getApplicationContext()).addSitStand(isStanding, delta_t + "|" + achievedScore);
 
-                        } else if (log.getAction().equals("sit_overtime")) {
+                        } else if (log.getAction().equals(DatabaseHelper.LOG_OVERTIME)) {
 
                             try {
                                 resultFirstWrite = false;
                                 firstWriteSitOvertime = false;
-                                previousResult = "sit";
+                                previousResult = false;
                                 DBLog lastsitstandlog = DatabaseHelper.getInstance(getApplicationContext()).getLastSitStand();
 
                                 if (lastsitstandlog != null) {
@@ -1020,13 +998,13 @@ public class ShimmerService extends Service {
                                 resultFirstWrite = false;
                                 String[] metadata = log.getMetadata().split(
                                         "\\|");
-                                previousResult = log.getAction();
+                                previousResult = log.getAction().equals(DatabaseHelper.LOG_STAND);
                                 startTime = log.getDatetime();
                                 achievedScore = Double.parseDouble(metadata[1]);
                                 previous_sit_achievedScore = 0.0;
                                 long sit_overtime_ms_from70 = startTime.getTime()
                                         + _30mn_to_ms;
-                                if (log.getAction().equals("sit")
+                                if (log.getAction().equals(DatabaseHelper.LOG_SIT)
                                         && System.currentTimeMillis() > sit_overtime_ms_from70) {
                                     Calendar calendar = Calendar.getInstance();
                                     calendar.setTimeInMillis(sit_overtime_ms_from70);
@@ -1034,7 +1012,7 @@ public class ShimmerService extends Service {
                                     delta_t = _30mn_to_ms;
                                     previous_sit_achievedScore = (ppmax * delta_t) / _30mn_to_ms;
                                     achievedScore += previous_sit_achievedScore;
-                                    DatabaseHelper.getInstance(getApplicationContext()).addLog(new DBLog("sit_overtime", new Date(), delta_t + "|" + achievedScore));
+                                    DatabaseHelper.getInstance(getApplicationContext()).addSitOvertime(delta_t + "|" + achievedScore);
                                 }
 
                             } catch (Exception e) {
@@ -1050,17 +1028,17 @@ public class ShimmerService extends Service {
                         delta_t = 0;
                         achievedScore = 0.0;
                         previous_sit_achievedScore = 0.0;
-                        DatabaseHelper.getInstance(getApplicationContext()).addLog(new DBLog(isStanding, new Date(), delta_t + "|" + achievedScore));
+                        DatabaseHelper.getInstance(getApplicationContext()).addSitStand(isStanding, delta_t + "|" + achievedScore);
                     }
 
                 } else { // resultFirstWrite = false
 
-                    if (!previousResult.equals(isStanding)) {
-                        System.out.println("isstanding:" + isStanding);
+                    if (!previousResult == isStanding) {
+                        System.out.println(Boolean.toString(isStanding));
                         // set firstWroteSitOvertime back to true
                         firstWriteSitOvertime = true;
                         warningSound = true;
-                        // if (isStanding.equals("sit")) {
+                        // if (!isStanding) {
                         // configurationAlert(isStanding,
                         // R.drawable.icon_sitting_green, "alert");
                         // } else {
@@ -1070,16 +1048,16 @@ public class ShimmerService extends Service {
                         // calculate achieved score and log
 
                         delta_t = System.currentTimeMillis() - startTime.getTime();
-                        if (isStanding.equals("sit")) {
-                            achievedScore += (double) (ppmax * delta_t)
+                        if (!isStanding) {
+                            achievedScore += ppmax * delta_t
                                     / (_30mn_to_ms);
                         } else {
                             if (delta_t <= _30mn_to_ms) {
-                                achievedScore += (double) ((ppmax * delta_t) / (_30mn_to_ms));
+                                achievedScore += (ppmax * delta_t) / (_30mn_to_ms);
                             } else {
-                                double temp_score = (double) (Math.pow(
+                                double temp_score = Math.pow(
                                         (1440.0 * 60000.0 / delta_t) - 1.0, k) * (100.0 / Math
-                                        .pow(47.0, k)))
+                                        .pow(47.0, k))
                                         - previous_sit_achievedScore;
                                 achievedScore += temp_score;
                                 previous_sit_achievedScore = 0.0;
@@ -1089,10 +1067,10 @@ public class ShimmerService extends Service {
                         // user change state
                         previousResult = isStanding;
                         startTime = new Date();
-                        DatabaseHelper.getInstance(getApplicationContext()).addLog(new DBLog(isStanding, new Date(), delta_t + "|" + achievedScore));
+                        DatabaseHelper.getInstance(getApplicationContext()).addSitStand(isStanding, delta_t + "|" + achievedScore);
                     }
 
-                    if (firstWriteSitOvertime && isStanding.equals("sit")) {
+                    if (firstWriteSitOvertime && !isStanding) {
                         if (System.currentTimeMillis() > startTime.getTime()
                                 + _25mn_to_ms
                                 && System.currentTimeMillis() < startTime.getTime()
@@ -1108,9 +1086,9 @@ public class ShimmerService extends Service {
                                 + _30mn_to_ms) {
                             firstWriteSitOvertime = false;
                             delta_t = System.currentTimeMillis() - startTime.getTime();
-                            previous_sit_achievedScore = (double) ((ppmax * delta_t) / (_30mn_to_ms));
+                            previous_sit_achievedScore = (ppmax * delta_t) / (_30mn_to_ms);
                             achievedScore += previous_sit_achievedScore;
-                            DatabaseHelper.getInstance(getApplicationContext()).addLog(new DBLog("sit_overtime", new Date(), delta_t + "|" + achievedScore));
+                            DatabaseHelper.getInstance(getApplicationContext()).addSitOvertime(delta_t + "|" + achievedScore);
                             /*configurationAlert("Tijd om recht te staan!",
                                     R.drawable.icon_sitting_red, "alert");*/
                         }
@@ -1127,12 +1105,10 @@ public class ShimmerService extends Service {
 
     private boolean compareStringArray(String[] stringArray, String string) {
         boolean uniqueString = true;
-        int size = stringArray.length;
-        for (int i = 0; i < size; i++) {
-            if (stringArray[i] == string) {
+        for(String s : stringArray) {
+            if(s != null && s.equals(string)) {
                 uniqueString = false;
             }
-
         }
         return uniqueString;
     }
@@ -1146,9 +1122,9 @@ public class ShimmerService extends Service {
         FormatCluster returnFormatCluster = null;
 
         while (iFormatCluster.hasNext()) {
-            formatCluster = (FormatCluster) iFormatCluster.next();
-            if (formatCluster.mFormat == format
-                    && formatCluster.mUnits == units) {
+            formatCluster = iFormatCluster.next();
+            if (formatCluster.mFormat.equals(format)
+                    && formatCluster.mUnits.equals(units)) {
                 returnFormatCluster = formatCluster;
             }
         }
