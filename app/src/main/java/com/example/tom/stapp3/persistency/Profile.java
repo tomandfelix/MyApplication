@@ -126,8 +126,9 @@ public class Profile implements Parcelable{
         info += (email == null ? "":" email:" + email);
         info += " money:" + money;
         info += " experience:" + experience;
-        info += "rank:" + rank;
-        info += "last updated:" + lastUpdate.toString();
+        info += (avatar == null ? "":" avatar:" + avatar);
+        info += " rank:" + rank;
+        info += " last updated:" + lastUpdate.toString();
         return info;
     }
 

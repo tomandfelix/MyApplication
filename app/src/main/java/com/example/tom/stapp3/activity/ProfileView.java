@@ -42,6 +42,8 @@ public class ProfileView extends DrawerActivity {
     }
 
     private void updateVisual(Profile profile) {
+        Log.i("updateVisual", profile.toString());
+        TextView rank = (TextView) findViewById(R.id.profile_rank);
         TextView username = (TextView) findViewById(R.id.profile_username);
         TextView money = (TextView) findViewById(R.id.profile_money);
         TextView experience = (TextView) findViewById(R.id.profile_experience);
@@ -49,10 +51,12 @@ public class ProfileView extends DrawerActivity {
 
         String mDrawableAvatar = "avatar_" + profile.getAvatar() + ".png";
         int resID = getResources().getIdentifier(mDrawableAvatar, "drawable", getPackageName());
-        if(profile.getAvatar() != null) { avatar.setImageResource(resID);}
-        if(profile.getUsername() != null) {username.setText( profile.getUsername());}
-        if(profile.getMoney() != -1) {money.setText(profile.getMoney());}
-        if(profile.getExperience() != -1) {experience.setText( profile.getExperience());}
+
+        rank.setText("Rank: " + profile.getRank());
+        avatar.setImageResource(resID);
+        username.setText(profile.getUsername());
+        money.setText("Money: " + profile.getMoney());
+        experience.setText("Experience: " + profile.getExperience());
     }
 
 
