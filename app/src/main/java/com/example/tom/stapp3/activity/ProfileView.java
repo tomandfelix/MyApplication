@@ -2,6 +2,7 @@ package com.example.tom.stapp3.activity;
 
 import android.os.Bundle;
 import android.util.Log;
+import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.example.tom.stapp3.persistency.DatabaseHelper;
@@ -41,20 +42,18 @@ public class ProfileView extends DrawerActivity {
     }
 
     private void updateVisual(Profile profile) {
-        TextView id = (TextView) findViewById(R.id.id);
-        TextView firstName = (TextView) findViewById(R.id.firstname);
-        TextView lastName = (TextView) findViewById(R.id.lastname);
-        TextView username = (TextView) findViewById(R.id.username);
-        TextView email = (TextView) findViewById(R.id.email);
-        TextView money = (TextView) findViewById(R.id.money);
-        TextView experience = (TextView) findViewById(R.id.experience);
+        TextView username = (TextView) findViewById(R.id.profile_username);
+        TextView money = (TextView) findViewById(R.id.profile_money);
+        TextView experience = (TextView) findViewById(R.id.profile_experience);
+        ImageView avatar = (ImageView) findViewById(R.id.profile_avatar);
 
-        if(profile.getId() != -1) {id.setText("ID: " + profile.getId());}
-        if(profile.getFirstName() != null) {firstName.setText("First Name: " + profile.getFirstName());}
-        if(profile.getLastName() != null) {lastName.setText("Last Name: " + profile.getLastName());}
-        if(profile.getUsername() != null) {username.setText("Username: " + profile.getUsername());}
-        if(profile.getEmail() != null) {email.setText("Email: " + profile.getEmail());}
-        if(profile.getMoney() != -1) {money.setText("Money: " + profile.getMoney());}
-        if(profile.getExperience() != -1) {experience.setText("Experience: " + profile.getExperience());}
+        String mDrawableAvatar = "avatar_" + profile.getAvatar() + ".png";
+        int resID = getResources().getIdentifier(mDrawableAvatar, "drawable", getPackageName());
+        if(profile.getAvatar() != null) { avatar.setImageResource(resID);}
+        if(profile.getUsername() != null) {username.setText( profile.getUsername());}
+        if(profile.getMoney() != -1) {money.setText(profile.getMoney());}
+        if(profile.getExperience() != -1) {experience.setText( profile.getExperience());}
     }
+
+
 }

@@ -66,7 +66,8 @@ public class FragmentViewer extends FragmentActivity {
         EditText username = (EditText) findViewById(R.id.new_username);
         EditText email = (EditText) findViewById(R.id.new_email);
         EditText password = (EditText) findViewById(R.id.new_password);
-        ServerHelper.getInstance(this).createProfile(firstName.getText().toString(), lastName.getText().toString(), username.getText().toString(), email.getText().toString(), password.getText().toString(), new Function<Profile>() {
+
+        ServerHelper.getInstance(this).createProfile(firstName.getText().toString(), lastName.getText().toString(), username.getText().toString(), email.getText().toString(), "unknown", password.getText().toString(), new Function<Profile>() {
             @Override
             public void call(Profile param) {
                 Intent intent = new Intent(getBaseContext(), ProfileView.class);

@@ -1,68 +1,52 @@
-<android.support.v4.widget.DrawerLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:id="@+id/drawer"
-    android:layout_width="match_parent"
-    android:layout_height="match_parent">
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools" android:layout_width="match_parent"
+    android:layout_height="match_parent" android:paddingLeft="@dimen/activity_horizontal_margin"
+    android:paddingRight="@dimen/activity_horizontal_margin"
+    android:paddingTop="@dimen/activity_vertical_margin"
+    android:paddingBottom="@dimen/activity_vertical_margin"
+    tools:context="com.example.tom.stapp3.activity.ProfileView">
 
-    <LinearLayout
-        android:orientation="vertical"
+    <ImageView
+        android:id="@+id/profile_avatar"
+        android:layout_width="100dp"
+        android:layout_height="100dp"
+        android:layout_alignParentTop="true"
+        android:layout_alignParentLeft="true"/>
+    <TextView
+        android:id="@+id/profile_rank"
+        android:text="Rank"
+        android:textSize="30sp"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:paddingLeft="@dimen/activity_horizontal_margin"
-        android:paddingRight="@dimen/activity_horizontal_margin"
-        android:paddingTop="@dimen/activity_vertical_margin"
-        android:paddingBottom="@dimen/activity_vertical_margin">
+        android:layout_height="100dp"
+        android:gravity="center"
+        android:layout_toRightOf="@+id/profile_avatar"
+        android:layout_marginLeft="@dimen/activity_horizontal_margin"
+        android:layout_alignParentTop="true" />
+    <TextView
+        android:id="@+id/profile_username"
+        android:text="Username"
+        android:textSize="40sp"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/profile_avatar"
+        android:layout_marginTop="@dimen/activity_vertical_margin"/>
+    <TextView
+        android:id="@+id/profile_money"
+        android:text="Money: "
+        android:textSize="30sp"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/profile_username"
+        android:layout_marginTop="@dimen/activity_vertical_margin"/>
+    <TextView
+        android:id="@+id/profile_experience"
+        android:text="Experience: "
+        android:textSize="30sp"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/profile_money"
+        android:layout_marginTop="@dimen/activity_vertical_margin"/>
 
-        <TextView
-            android:text="ID: "
-            android:id="@+id/id"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content" />
+</RelativeLayout>
 
-        <TextView
-            android:text="First Name: "
-            android:id="@+id/firstname"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content" />
 
-        <TextView
-            android:text="Last Name: "
-            android:id="@+id/lastname"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content" />
-
-        <TextView
-            android:text="Username: "
-            android:id="@+id/username"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content" />
-
-        <TextView
-            android:text="Email: "
-            android:id="@+id/email"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content" />
-
-        <TextView
-            android:text="Money: "
-            android:id="@+id/money"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content" />
-
-        <TextView
-            android:text="Experience: "
-            android:id="@+id/experience"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content" />
-
-    </LinearLayout>
-
-    <ListView
-        android:id="@+id/menulist"
-        android:layout_width="240dp"
-        android:layout_height="match_parent"
-        android:layout_gravity="start"
-        android:choiceMode="singleChoice"
-        android:divider="@android:color/transparent"
-        android:dividerHeight="0dp"
-        android:background="#111"/>
-</android.support.v4.widget.DrawerLayout>
