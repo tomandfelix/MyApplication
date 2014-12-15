@@ -48,7 +48,7 @@ public class StrangerView extends Activity {
         TextView experience = (TextView) findViewById(R.id.stranger_experience);
         ImageView avatar = (ImageView) findViewById(R.id.stranger_avatar);
 
-        int avatarID = getResources().getIdentifier("avatar_" + profile.getAvatar(), "drawable", getPackageName());
+        int avatarID = getResources().getIdentifier("avatar_" + profile.getAvatar() + "_512", "drawable", getPackageName());
 
         rank.setText("Rank: " + profile.getRank());
         username.setText(profile.getUsername());
