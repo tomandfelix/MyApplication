@@ -4,6 +4,7 @@ import android.app.Activity;
 import android.os.Bundle;
 import android.support.v4.app.NavUtils;
 import android.view.MenuItem;
+import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.example.tom.stapp3.Function;
@@ -45,10 +46,14 @@ public class StrangerView extends Activity {
         TextView username = (TextView) findViewById(R.id.stranger_username);
         TextView money = (TextView) findViewById(R.id.stranger_money);
         TextView experience = (TextView) findViewById(R.id.stranger_experience);
+        ImageView avatar = (ImageView) findViewById(R.id.stranger_avatar);
+
+        int avatarID = getResources().getIdentifier("avatar_" + profile.getAvatar(), "drawable", getPackageName());
 
         rank.setText("Rank: " + profile.getRank());
         username.setText(profile.getUsername());
         money.setText("Money: " + profile.getMoney());
         experience.setText("Experience: " + profile.getExperience());
+        avatar.setImageResource(avatarID);
     }
 }

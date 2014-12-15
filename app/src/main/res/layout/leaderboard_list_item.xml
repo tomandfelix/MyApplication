@@ -1,48 +1,41 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:orientation="horizontal"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:paddingTop="7dp"
     android:paddingBottom="7dp">
+
+    <ImageView
+        android:id="@+id/leaderboard_avatar"
+        android:layout_width="30dp"
+        android:layout_height="30dp"
+        android:src="@drawable/avatar_manager"/>
     
     <TextView
         android:id="@+id/leaderboard_rank"
         android:textSize="20sp"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="0"/>
+        android:layout_toRightOf="@+id/leaderboard_avatar"
+        android:layout_marginLeft="@dimen/activity_horizontal_margin"
+        android:text="1000"/>
 
-    <View
-        android:layout_width="@dimen/activity_horizontal_margin"
-        android:layout_height="match_parent"/>
-
-    <ImageView
-        android:layout_width="30dp"
-        android:layout_height="30dp"
-        android:src="@drawable/avatar_unknown"/>
-
-    <View
-        android:layout_width="@dimen/activity_horizontal_margin"
-        android:layout_height="match_parent"/>
-    
     <TextView
         android:id="@+id/leaderboard_username"
         android:textSize="20sp"
-        android:layout_width="0dip"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_weight="1"
+        android:layout_toRightOf="@+id/leaderboard_avatar"
+        android:layout_marginLeft="70dp"
         android:text="Username"/>
 
-    <View
-        android:layout_width="@dimen/activity_horizontal_margin"
-        android:layout_height="match_parent"/>
-    
     <TextView
         android:id="@+id/leaderboard_experience"
         android:textSize="20sp"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:layout_alignParentRight="true"
         android:text="9000"/>
 
-</LinearLayout>
+</RelativeLayout>

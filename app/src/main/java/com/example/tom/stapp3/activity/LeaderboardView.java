@@ -9,6 +9,7 @@ import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.HeaderViewListAdapter;
+import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.TextView;
 
@@ -112,10 +113,14 @@ public class LeaderboardView extends DrawerActivity {
 
             if(p != null) {
                 TextView rank = (TextView) convertView.findViewById(R.id.leaderboard_rank);
+                ImageView avatar = (ImageView) convertView.findViewById(R.id.leaderboard_avatar);
                 TextView username = (TextView) convertView.findViewById(R.id.leaderboard_username);
                 TextView experience = (TextView) convertView.findViewById(R.id.leaderboard_experience);
 
+                int avatarID = getResources().getIdentifier("avatar_" + p.getAvatar(), "drawable", getPackageName());
+
                 if(rank != null) {rank.setText(Integer.toString(p.getRank()));}
+                if(avatar != null) {avatar.setImageResource(avatarID);}
                 if(username != null) {username.setText(p.getUsername());}
                 if(experience != null) {experience.setText(Integer.toString(p.getExperience()));}
             }

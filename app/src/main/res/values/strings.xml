@@ -17,4 +17,43 @@
         <item>Logout</item>
     </string-array>
 
+    <string-array name="avatars">
+        <item>admin</item>
+        <item>african_boss</item>
+        <item>angel</item>
+        <item>arab_boss</item>
+        <item>army_officer</item>
+        <item>asian_boss</item>
+        <item>asian_female_boss</item>
+        <item>captain</item>
+        <item>caucasian_boss</item>
+        <item>caucasian_female_boss</item>
+        <item>chief</item>
+        <item>devil</item>
+        <item>engineer</item>
+        <item>general</item>
+        <item>global_manager</item>
+        <item>head_physician</item>
+        <item>judge</item>
+        <item>king</item>
+        <item>knight</item>
+        <item>manager</item>
+        <item>mexican_boss</item>
+        <item>official</item>
+        <item>old_boss</item>
+        <item>police_officer</item>
+        <item>policeman</item>
+        <item>professor</item>
+        <item>queen</item>
+        <item>security</item>
+        <item>security_guard</item>
+        <item>sheikh</item>
+        <item>superman</item>
+        <item>supervisor</item>
+        <item>teacher</item>
+        <item>themis</item>
+        <item>uncle_sam</item>
+        <item>wizard</item>
+    </string-array>
+
 </resources>

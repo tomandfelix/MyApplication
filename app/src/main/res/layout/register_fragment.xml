@@ -6,150 +6,109 @@ android:id="@+id/new_profile"
 android:layout_width="fill_parent"
 android:layout_height="fill_parent">
 
-    <TableLayout
-        android:layout_width="match_parent"
-        android:layout_height="0dip"
-        android:layout_weight="1"
-        android:stretchColumns="1">
+    <RelativeLayout
+        android:layout_height="match_parent"
+        android:layout_width="match_parent">
 
-        <View
+        <ImageView
+            android:id="@+id/new_avatar"
+            android:layout_width="100dp"
+            android:layout_height="100dp"
+            android:layout_alignParentTop="true"
+            android:layout_alignParentLeft="true"
+            android:src="@drawable/avatar_manager"/>
+
+        <GridView
+            android:id="@+id/avatar_grid"
             android:layout_width="match_parent"
-            android:layout_height="0dip"
-            android:layout_weight="0.5"/>
+            android:layout_height="300dp"
+            android:columnWidth="100dp"
+            android:gravity="center"
+            android:numColumns="auto_fit"
+            android:verticalSpacing="5dp"
+            android:drawSelectorOnTop="true"
+            android:stretchMode="columnWidth"
+            android:layout_below="@+id/new_avatar"
+            android:layout_marginTop="@dimen/activity_vertical_margin">
+        </GridView>
 
-        <TableRow
+        <EditText
+            android:id="@+id/new_username"
+            android:hint="Username"
+            android:textSize="40sp"
+            android:singleLine="true"
+            android:imeOptions="actionNext"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content">
-            <TextView
-                android:paddingRight="10dp"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:textSize="20sp"
-                android:text="First Name"/>
-            <EditText
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:singleLine="true"
-                android:imeOptions="actionNext"
-                android:id="@+id/new_firstname"
-                android:hint="John"
-                android:inputType="textPersonName"/>
-        </TableRow>
-
-        <View
-            android:layout_width="match_parent"
-            android:layout_height="0dip"
-            android:layout_weight="1"/>
-
-        <TableRow
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content">
-            <TextView
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:textSize="20sp"
-                android:text="Last Name"/>
-            <EditText
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:singleLine="true"
-                android:imeOptions="actionNext"
-                android:id="@+id/new_lastname"
-                android:hint="Doe"
-                android:inputType="textPersonName"/>
-        </TableRow>
-
-        <View
-            android:layout_width="match_parent"
-            android:layout_height="0dip"
-            android:layout_weight="1"/>
-
-        <TableRow
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content">
-            <TextView
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:textSize="20sp"
-                android:text="Username"/>
-            <EditText
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:singleLine="true"
-                android:imeOptions="actionNext"
-                android:id="@+id/new_username"
-                android:hint="John_Doe_123"/>
-        </TableRow>
-
-        <View
-            android:layout_width="match_parent"
-            android:layout_height="0dip"
-            android:layout_weight="1"/>
-
-        <TableRow
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content">
-            <TextView
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:textSize="20sp"
-                android:text="Email"/>
-            <EditText
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:singleLine="true"
-                android:imeOptions="actionNext"
-                android:id="@+id/new_email"
-                android:hint="john.doe@example.com"
-                android:inputType="textEmailAddress"/>
-        </TableRow>
-
-        <View
-            android:layout_width="match_parent"
-            android:layout_height="0dip"
-            android:layout_weight="1"/>
-
-        <TableRow
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content">
-            <TextView
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:textSize="20sp"
-                android:text="Password"/>
-            <EditText
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:singleLine="true"
-                android:imeOptions="actionDone"
-                android:id="@+id/new_password"
-                android:hint="secret"
-                android:inputType="textPassword"/>
-        </TableRow>
-
-        <View
-            android:layout_width="match_parent"
-            android:layout_height="0dip"
-            android:layout_weight="0.5"/>
-    </TableLayout>
-
-    <LinearLayout
-        android:orientation="horizontal"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content">
-
-        <Button
-            android:layout_width="0dip"
             android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:text="Back"
-            android:onClick="toStart"/>
+            android:layout_below="@+id/avatar_grid"
+            android:layout_marginTop="@dimen/activity_vertical_margin"/>
 
-        <Button
-            android:layout_width="0dip"
+        <EditText
+            android:id="@+id/new_firstname"
+            android:hint="First Name"
+            android:textSize="30sp"
+            android:singleLine="true"
+            android:imeOptions="actionNext"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:text="Register"
-            android:onClick="registerBtn"/>
-    </LinearLayout>
+            android:layout_below="@+id/new_username"
+            android:layout_marginTop="@dimen/activity_vertical_margin"
+            android:inputType="textPersonName"/>
+
+        <EditText
+            android:id="@+id/new_lastname"
+            android:hint="Last Name"
+            android:textSize="30sp"
+            android:singleLine="true"
+            android:imeOptions="actionNext"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_below="@+id/new_firstname"
+            android:layout_marginTop="@dimen/activity_vertical_margin"
+            android:inputType="textPersonName"/>
+
+        <EditText
+            android:id="@+id/new_email"
+            android:hint="Email"
+            android:textSize="30sp"
+            android:singleLine="true"
+            android:imeOptions="actionNext"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_below="@+id/new_lastname"
+            android:layout_marginTop="@dimen/activity_vertical_margin"
+            android:inputType="textEmailAddress"/>
+        <EditText
+            android:id="@+id/new_password"
+            android:hint="Password"
+            android:textSize="30sp"
+            android:singleLine="true"
+            android:imeOptions="actionDone"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_below="@+id/new_email"
+            android:layout_marginTop="@dimen/activity_vertical_margin"
+            android:inputType="textPassword"/>
+
+        <LinearLayout
+            android:layout_alignParentBottom="true"
+            android:orientation="horizontal"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+
+            <Button
+                android:layout_width="0dip"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="Back"
+                android:onClick="toStart"/>
+
+            <Button
+                android:layout_width="0dip"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="Register"
+                android:onClick="registerBtn"/>
+        </LinearLayout>
+    </RelativeLayout>
 </LinearLayout>
