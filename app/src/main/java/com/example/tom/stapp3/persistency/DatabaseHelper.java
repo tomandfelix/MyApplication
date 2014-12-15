@@ -40,6 +40,7 @@ public class DatabaseHelper extends SQLiteOpenHelper{
     private static final String KEY_EMAIL = "email";
     private static final String KEY_MONEY = "money";
     private static final String KEY_EXPERIENCE = "experience";
+    private static final String KEY_AVATAR = "avatar";
     private static final String KEY_RANK = "rank";
     private static final String KEY_UPDATED = "lastUpdated";
     private static final String KEY_SETTING = "name";
@@ -83,7 +84,7 @@ public class DatabaseHelper extends SQLiteOpenHelper{
     @Override
     public void onCreate(SQLiteDatabase db) {
         db.execSQL("CREATE TABLE " + TABLE_LOGS + " (" + KEY_ID + " INTEGER PRIMARY KEY AUTOINCREMENT, " + KEY_ACTION + " TEXT, " + KEY_DATETIME + " DATETIME, " + KEY_METADATA + " TEXT)");
-        db.execSQL("CREATE TABLE " + TABLE_PROFILES + " (" + KEY_ID + " INTEGER PRIMARY KEY NOT NULL UNIQUE, " + KEY_FIRSTNAME + " TEXT, " + KEY_LASTNAME + " TEXT, " + KEY_USERNAME + " TEXT, " + KEY_EMAIL + " TEXT, " + KEY_MONEY + " INT, " + KEY_EXPERIENCE + " INT, " + KEY_RANK + " INT, " + KEY_UPDATED + " DATETIME)");
+        db.execSQL("CREATE TABLE " + TABLE_PROFILES + " (" + KEY_ID + " INTEGER PRIMARY KEY NOT NULL UNIQUE, " + KEY_FIRSTNAME + " TEXT, " + KEY_LASTNAME + " TEXT, " + KEY_USERNAME + " TEXT, " + KEY_EMAIL + " TEXT, " + KEY_MONEY + " INT, " + KEY_EXPERIENCE + " INT, " + KEY_AVATAR + " TEXT, " + KEY_RANK + " INT, " + KEY_UPDATED + " DATETIME)");
         db.execSQL("CREATE TABLE " + TABLE_SETTINGS + " (" + KEY_SETTING + " TEXT PRIMARY KEY NOT NULL UNIQUE, " + KEY_VALUE_INT + " INTEGER, " + KEY_VALUE_STRING + " TEXT)");
         ContentValues values = new ContentValues(2);
         values.put(KEY_SETTING, OWNER);
@@ -224,7 +225,7 @@ public class DatabaseHelper extends SQLiteOpenHelper{
         Log.i("endDay", "ending day");
         addLog(LOG_ACH_SCORE, stopTime, Double.toString(achieved));
         addLog(LOG_ACH_SCORE_PERC, stopTime, Double.toString(percent));
-        addLog(LOG_STOP_DAY, stopTime, null);
+        addLog(LOG_STOP_DAY, stopTime, Double.toString(connectionTime));
     }
 
     public void addConnectionStatus(boolean connected) {
@@ -258,6 +259,7 @@ public class DatabaseHelper extends SQLiteOpenHelper{
             value.put(KEY_EMAIL, input.getEmail());
             value.put(KEY_MONEY, input.getMoney());
             value.put(KEY_EXPERIENCE, input.getExperience());
+            value.put(KEY_AVATAR, input.getAvatar());
             value.put(KEY_RANK, input.getRank());
             value.put(KEY_UPDATED, dateToString(input.getLastUpdate()));
             SQLiteDatabase db = getWritableDatabase();
@@ -292,6 +294,9 @@ public class DatabaseHelper extends SQLiteOpenHelper{
             if(input.getExperience() != -1) {
                 value.put(KEY_EXPERIENCE, input.getExperience());
             }
+            if(input.getAvatar() != null) {
+                value.put(KEY_AVATAR, input.getAvatar());
+            }
             if(input.getRank() != -1) {
                 value.put(KEY_RANK, input.getRank());
             }
@@ -299,29 +304,29 @@ public class DatabaseHelper extends SQLiteOpenHelper{
                 value.put(KEY_UPDATED, dateToString(input.getLastUpdate()));
             }
             SQLiteDatabase db = getWritableDatabase();
-            db.update(TABLE_PROFILES, value, KEY_ID + " = ?", new String[]{"" + input.getId()});
+            db.update(TABLE_PROFILES, value, KEY_ID + " = ?", new String[]{Integer.toString(input.getId())});
         }
     }
 
     public Profile getProfile(int id) {
-        String query = "SELECT " + KEY_FIRSTNAME + ", " + KEY_LASTNAME + ", " + KEY_USERNAME + ", " + KEY_EMAIL + ", " + KEY_MONEY + ", " + KEY_EXPERIENCE + ", " + KEY_RANK + ", " + KEY_UPDATED + " FROM " + TABLE_PROFILES + " WHERE " + KEY_ID + " = ?";
+        String query = "SELECT " + KEY_FIRSTNAME + ", " + KEY_LASTNAME + ", " + KEY_USERNAME + ", " + KEY_EMAIL + ", " + KEY_MONEY + ", " + KEY_EXPERIENCE + ", " + KEY_AVATAR + ", " + KEY_RANK + ", " + KEY_UPDATED + " FROM " + TABLE_PROFILES + " WHERE " + KEY_ID + " = ?";
         SQLiteDatabase db = getReadableDatabase();
         Cursor cursor = db.rawQuery(query, new String[] {Integer.toString(id)});
         if(cursor != null && cursor.getCount() > 0) {
             cursor.moveToFirst();
-            return new Profile(id, cursor.getString(0), cursor.getString(1), cursor.getString(2), cursor.getString(3), cursor.getInt(4), cursor.getInt(5), cursor.getInt(6), stringToDate(cursor.getString(7)));
+            return new Profile(id, cursor.getString(0), cursor.getString(1), cursor.getString(2), cursor.getString(3), cursor.getInt(4), cursor.getInt(5), cursor.getString(6), cursor.getInt(7), stringToDate(cursor.getString(8)));
         } else {
             return null;
         }
     }
 
     public Profile getProfile(String username) {
-        String query = "SELECT " + KEY_ID + ", " + KEY_FIRSTNAME + ", " + KEY_LASTNAME + ", " + KEY_EMAIL + ", " + KEY_MONEY + ", " + KEY_EXPERIENCE + ", " + KEY_RANK + ", " + KEY_UPDATED + " FROM " + TABLE_PROFILES + " WHERE " + KEY_USERNAME + " = ?";
+        String query = "SELECT " + KEY_ID + ", " + KEY_FIRSTNAME + ", " + KEY_LASTNAME + ", " + KEY_EMAIL + ", " + KEY_MONEY + ", " + KEY_EXPERIENCE + ", " + KEY_AVATAR + ", " + KEY_RANK + ", " + KEY_UPDATED + " FROM " + TABLE_PROFILES + " WHERE " + KEY_USERNAME + " = ?";
         SQLiteDatabase db = getReadableDatabase();
         Cursor cursor = db.rawQuery(query, new String[] {username});
         if(cursor != null && cursor.getCount() > 0) {
             cursor.moveToFirst();
-            return new Profile(cursor.getInt(0), cursor.getString(1), cursor.getString(2), username, cursor.getString(3), cursor.getInt(4), cursor.getInt(5), cursor.getInt(6), stringToDate(cursor.getString(7)));
+            return new Profile(cursor.getInt(0), cursor.getString(1), cursor.getString(2), username, cursor.getString(3), cursor.getInt(4), cursor.getInt(5), cursor.getString(6), cursor.getInt(7), stringToDate(cursor.getString(8)));
         } else {
             return null;
         }
@@ -330,13 +335,13 @@ public class DatabaseHelper extends SQLiteOpenHelper{
     public ArrayList<Profile> getLeaderboardByRank(int rank) {
         ArrayList<Profile> prof= null;
         rank -= (rank % 10) == 0 ? 10 : rank % 10;
-        String query = "SELECT " + KEY_ID + ", " + KEY_FIRSTNAME + ", " + KEY_LASTNAME + ", " + KEY_USERNAME + ", " + KEY_EMAIL + ", " + KEY_MONEY + ", " + KEY_EXPERIENCE + ", " + KEY_RANK + ", " + KEY_UPDATED + " FROM " + TABLE_PROFILES + " ORDER BY " + KEY_RANK + " ASC LIMIT ?, 10";
+        String query = "SELECT " + KEY_ID + ", " + KEY_FIRSTNAME + ", " + KEY_LASTNAME + ", " + KEY_USERNAME + ", " + KEY_EMAIL + ", " + KEY_MONEY + ", " + KEY_EXPERIENCE + ", " + KEY_AVATAR + ", " + KEY_RANK + ", " + KEY_UPDATED + " FROM " + TABLE_PROFILES + " ORDER BY " + KEY_RANK + " ASC LIMIT ?, 10";
         SQLiteDatabase db = getReadableDatabase();
         Cursor cursor = db.rawQuery(query, new String[]{Integer.toString(rank)});
         if(cursor != null && cursor.getCount() == 10) {
             prof = new ArrayList<Profile>(10);
             while(cursor.moveToNext()) {
-                prof.add(new Profile(cursor.getInt(0), cursor.getString(1), cursor.getString(2), cursor.getString(3), cursor.getString(4), cursor.getInt(5), cursor.getInt(6), cursor.getInt(7), stringToDate(cursor.getString(8))));
+                prof.add(new Profile(cursor.getInt(0), cursor.getString(1), cursor.getString(2), cursor.getString(3), cursor.getString(4), cursor.getInt(5), cursor.getInt(6), cursor.getString(7), cursor.getInt(8), stringToDate(cursor.getString(9))));
             }
         }
         return prof;

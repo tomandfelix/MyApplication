@@ -10,17 +10,18 @@ import java.util.Date;
  * Profile class corresponds to profiles in the database
  */
 public class Profile implements Parcelable{
-    protected int id;
-    protected String lastName;
-    protected String firstName;
-    protected String username;
-    protected String email;
-    protected int money;
-    protected int experience;
+    private int id;
+    private String lastName;
+    private String firstName;
+    private String username;
+    private String email;
+    private int money;
+    private int experience;
+    private String avatar;
     private int rank;
     private Date lastUpdate;
 
-    public Profile(int id, String firstName, String lastName, String username, String email, int money, int experience, int rank, Date lastUpdate) {
+    public Profile(int id, String firstName, String lastName, String username, String email, int money, int experience, String avatar, int rank, Date lastUpdate) {
         this.id = id;
         this.lastName = lastName;
         this.firstName = firstName;
@@ -28,6 +29,7 @@ public class Profile implements Parcelable{
         this.email = email;
         this.money = money;
         this.experience = experience;
+        this.avatar = avatar;
         this.rank = rank;
         this.lastUpdate = lastUpdate;
 
@@ -90,6 +92,14 @@ public class Profile implements Parcelable{
         this.experience = experience;
     }
 
+    public String getAvatar() {
+        return avatar;
+    }
+
+    public void setAvatar(String avatar) {
+        this.avatar = avatar;
+    }
+
     public int getRank() {
         return rank;
     }
@@ -135,11 +145,12 @@ public class Profile implements Parcelable{
         dest.writeString(email);
         dest.writeInt(money);
         dest.writeInt(experience);
+        dest.writeString(avatar);
         dest.writeInt(rank);
         dest.writeLong(lastUpdate.getTime());
     }
 
-    protected Profile(Parcel in) {
+    private Profile(Parcel in) {
         id = in.readInt();
         lastName = in.readString();
         firstName = in.readString();
@@ -147,6 +158,8 @@ public class Profile implements Parcelable{
         email = in.readString();
         money = in.readInt();
         experience = in.readInt();
+        avatar = in.readString();
+
         rank = in.readInt();
         lastUpdate = new Date(in.readLong());
     }
