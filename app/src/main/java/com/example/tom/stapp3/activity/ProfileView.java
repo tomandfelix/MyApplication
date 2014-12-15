@@ -49,7 +49,7 @@ public class ProfileView extends DrawerActivity {
         TextView experience = (TextView) findViewById(R.id.profile_experience);
         ImageView avatar = (ImageView) findViewById(R.id.profile_avatar);
 
-        String mDrawableAvatar = "avatar_" + profile.getAvatar() + ".png";
+        String mDrawableAvatar = "avatar_" + profile.getAvatar();
         int resID = getResources().getIdentifier(mDrawableAvatar, "drawable", getPackageName());
 
         rank.setText("Rank: " + profile.getRank());
