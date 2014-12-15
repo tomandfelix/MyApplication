@@ -56,9 +56,9 @@ public class ServerHelper {
         return Math.round(TimeUnit.MILLISECONDS.toMinutes(new Date().getTime() - input.getTime()));
     }
 
-    public void createProfile(String firstName, String lastName, String username, String email, String password, Function<Profile> callback) {
+    public void createProfile(String firstName, String lastName, String username, String email, String avatar, String password, Function<Profile> callback) {
         CreateProfile temp = new CreateProfile(callback);
-        temp.execute(firstName, lastName, username, email, password);
+        temp.execute(firstName, lastName, username, email, avatar, password);
     }
 
     public void getProfile(String username, String password, Function<Profile> callback, boolean forceUpdate) {
@@ -119,16 +119,16 @@ public class ServerHelper {
     }
 
     public void deleteProfile(int id, String password) {
-        new DeleteProfile().execute("" + id, password);
+        new DeleteProfile().execute(Integer.toString(id), password);
     }
 
     public void updateMoneyAndExperience(int id, int money, int experience) {
         new UpdateMoneyAndExperience().execute(id, money, experience);
     }
 
-    public void updateProfileSettings(int id, String password, String firstname, String lastname, String username, String email, String new_password) {
-        new UpdateProfileSettings().execute("" + id, password, firstname, lastname, username, email, new_password);
-        DatabaseHelper.getInstance(context).updateProfile(new Profile(id, firstname, lastname, username, email, -1, -1, -1, null));
+    public void updateProfileSettings(int id, String password, String firstname, String lastname, String username, String email, String avatar, String new_password) {
+        new UpdateProfileSettings().execute(Integer.toString(id), password, firstname, lastname, username, email, avatar, new_password);
+        DatabaseHelper.getInstance(context).updateProfile(new Profile(id, firstname, lastname, username, email, -1, -1, avatar, -1, null));
     }
 
     private class CreateProfile extends AsyncTask<String, Void, Profile> {
@@ -151,7 +151,8 @@ public class ServerHelper {
                 query.put("lastname", params[1]);
                 query.put("username", params[2]);
                 query.put("email", params[3]);
-                query.put("password", params[4]);
+                query.put("avatar", params[4]);
+                query.put("password", params[5]);
                 post.setEntity(new StringEntity(query.toString()));
                 HttpResponse response = client.execute(post);
                 BufferedReader in = new BufferedReader(new InputStreamReader(response.getEntity().getContent()));
@@ -162,7 +163,7 @@ public class ServerHelper {
                 }
                 in.close();
                 if(! result.toString().contains("{}")) {
-                    prof = new Profile(result.getInt("id") , params[0], params[1], params[2], params[3], 0, 0, result.getInt("rank"), new Date());
+                    prof = new Profile(result.getInt("id") , params[0], params[1], params[2], params[3], 0, 0, params[4], result.getInt("rank"), new Date());
                 }
             } catch (ClientProtocolException e) {
                 Log.e("CreateProfile", "Error: ClientProtocolException");
@@ -211,7 +212,7 @@ public class ServerHelper {
                 }
                 in.close();
                 if(! result.toString().contains("{}")) {
-                    prof = new Profile(result.getInt("id"), result.getString("firstname"), result.getString("lastname"), params[0], result.getString("email"),result.getInt("money"), result.getInt("experience"), result.getInt("rank"), new Date());
+                    prof = new Profile(result.getInt("id"), result.getString("firstname"), result.getString("lastname"), params[0], result.getString("email"),result.getInt("money"), result.getInt("experience"), result.getString("avatar"), result.getInt("rank"), new Date());
                 }
             } catch (ClientProtocolException e) {
                 Log.e("GetProfile", "Error: ClientProtocolException");
@@ -262,7 +263,7 @@ public class ServerHelper {
                 }
                 in.close();
                 if(! result.toString().contains("{}")) {
-                    prof = new Profile(params[0], null, null, result.getString("username"), null, result.getInt("money"), result.getInt("experience"), result.getInt("rank"), new Date());
+                    prof = new Profile(params[0], null, null, result.getString("username"), null, result.getInt("money"), result.getInt("experience"), result.getString("avatar"), result.getInt("rank"), new Date());
                 }
             } catch (ClientProtocolException e) {
                 Log.e("GetOtherProfile", "Error: ClientProtocolException");
@@ -320,7 +321,7 @@ public class ServerHelper {
                 } else {
                     for (int i = 0; i < result.length(); i++) {
                         JSONObject temp = result.getJSONObject(i);
-                        prof.add(new Profile(temp.getInt("id"), null, null, temp.getString("username"), null, temp.getInt("money"), temp.getInt("experience"), temp.getInt("rank"), new Date()));
+                        prof.add(new Profile(temp.getInt("id"), null, null, temp.getString("username"), null, temp.getInt("money"), temp.getInt("experience"), temp.getString("avatar"), temp.getInt("rank"), new Date()));
                     }
                 }
             } catch (ClientProtocolException e) {
@@ -406,7 +407,8 @@ public class ServerHelper {
                 query.put("lastname", params[3]);
                 query.put("username", params[4]);
                 query.put("email", params[5]);
-                query.put("new_password", params[6]);
+                query.put("avatar", params[6]);
+                query.put("new_password", params[7]);
                 post.setEntity(new StringEntity(query.toString()));
                 HttpResponse response = client.execute(post);
                 BufferedReader in = new BufferedReader(new InputStreamReader(response.getEntity().getContent()));
