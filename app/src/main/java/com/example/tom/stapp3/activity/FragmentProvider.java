@@ -1,12 +1,16 @@
 package com.example.tom.stapp3.activity;
 
+import android.content.res.TypedArray;
 import android.os.Bundle;
 import android.app.Fragment;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.GridView;
 
 import com.example.tom.stapp3.R;
+
 
 /**
  * Created by Tom on 3/11/2014.
@@ -38,8 +42,13 @@ public class FragmentProvider extends Fragment{
                 break;
             case 2:
                 layoutView = inflater.inflate(R.layout.register_fragment, container, false);
+                TypedArray avatars = getResources().obtainTypedArray(R.array.avatars);
+                Log.i("register", Integer.toString(avatars.length()));
+                //GridView avatarGridView = (GridView) layoutView.findViewById(R.id.avatar_grid);
+                //AvatarGridAdapter avatarGridAdapter = new AvatarGridAdapter(getActivity(), R.layout.avatar_grid_item, avatars);
+                //avatarGridView.setAdapter(avatarGridAdapter);
                 break;
-            case 1:default :
+            case 1:default:
                 layoutView = inflater.inflate(R.layout.start_fragment, container, false);
                 break;
         }

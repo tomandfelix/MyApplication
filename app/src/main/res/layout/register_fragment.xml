@@ -16,7 +16,7 @@ android:layout_height="fill_parent">
             android:layout_height="100dp"
             android:layout_alignParentTop="true"
             android:layout_alignParentLeft="true"
-            android:src="@drawable/avatar_manager"/>
+            android:src="@drawable/avatar_manager_512"/>
 
         <GridView
             android:id="@+id/avatar_grid"
@@ -24,7 +24,7 @@ android:layout_height="fill_parent">
             android:layout_height="300dp"
             android:columnWidth="100dp"
             android:gravity="center"
-            android:numColumns="auto_fit"
+            android:numColumns="4"
             android:verticalSpacing="5dp"
             android:drawSelectorOnTop="true"
             android:stretchMode="columnWidth"

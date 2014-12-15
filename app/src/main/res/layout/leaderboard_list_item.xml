@@ -10,7 +10,7 @@
         android:id="@+id/leaderboard_avatar"
         android:layout_width="30dp"
         android:layout_height="30dp"
-        android:src="@drawable/avatar_manager"/>
+        android:src="@drawable/avatar_manager_128"/>
     
     <TextView
         android:id="@+id/leaderboard_rank"

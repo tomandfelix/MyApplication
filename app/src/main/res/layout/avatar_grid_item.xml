@@ -3,6 +3,9 @@
     android:id="@+id/avatar_list_image"
     android:layout_width="100dp"
     android:layout_height="100dp"
+    android:layout_columnSpan="1"
+    android:layout_rowSpan="1"
+    android:adjustViewBounds="true"
     android:padding="5dp"
     android:clickable="true"
     android:focusable="true">
