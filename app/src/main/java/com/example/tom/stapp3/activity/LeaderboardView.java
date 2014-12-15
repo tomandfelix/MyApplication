@@ -117,7 +117,7 @@ public class LeaderboardView extends DrawerActivity {
                 TextView username = (TextView) convertView.findViewById(R.id.leaderboard_username);
                 TextView experience = (TextView) convertView.findViewById(R.id.leaderboard_experience);
 
-                int avatarID = getResources().getIdentifier("avatar_" + p.getAvatar(), "drawable", getPackageName());
+                int avatarID = getResources().getIdentifier("avatar_" + p.getAvatar() +"_128", "drawable", getPackageName());
 
                 if(rank != null) {rank.setText(Integer.toString(p.getRank()));}
                 if(avatar != null) {avatar.setImageResource(avatarID);}
