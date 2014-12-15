@@ -18,13 +18,14 @@ android:layout_height="fill_parent">
             android:layout_alignParentTop="true"
             android:layout_alignParentLeft="true"
             android:onClick="toggleAvatarGrid"
+            android:adjustViewBounds="true"
             android:src="@drawable/avatar_manager_512"/>
 
         <GridView
             android:id="@+id/avatar_grid"
             android:visibility="invisible"
             android:layout_width="match_parent"
-            android:layout_height="300dp"
+            android:layout_height="0dp"
             android:columnWidth="100dp"
             android:gravity="center"
             android:numColumns="4"
@@ -32,24 +33,24 @@ android:layout_height="fill_parent">
             android:drawSelectorOnTop="true"
             android:stretchMode="columnWidth"
             android:layout_below="@+id/new_avatar"
-            android:layout_marginTop="@dimen/activity_vertical_margin">
+            android:layout_marginTop="@dimen/activity_vertical_margin"
+            android:clickable="true">
         </GridView>
 
         <EditText
             android:id="@+id/new_username"
             android:hint="Username"
-            android:textSize="40sp"
+            android:textSize="25sp"
             android:singleLine="true"
             android:imeOptions="actionNext"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_below="@+id/new_avatar"
-            android:layout_marginTop="@dimen/activity_vertical_margin"/>
+            android:layout_below="@+id/avatar_grid"/>
 
         <EditText
             android:id="@+id/new_firstname"
             android:hint="First Name"
-            android:textSize="30sp"
+            android:textSize="25sp"
             android:singleLine="true"
             android:imeOptions="actionNext"
             android:layout_width="match_parent"
@@ -61,7 +62,7 @@ android:layout_height="fill_parent">
         <EditText
             android:id="@+id/new_lastname"
             android:hint="Last Name"
-            android:textSize="30sp"
+            android:textSize="25sp"
             android:singleLine="true"
             android:imeOptions="actionNext"
             android:layout_width="match_parent"
@@ -73,7 +74,7 @@ android:layout_height="fill_parent">
         <EditText
             android:id="@+id/new_email"
             android:hint="Email"
-            android:textSize="30sp"
+            android:textSize="25sp"
             android:singleLine="true"
             android:imeOptions="actionNext"
             android:layout_width="match_parent"
@@ -84,7 +85,7 @@ android:layout_height="fill_parent">
         <EditText
             android:id="@+id/new_password"
             android:hint="Password"
-            android:textSize="30sp"
+            android:textSize="25sp"
             android:singleLine="true"
             android:imeOptions="actionDone"
             android:layout_width="match_parent"

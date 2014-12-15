@@ -8,9 +8,16 @@ import android.app.FragmentManager;
 import android.support.v13.app.FragmentPagerAdapter;
 import android.support.v4.view.PagerAdapter;
 import android.support.v4.view.ViewPager;
+import android.util.Log;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.animation.Animation;
+import android.view.animation.AnimationUtils;
+import android.view.animation.Transformation;
+import android.widget.AdapterView;
 import android.widget.EditText;
+import android.widget.GridView;
+import android.widget.ImageView;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 
@@ -24,10 +31,10 @@ import com.example.tom.stapp3.persistency.ServerHelper;
  * Created by Tom on 3/11/2014.
  * This is the first activity, it is a viewpager with 3 fragments: login, start and register
  */
-public class FragmentViewer extends FragmentActivity {
+public class FragmentViewer extends FragmentActivity implements FragmentProvider.OnFragmentInteractionListener{
     private static final int NUM_PAGES = 3;
     private ViewPager mPager;
-    private boolean avatarGridOpen = false;
+    private String avatar;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -94,19 +101,61 @@ public class FragmentViewer extends FragmentActivity {
     }
 
     public void toggleAvatarGrid(View v) {
-        if(avatarGridOpen) {
-            avatarGridOpen = false;
-            findViewById(R.id.avatar_grid).setVisibility(View.INVISIBLE);
-            RelativeLayout.LayoutParams params = new RelativeLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT);
-            params.addRule(RelativeLayout.BELOW, R.id.new_avatar);
-            findViewById(R.id.new_username).setLayoutParams(params);
+        final GridView avatarGrid = (GridView) findViewById(R.id.avatar_grid);
+        if(avatarGrid.getVisibility() == View.INVISIBLE) {
+            avatarGrid.getLayoutParams().height = 0;
+            avatarGrid.setVisibility(View.VISIBLE);
+            Animation expand = new Animation() {
+                @Override
+                protected void applyTransformation(float interpolatedTime, Transformation t) {
+                    avatarGrid.getLayoutParams().height = interpolatedTime == 1 ? RelativeLayout.LayoutParams.WRAP_CONTENT : (int) (300 * interpolatedTime);
+                    avatarGrid.requestLayout();
+                }
+
+                @Override
+                public boolean willChangeBounds() {
+                    return true;
+                }
+            };
+            expand.setDuration((int) (300 / avatarGrid.getContext().getResources().getDisplayMetrics().density));
+            avatarGrid.startAnimation(expand);
         } else {
-            avatarGridOpen = true;
-            findViewById(R.id.avatar_grid).setVisibility(View.VISIBLE);
-            RelativeLayout.LayoutParams params = new RelativeLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT);
-            params.addRule(RelativeLayout.BELOW, R.id.avatar_grid);
-            findViewById(R.id.new_username).setLayoutParams(params);
+            Animation collapse = new Animation() {
+                @Override
+                protected void applyTransformation(float interpolatedTime, Transformation t) {
+                    if(interpolatedTime == 1) {
+                        avatarGrid.setVisibility(View.INVISIBLE);
+                    } else {
+                        avatarGrid.getLayoutParams().height = 300 - (int) (300 * interpolatedTime);
+                        avatarGrid.requestLayout();
+                    }
+                }
+
+                @Override
+                public boolean willChangeBounds() {
+                    return true;
+                }
+            };
+            collapse.setDuration((int) (300 / avatarGrid.getContext().getResources().getDisplayMetrics().density));
+            avatarGrid.startAnimation(collapse);
         }
+    }
+
+    @Override
+    public void onFragmentInteraction(String message) {
+        avatar = message;
+        Log.i("Avatar", message);
+        setAvatarImage(message);
+        toggleAvatarGrid(null);
+    }
+
+    public void setAvatarImage(String avatar) {
+        int avatarID = getResources().getIdentifier("avatar_" + avatar + "_512", "drawable", getPackageName());
+        ImageView avatarView = (ImageView) findViewById(R.id.new_avatar);
+        avatarView.setImageResource(avatarID);
+        avatarView.requestLayout();
+        findViewById(R.id.avatar_grid).requestLayout();
+        findViewById(R.id.new_username).requestLayout();
     }
 
     private class FragmentAdapter extends FragmentPagerAdapter {
