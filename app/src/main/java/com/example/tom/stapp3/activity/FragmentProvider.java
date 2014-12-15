@@ -44,9 +44,9 @@ public class FragmentProvider extends Fragment{
                 layoutView = inflater.inflate(R.layout.register_fragment, container, false);
                 TypedArray avatars = getResources().obtainTypedArray(R.array.avatars);
                 Log.i("register", Integer.toString(avatars.length()));
-                //GridView avatarGridView = (GridView) layoutView.findViewById(R.id.avatar_grid);
-                //AvatarGridAdapter avatarGridAdapter = new AvatarGridAdapter(getActivity(), R.layout.avatar_grid_item, avatars);
-                //avatarGridView.setAdapter(avatarGridAdapter);
+                GridView avatarGridView = (GridView) layoutView.findViewById(R.id.avatar_grid);
+                AvatarGridAdapter avatarGridAdapter = new AvatarGridAdapter(getActivity(), R.layout.avatar_grid_item, avatars);
+                avatarGridView.setAdapter(avatarGridAdapter);
                 break;
             case 1:default:
                 layoutView = inflater.inflate(R.layout.start_fragment, container, false);

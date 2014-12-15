@@ -51,7 +51,7 @@ public class AvatarGridAdapter extends BaseAdapter {
 
         if(getItem(position) != null) {
             ImageView avatar = (ImageView) convertView.findViewById(R.id.avatar_list_image);
-            if(avatar != null) {avatar.setImageResource((int) getItem(position));}
+            if(avatar != null) {avatar.setImageDrawable(data.getDrawable(position));}
         }
         return convertView;
     }

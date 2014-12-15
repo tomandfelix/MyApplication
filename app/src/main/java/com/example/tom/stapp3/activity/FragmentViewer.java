@@ -9,7 +9,9 @@ import android.support.v13.app.FragmentPagerAdapter;
 import android.support.v4.view.PagerAdapter;
 import android.support.v4.view.ViewPager;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.EditText;
+import android.widget.RelativeLayout;
 import android.widget.TextView;
 
 import com.example.tom.stapp3.persistency.DatabaseHelper;
@@ -25,6 +27,7 @@ import com.example.tom.stapp3.persistency.ServerHelper;
 public class FragmentViewer extends FragmentActivity {
     private static final int NUM_PAGES = 3;
     private ViewPager mPager;
+    private boolean avatarGridOpen = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -88,6 +91,22 @@ public class FragmentViewer extends FragmentActivity {
 
     public void toStart(View v) {
         mPager.setCurrentItem(1, true);
+    }
+
+    public void toggleAvatarGrid(View v) {
+        if(avatarGridOpen) {
+            avatarGridOpen = false;
+            findViewById(R.id.avatar_grid).setVisibility(View.INVISIBLE);
+            RelativeLayout.LayoutParams params = new RelativeLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT);
+            params.addRule(RelativeLayout.BELOW, R.id.new_avatar);
+            findViewById(R.id.new_username).setLayoutParams(params);
+        } else {
+            avatarGridOpen = true;
+            findViewById(R.id.avatar_grid).setVisibility(View.VISIBLE);
+            RelativeLayout.LayoutParams params = new RelativeLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT);
+            params.addRule(RelativeLayout.BELOW, R.id.avatar_grid);
+            findViewById(R.id.new_username).setLayoutParams(params);
+        }
     }
 
     private class FragmentAdapter extends FragmentPagerAdapter {

@@ -7,7 +7,8 @@ android:layout_width="fill_parent"
 android:layout_height="fill_parent">
 
     <RelativeLayout
-        android:layout_height="match_parent"
+        android:layout_height="0dip"
+        android:layout_weight="1"
         android:layout_width="match_parent">
 
         <ImageView
@@ -16,10 +17,12 @@ android:layout_height="fill_parent">
             android:layout_height="100dp"
             android:layout_alignParentTop="true"
             android:layout_alignParentLeft="true"
+            android:onClick="toggleAvatarGrid"
             android:src="@drawable/avatar_manager_512"/>
 
         <GridView
             android:id="@+id/avatar_grid"
+            android:visibility="invisible"
             android:layout_width="match_parent"
             android:layout_height="300dp"
             android:columnWidth="100dp"
@@ -40,7 +43,7 @@ android:layout_height="fill_parent">
             android:imeOptions="actionNext"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_below="@+id/avatar_grid"
+            android:layout_below="@+id/new_avatar"
             android:layout_marginTop="@dimen/activity_vertical_margin"/>
 
         <EditText
@@ -89,26 +92,25 @@ android:layout_height="fill_parent">
             android:layout_below="@+id/new_email"
             android:layout_marginTop="@dimen/activity_vertical_margin"
             android:inputType="textPassword"/>
-
-        <LinearLayout
-            android:layout_alignParentBottom="true"
-            android:orientation="horizontal"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content">
-
-            <Button
-                android:layout_width="0dip"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:text="Back"
-                android:onClick="toStart"/>
-
-            <Button
-                android:layout_width="0dip"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:text="Register"
-                android:onClick="registerBtn"/>
-        </LinearLayout>
     </RelativeLayout>
+    <LinearLayout
+        android:layout_alignParentBottom="true"
+        android:orientation="horizontal"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+
+        <Button
+            android:layout_width="0dip"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="Back"
+            android:onClick="toStart"/>
+
+        <Button
+            android:layout_width="0dip"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="Register"
+            android:onClick="registerBtn"/>
+    </LinearLayout>
 </LinearLayout>
