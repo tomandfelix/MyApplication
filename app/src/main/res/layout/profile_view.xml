@@ -21,49 +21,43 @@ android:layout_height="match_parent">
                 android:layout_height="100dp"
                 android:src="@drawable/avatar_manager_512"/>
 
-            <TextView
-                android:id="@+id/profile_username"
+            <LinearLayout
+                android:id="@+id/profile_info"
+                android:orientation="vertical"
                 android:layout_toRightOf="@+id/profile_avatar"
                 android:layout_alignParentTop="true"
                 android:layout_marginLeft="@dimen/text_separation"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:textSize="25sp"
-                android:gravity="center_vertical"
-                android:text="Username"/>
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content">
 
-            <TextView
-                android:id="@+id/profile_rank"
-                android:layout_toRightOf="@+id/profile_avatar"
-                android:layout_below="@+id/profile_username"
-                android:layout_marginLeft="@dimen/text_separation"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:textSize="20sp"
-                android:gravity="center_vertical"
-                android:text="Rank: "/>
+                <TextView
+                    android:id="@+id/profile_username"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:textSize="25sp"
+                    android:text="Username"/>
 
-            <TextView
-                android:id="@+id/profile_money"
-                android:layout_toRightOf="@+id/profile_avatar"
-                android:layout_below="@+id/profile_rank"
-                android:layout_marginLeft="@dimen/text_separation"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:textSize="15sp"
-                android:gravity="center_vertical"
-                android:text="Money: "/>
+                <TextView
+                    android:id="@+id/profile_rank"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:textSize="20sp"
+                    android:text="Rank: "/>
 
-            <TextView
-                android:id="@+id/profile_experience"
-                android:layout_toRightOf="@+id/profile_avatar"
-                android:layout_below="@+id/profile_money"
-                android:layout_marginLeft="@dimen/text_separation"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:textSize="15sp"
-                android:gravity="center_vertical"
-                android:text="Experience: "/>
+                <TextView
+                    android:id="@+id/profile_money"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:textSize="15sp"
+                    android:text="Money: "/>
+
+                <TextView
+                    android:id="@+id/profile_experience"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:textSize="15sp"
+                    android:text="Experience: "/>
+            </LinearLayout>
         </RelativeLayout>
         <LinearLayout
             android:id="@+id/profile_edit"

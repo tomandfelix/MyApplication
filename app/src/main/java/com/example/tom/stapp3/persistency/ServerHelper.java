@@ -12,6 +12,7 @@ import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.DefaultHttpClient;
+import org.apache.http.util.EntityUtils;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -155,13 +156,8 @@ public class ServerHelper {
                 query.put("password", params[5]);
                 post.setEntity(new StringEntity(query.toString()));
                 HttpResponse response = client.execute(post);
-                BufferedReader in = new BufferedReader(new InputStreamReader(response.getEntity().getContent()));
-                String line;
-                JSONObject result = new JSONObject();
-                while((line = in.readLine()) != null) {
-                    result = new JSONObject(line);
-                }
-                in.close();
+                String output = EntityUtils.toString(response.getEntity());
+                JSONObject result = new JSONObject(output);
                 if(! result.toString().contains("{}")) {
                     prof = new Profile(result.getInt("id") , params[0], params[1], params[2], params[3], 0, 0, params[4], result.getInt("rank"), new Date());
                 }
@@ -204,13 +200,8 @@ public class ServerHelper {
                 query.put("password", params[1]);
                 post.setEntity(new StringEntity(query.toString()));
                 HttpResponse response = client.execute(post);
-                BufferedReader in = new BufferedReader(new InputStreamReader(response.getEntity().getContent()));
-                String line;
-                JSONObject result = new JSONObject();
-                while ((line = in.readLine()) != null) {
-                        result = new JSONObject(line);
-                }
-                in.close();
+                String output = EntityUtils.toString(response.getEntity());
+                JSONObject result = new JSONObject(output);
                 if(! result.toString().contains("{}")) {
                     prof = new Profile(result.getInt("id"), result.getString("firstname"), result.getString("lastname"), params[0], result.getString("email"),result.getInt("money"), result.getInt("experience"), result.getString("avatar"), result.getInt("rank"), new Date());
                 }
@@ -255,13 +246,8 @@ public class ServerHelper {
                 query.put("id", params[0].toString());
                 post.setEntity(new StringEntity(query.toString()));
                 HttpResponse response = client.execute(post);
-                BufferedReader in = new BufferedReader(new InputStreamReader(response.getEntity().getContent()));
-                String line;
-                JSONObject result = new JSONObject();
-                while ((line = in.readLine()) != null) {
-                    result = new JSONObject(line);
-                }
-                in.close();
+                String output = EntityUtils.toString(response.getEntity());
+                JSONObject result = new JSONObject(output);
                 if(! result.toString().contains("{}")) {
                     prof = new Profile(params[0], null, null, result.getString("username"), null, result.getInt("money"), result.getInt("experience"), result.getString("avatar"), result.getInt("rank"), new Date());
                 }
@@ -309,13 +295,8 @@ public class ServerHelper {
                 }
                 post.setEntity(new StringEntity(query.toString()));
                 HttpResponse response = client.execute(post);
-                BufferedReader in = new BufferedReader(new InputStreamReader(response.getEntity().getContent()));
-                String line;
-                JSONArray result = new JSONArray();
-                while ((line = in.readLine()) != null) {
-                    result = new JSONArray(line);
-                }
-                in.close();
+                String output = EntityUtils.toString(response.getEntity());
+                JSONArray result = new JSONArray(output);
                 if(result.toString().contains("{}")) {
                     prof = null;
                 } else {
@@ -383,13 +364,8 @@ public class ServerHelper {
                 query.put("experience", params[2]);
                 post.setEntity(new StringEntity(query.toString()));
                 HttpResponse response = client.execute(post);
-                BufferedReader in = new BufferedReader(new InputStreamReader(response.getEntity().getContent()));
-                String line;
-                JSONObject result = new JSONObject();
-                while ((line = in.readLine()) != null) {
-                    result = new JSONObject(line);
-                }
-                in.close();
+                String output = EntityUtils.toString(response.getEntity());
+                JSONObject result = new JSONObject(output);
                 if(! result.toString().contains("{}")) {
                     prof = new Profile(params[0], null, null, null, null, params[1], params[2], null, result.getInt("rank"), new Date());
                 }
@@ -427,12 +403,7 @@ public class ServerHelper {
                 query.put("new_password", params[7]);
                 post.setEntity(new StringEntity(query.toString()));
                 HttpResponse response = client.execute(post);
-                BufferedReader in = new BufferedReader(new InputStreamReader(response.getEntity().getContent()));
-                String line;
-                String output = "";
-                while ((line = in.readLine()) != null) {
-                    output += line;
-                }
+                String output = EntityUtils.toString(response.getEntity());
                 Log.e("OUTPUT", output);
             } catch (ClientProtocolException e) {
                 Log.e("UpdateProfileSettings", "Error: ClientProtocolException");

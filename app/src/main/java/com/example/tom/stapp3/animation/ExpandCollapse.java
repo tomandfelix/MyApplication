@@ -11,18 +11,16 @@ import android.widget.LinearLayout;
  */
 public class ExpandCollapse {
     private final View view;
-    private boolean open;
 
     public ExpandCollapse(final View view) {
         this.view = view;
-        open = false;
     }
 
     public boolean isOpen() {
-        return open;
+        return (view.getVisibility() == View.VISIBLE);
     }
 
-    public void toggle() {
+    public Animation getToggleAnimation() {
         if(view.getVisibility() == View.GONE) {
             view.measure(View.MeasureSpec.makeMeasureSpec(LinearLayout.LayoutParams.MATCH_PARENT, View.MeasureSpec.EXACTLY), View.MeasureSpec.makeMeasureSpec(LinearLayout.LayoutParams.MATCH_PARENT, View.MeasureSpec.EXACTLY));
             final int targetHeight = view.getMeasuredHeight();
@@ -41,8 +39,7 @@ public class ExpandCollapse {
                 }
             };
             expand.setDuration((int) (targetHeight / view.getContext().getResources().getDisplayMetrics().density));
-            view.startAnimation(expand);
-            open = true;
+            return expand;
         } else {
             final int initialHeight = view.getMeasuredHeight();
             Animation collapse = new Animation() {
@@ -62,8 +59,11 @@ public class ExpandCollapse {
                 }
             };
             collapse.setDuration((int) (initialHeight / view.getContext().getResources().getDisplayMetrics().density));
-            view.startAnimation(collapse);
-            open = false;
+            return collapse;
         }
+    }
+
+    public void toggle() {
+        view.startAnimation(getToggleAnimation());
     }
 }
