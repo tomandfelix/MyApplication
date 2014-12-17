@@ -158,15 +158,9 @@ public class ServerHelper {
                 BufferedReader in = new BufferedReader(new InputStreamReader(response.getEntity().getContent()));
                 String line;
                 JSONObject result = new JSONObject();
-                String output = "";
-                while ((line = in.readLine()) != null) {
-                    output += line;
+                while((line = in.readLine()) != null) {
+                    result = new JSONObject(line);
                 }
-                in.close();
-                Log.e("OUTPUT", output);
-                //while((line = in.readLine()) != null) {
-                    result = new JSONObject(output);
-                //}
                 in.close();
                 if(! result.toString().contains("{}")) {
                     prof = new Profile(result.getInt("id") , params[0], params[1], params[2], params[3], 0, 0, params[4], result.getInt("rank"), new Date());
@@ -375,19 +369,30 @@ public class ServerHelper {
         }
     }
 
-    private class UpdateMoneyAndExperience extends AsyncTask<Integer, Void, Void> {
+    private class UpdateMoneyAndExperience extends AsyncTask<Integer, Void, Profile> {
         @Override
-        public Void doInBackground(Integer... params) {
+        public Profile doInBackground(Integer... params) {
             Log.d("ServerHelper", "AsyncTask UpdateMoneyAndExperience started");
             HttpClient client = new DefaultHttpClient();
             HttpPost post = new HttpPost("http://eng.studev.groept.be/thesis/a14_stapp2/updateMoneyAndExperience.php");
             JSONObject query = new JSONObject();
+            Profile prof = null;
             try {
                 query.put("id", params[0]);
                 query.put("money", params[1]);
                 query.put("experience", params[2]);
                 post.setEntity(new StringEntity(query.toString()));
-                client.execute(post);
+                HttpResponse response = client.execute(post);
+                BufferedReader in = new BufferedReader(new InputStreamReader(response.getEntity().getContent()));
+                String line;
+                JSONObject result = new JSONObject();
+                while ((line = in.readLine()) != null) {
+                    result = new JSONObject(line);
+                }
+                in.close();
+                if(! result.toString().contains("{}")) {
+                    prof = new Profile(params[0], null, null, null, null, params[1], params[2], null, result.getInt("rank"), new Date());
+                }
             } catch (ClientProtocolException e) {
                 Log.e("UpdateMoneyAndExperience", "Error: ClientProtocolException");
             } catch (IOException e) {
@@ -395,7 +400,12 @@ public class ServerHelper {
             } catch (JSONException e) {
                 Log.e("UpdateMoneyAndExperience", "JSON error");
             }
-            return null;
+            return prof;
+        }
+
+        @Override
+        public void onPostExecute(Profile param) {
+            DatabaseHelper.getInstance(context).updateProfile(param);
         }
     }
 
