@@ -10,17 +10,11 @@ import android.support.v4.view.PagerAdapter;
 import android.support.v4.view.ViewPager;
 import android.util.Log;
 import android.view.View;
-import android.view.ViewGroup;
-import android.view.animation.Animation;
-import android.view.animation.AnimationUtils;
-import android.view.animation.Transformation;
-import android.widget.AdapterView;
 import android.widget.EditText;
-import android.widget.GridView;
 import android.widget.ImageView;
-import android.widget.RelativeLayout;
 import android.widget.TextView;
 
+import com.example.tom.stapp3.animation.ExpandCollapse;
 import com.example.tom.stapp3.persistency.DatabaseHelper;
 import com.example.tom.stapp3.Function;
 import com.example.tom.stapp3.persistency.Profile;
@@ -45,6 +39,7 @@ public class FragmentViewer extends FragmentActivity implements FragmentProvider
         mPager.setAdapter(mAdapter);
         mPager.setCurrentItem(1, false);
         DatabaseHelper.getInstance(this).setReadable();
+        avatar = "manager";
     }
 
     public void loginBtn(View v) {
@@ -77,7 +72,7 @@ public class FragmentViewer extends FragmentActivity implements FragmentProvider
         EditText email = (EditText) findViewById(R.id.new_email);
         EditText password = (EditText) findViewById(R.id.new_password);
 
-        ServerHelper.getInstance(this).createProfile(firstName.getText().toString(), lastName.getText().toString(), username.getText().toString(), email.getText().toString(), "unknown", password.getText().toString(), new Function<Profile>() {
+        ServerHelper.getInstance(this).createProfile(firstName.getText().toString(), lastName.getText().toString(), username.getText().toString(), email.getText().toString(), avatar, password.getText().toString(), new Function<Profile>() {
             @Override
             public void call(Profile param) {
                 Intent intent = new Intent(getBaseContext(), ProfileView.class);
@@ -100,62 +95,17 @@ public class FragmentViewer extends FragmentActivity implements FragmentProvider
         mPager.setCurrentItem(1, true);
     }
 
-    public void toggleAvatarGrid(View v) {
-        final GridView avatarGrid = (GridView) findViewById(R.id.avatar_grid);
-        if(avatarGrid.getVisibility() == View.INVISIBLE) {
-            avatarGrid.getLayoutParams().height = 0;
-            avatarGrid.setVisibility(View.VISIBLE);
-            Animation expand = new Animation() {
-                @Override
-                protected void applyTransformation(float interpolatedTime, Transformation t) {
-                    avatarGrid.getLayoutParams().height = interpolatedTime == 1 ? RelativeLayout.LayoutParams.WRAP_CONTENT : (int) (300 * interpolatedTime);
-                    avatarGrid.requestLayout();
-                }
-
-                @Override
-                public boolean willChangeBounds() {
-                    return true;
-                }
-            };
-            expand.setDuration((int) (300 / avatarGrid.getContext().getResources().getDisplayMetrics().density));
-            avatarGrid.startAnimation(expand);
-        } else {
-            Animation collapse = new Animation() {
-                @Override
-                protected void applyTransformation(float interpolatedTime, Transformation t) {
-                    if(interpolatedTime == 1) {
-                        avatarGrid.setVisibility(View.INVISIBLE);
-                    } else {
-                        avatarGrid.getLayoutParams().height = 300 - (int) (300 * interpolatedTime);
-                        avatarGrid.requestLayout();
-                    }
-                }
-
-                @Override
-                public boolean willChangeBounds() {
-                    return true;
-                }
-            };
-            collapse.setDuration((int) (300 / avatarGrid.getContext().getResources().getDisplayMetrics().density));
-            avatarGrid.startAnimation(collapse);
-        }
-    }
-
     @Override
     public void onFragmentInteraction(String message) {
+        Log.i("onFragmentInteraction", message);
         avatar = message;
-        Log.i("Avatar", message);
         setAvatarImage(message);
-        toggleAvatarGrid(null);
     }
 
     public void setAvatarImage(String avatar) {
         int avatarID = getResources().getIdentifier("avatar_" + avatar + "_512", "drawable", getPackageName());
         ImageView avatarView = (ImageView) findViewById(R.id.new_avatar);
         avatarView.setImageResource(avatarID);
-        avatarView.requestLayout();
-        findViewById(R.id.avatar_grid).requestLayout();
-        findViewById(R.id.new_username).requestLayout();
     }
 
     private class FragmentAdapter extends FragmentPagerAdapter {

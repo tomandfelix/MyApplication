@@ -12,6 +12,7 @@ import android.widget.AdapterView;
 import android.widget.GridView;
 
 import com.example.tom.stapp3.R;
+import com.example.tom.stapp3.animation.ExpandCollapse;
 
 
 /**
@@ -21,6 +22,7 @@ import com.example.tom.stapp3.R;
 public class FragmentProvider extends Fragment {
     private int position;
     private OnFragmentInteractionListener mListener;
+    private ExpandCollapse avatarGridToggle;
 
     public interface OnFragmentInteractionListener {
         public void onFragmentInteraction(String message);
@@ -61,12 +63,20 @@ public class FragmentProvider extends Fragment {
                 layoutView = inflater.inflate(R.layout.register_fragment, container, false);
                 TypedArray avatars = getResources().obtainTypedArray(R.array.avatars);
                 Log.i("register", Integer.toString(avatars.length()));
-                GridView avatarGridView = (GridView) layoutView.findViewById(R.id.avatar_grid);
+                GridView avatarGridView = (GridView) layoutView.findViewById(R.id.new_avatar_grid);
                 AvatarGridAdapter avatarGridAdapter = new AvatarGridAdapter(getActivity(), R.layout.avatar_grid_item, avatars);
                 avatarGridView.setAdapter(avatarGridAdapter);
+                avatarGridToggle = new ExpandCollapse(avatarGridView);
+                layoutView.findViewById(R.id.new_avatar).setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        avatarGridToggle.toggle();
+                    }
+                });
                 avatarGridView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
                     public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
                         mListener.onFragmentInteraction(getResources().getStringArray(R.array.avatar_names)[position]);
+                        avatarGridToggle.toggle();
                     }
                 });
                 break;

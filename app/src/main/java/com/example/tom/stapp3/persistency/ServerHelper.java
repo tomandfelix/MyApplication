@@ -158,9 +158,15 @@ public class ServerHelper {
                 BufferedReader in = new BufferedReader(new InputStreamReader(response.getEntity().getContent()));
                 String line;
                 JSONObject result = new JSONObject();
-                while((line = in.readLine()) != null) {
-                    result = new JSONObject(line);
+                String output = "";
+                while ((line = in.readLine()) != null) {
+                    output += line;
                 }
+                in.close();
+                Log.e("OUTPUT", output);
+                //while((line = in.readLine()) != null) {
+                    result = new JSONObject(output);
+                //}
                 in.close();
                 if(! result.toString().contains("{}")) {
                     prof = new Profile(result.getInt("id") , params[0], params[1], params[2], params[3], 0, 0, params[4], result.getInt("rank"), new Date());

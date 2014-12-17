@@ -9,6 +9,7 @@
     <EditText
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:textSize="@dimen/textSize"
         android:singleLine="true"
         android:imeOptions="actionNext"
         android:id="@+id/login_username"
@@ -17,6 +18,7 @@
     <EditText
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:textSize="@dimen/textSize"
         android:singleLine="true"
         android:imeOptions="actionDone"
         android:id="@+id/login_password"
