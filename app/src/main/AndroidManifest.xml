@@ -41,7 +41,7 @@
         </activity>
         <service
             android:enabled="true"
-            android:name=".driver.ShimmerService">
+            android:name=".service.ShimmerService">
         </service>
     </application>
 

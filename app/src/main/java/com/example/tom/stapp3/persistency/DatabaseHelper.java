@@ -48,7 +48,6 @@ public class DatabaseHelper extends SQLiteOpenHelper{
     private static final String KEY_VALUE_STRING = "stringValue";
     public static final String OWNER = "owner";
     public static final String NOTIF = "notification";
-    public static final String ADDRESS = "mac_address";
     public static final String LOG_SIT = "sit";
     public static final String LOG_OVERTIME = "sit_overtime";
     public static final String LOG_STAND = "stand";
@@ -58,10 +57,6 @@ public class DatabaseHelper extends SQLiteOpenHelper{
     public static final String LOG_DISCONNECT = "sensor_disconnect";
     public static final String LOG_ACH_SCORE = "achieved_score";
     public static final String LOG_ACH_SCORE_PERC = "achieved_score_percent";
-    public static final int STATUS_STARTED = 1;
-    public static final int STATUS_CONNECTING = 2;
-    public static final int STATUS_CONNCTED = 3;
-    public static final int STATUS_STOPPED = 4;
 
     public static DatabaseHelper getInstance(Context context) {
         if(uniqueInstance == null) {
@@ -93,9 +88,6 @@ public class DatabaseHelper extends SQLiteOpenHelper{
         values.clear();
         values.put(KEY_SETTING, NOTIF);
         values.put(KEY_VALUE_INT, 0);
-        db.insert(TABLE_SETTINGS, null, values);
-        values.put(KEY_SETTING, ADDRESS);
-        values.put(KEY_VALUE_STRING, "");
         db.insert(TABLE_SETTINGS, null, values);
     }
 
@@ -133,27 +125,6 @@ public class DatabaseHelper extends SQLiteOpenHelper{
         input.put(KEY_METADATA, metadata == null ? "" : metadata);
         SQLiteDatabase db = getWritableDatabase();
         db.insert(TABLE_LOGS, null, input);
-    }
-
-    public int getStatus() {
-        String query = "SELECT " + KEY_ACTION + " FROM " + TABLE_LOGS + " WHERE " + KEY_ACTION + " IN('" + LOG_START_DAY + "', '" + LOG_CONNECT + "', '" + LOG_STOP_DAY + "') ORDER BY " + KEY_ID + " DESC LIMIT 1";
-        SQLiteDatabase db = getReadableDatabase();
-        Cursor cursor = db.rawQuery(query, null);
-        if(cursor != null && cursor.getCount() > 0) {
-            cursor.moveToFirst();
-            if(cursor.getString(0).equals(LOG_START_DAY)) {
-                if(getAddress() != null && !getAddress().equals("")) {
-                    return STATUS_CONNECTING;
-                } else {
-                    return STATUS_STARTED;
-                }
-            } else if(cursor.getString(0).equals(LOG_CONNECT)) {
-                return STATUS_CONNCTED;
-            } else if(cursor.getString(0).equals(LOG_STOP_DAY)) {
-                return STATUS_STOPPED;
-            }
-        }
-        return STATUS_STOPPED;
     }
 
     public DBLog getLastLog() {
@@ -366,24 +337,5 @@ public class DatabaseHelper extends SQLiteOpenHelper{
         input.put(KEY_VALUE_INT, value);
         SQLiteDatabase db = getWritableDatabase();
         db.update(TABLE_SETTINGS, input, KEY_SETTING + " = ?", new String[]{name});
-    }
-
-    public String getAddress() {
-        String query = "SELECT " + KEY_VALUE_STRING + " FROM " + TABLE_SETTINGS + " WHERE " + KEY_SETTING + " = ?";
-        SQLiteDatabase db = getReadableDatabase();
-        Cursor cursor = db.rawQuery(query, new String[]{ADDRESS});
-        if(cursor != null && cursor.getCount() > 0) {
-            cursor.moveToFirst();
-            return cursor.getString(0);
-        } else {
-            return null;
-        }
-    }
-
-    public void setAddress(String address) {
-        ContentValues input = new ContentValues(1);
-        input.put(KEY_VALUE_STRING, address);
-        SQLiteDatabase db = getWritableDatabase();
-        db.update(TABLE_SETTINGS, input, KEY_SETTING + " = ?", new String[]{ADDRESS});
     }
 }
