@@ -39,7 +39,8 @@ public class Challenge extends Quest {
         info += "id:" + id;
         info += (name == null ? "":" name:" + name);
         info += (description == null ? "":" description:" + description);
-        info += "bet amount: " + betAmount;
+        info += " bet amount:" + betAmount;
+        info += " people:" + peopleAmount;
         return info;
     }
     @Override

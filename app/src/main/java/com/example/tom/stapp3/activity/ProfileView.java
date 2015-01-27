@@ -34,7 +34,7 @@ public class ProfileView extends DrawerActivity {
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
-        setContentView(R.layout.profile_view);
+        setContentView(R.layout.activity_profile);
         if (savedInstanceState == null) {
             savedInstanceState = new Bundle();
         }
@@ -61,7 +61,7 @@ public class ProfileView extends DrawerActivity {
         avatarChanged = false;
         TypedArray avatars = getResources().obtainTypedArray(R.array.avatars);
         GridView avatarGridView = (GridView) findViewById(R.id.edit_avatar_grid);
-        AvatarGridAdapter avatarGridAdapter = new AvatarGridAdapter(this, R.layout.avatar_grid_item, avatars);
+        AvatarGridAdapter avatarGridAdapter = new AvatarGridAdapter(this, R.layout.grid_item_avatar, avatars);
         avatarGridView.setAdapter(avatarGridAdapter);
         avatarGridView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {

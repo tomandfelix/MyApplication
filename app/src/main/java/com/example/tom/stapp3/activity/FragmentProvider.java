@@ -57,14 +57,14 @@ public class FragmentProvider extends Fragment {
         View layoutView;
         switch(position) {
             case 0:
-                layoutView = inflater.inflate(R.layout.login_fragment, container, false);
+                layoutView = inflater.inflate(R.layout.fragment_login, container, false);
                 break;
             case 2:
-                layoutView = inflater.inflate(R.layout.register_fragment, container, false);
+                layoutView = inflater.inflate(R.layout.fragment_register, container, false);
                 TypedArray avatars = getResources().obtainTypedArray(R.array.avatars);
                 Log.i("register", Integer.toString(avatars.length()));
                 GridView avatarGridView = (GridView) layoutView.findViewById(R.id.new_avatar_grid);
-                AvatarGridAdapter avatarGridAdapter = new AvatarGridAdapter(getActivity(), R.layout.avatar_grid_item, avatars);
+                AvatarGridAdapter avatarGridAdapter = new AvatarGridAdapter(getActivity(), R.layout.grid_item_avatar, avatars);
                 avatarGridView.setAdapter(avatarGridAdapter);
                 avatarGridToggle = new ExpandCollapse(avatarGridView);
                 layoutView.findViewById(R.id.new_avatar).setOnClickListener(new View.OnClickListener() {
@@ -81,7 +81,7 @@ public class FragmentProvider extends Fragment {
                 });
                 break;
             case 1:default:
-                layoutView = inflater.inflate(R.layout.start_fragment, container, false);
+                layoutView = inflater.inflate(R.layout.fragment_start, container, false);
                 break;
         }
         return layoutView;

@@ -42,7 +42,7 @@ public class QuestList extends DrawerActivity {
                 list.add(new Solo(1, "testQuest1", "This Quest is for testing purposes only. Do not try this at home!", 1, 10, 30, Solo.EASY));
                 list.add(new Solo(2, "testQuest2", "This Quest is for testing purposes only. Do not try this at home!", 2, 20, 30, Solo.MEDIUM));
                 list.add(new Solo(3, "testQuest3", "This Quest is for testing purposes only. Do not try this at home!", 3, 30, 30, Solo.HARD));
-                soloAdapter = new SoloQuestListAdapter(getBaseContext(), R.layout.solo_list_item, list);
+                soloAdapter = new SoloQuestListAdapter(getBaseContext(), R.layout.list_item_solo_quest, list);
                 questList.setAdapter(soloAdapter);
                 questList.setOnItemClickListener(new AdapterView.OnItemClickListener() {
                     @Override
@@ -56,7 +56,7 @@ public class QuestList extends DrawerActivity {
                 list.add(new Challenge(1, "testChallenge1", "This Challenge is for testing purposes only. Do not try this at home!", 2));
                 list.add(new Challenge(2, "testChallenge2", "This Challenge is for testing purposes only. Do not try this at home!", 2));
                 list.add(new Challenge(3, "testChallenge3", "This Challenge is for testing purposes only. Do not try this at home!", 5));
-                challengeAdapter = new ChallengeListAdapter(getBaseContext(), R.layout.challenge_list_item, list);
+                challengeAdapter = new ChallengeListAdapter(getBaseContext(), R.layout.list_item_challenge, list);
                 questList.setAdapter(challengeAdapter);
                 questList.setOnItemClickListener(new AdapterView.OnItemClickListener() {
                     @Override

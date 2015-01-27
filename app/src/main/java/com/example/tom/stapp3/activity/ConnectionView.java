@@ -99,7 +99,7 @@ public class ConnectionView extends DrawerActivity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-        setContentView(R.layout.connection_view);
+        setContentView(R.layout.activity_connection);
         if(savedInstanceState == null) {
             savedInstanceState = new Bundle();
         }
@@ -148,7 +148,7 @@ public class ConnectionView extends DrawerActivity {
 
         //Populate the listView
         ListView deviceList = (ListView) findViewById(R.id.paired);
-        deviceList.setAdapter(new ArrayAdapter<>(this, R.layout.devices_item, deviceNames));
+        deviceList.setAdapter(new ArrayAdapter<>(this, R.layout.list_item_devices, deviceNames));
 
         deviceList.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override

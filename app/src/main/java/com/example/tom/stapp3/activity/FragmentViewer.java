@@ -14,7 +14,6 @@ import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.TextView;
 
-import com.example.tom.stapp3.animation.ExpandCollapse;
 import com.example.tom.stapp3.persistency.DatabaseHelper;
 import com.example.tom.stapp3.Function;
 import com.example.tom.stapp3.persistency.Profile;
@@ -33,7 +32,7 @@ public class FragmentViewer extends FragmentActivity implements FragmentProvider
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.pager);
+        setContentView(R.layout.activity_start);
         PagerAdapter mAdapter = new FragmentAdapter(getFragmentManager());
         mPager = (ViewPager) findViewById(R.id.pager);
         mPager.setAdapter(mAdapter);

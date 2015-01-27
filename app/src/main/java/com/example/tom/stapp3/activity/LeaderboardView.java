@@ -32,7 +32,7 @@ public class LeaderboardView extends DrawerActivity {
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
-        setContentView(R.layout.leaderboard_view);
+        setContentView(R.layout.activity_leaderboard);
         if(savedInstanceState == null) {
             savedInstanceState = new Bundle();
         }
@@ -43,12 +43,12 @@ public class LeaderboardView extends DrawerActivity {
             @Override
             public void call(ArrayList<Profile> param) {
                 list = param;
-                adapter = new LeaderboardListAdapter(getBaseContext(), R.layout.leaderboard_list_item, list);
-                View header = getLayoutInflater().inflate(R.layout.leaderboard_head_foot, leaderboardList, false);
+                adapter = new LeaderboardListAdapter(getBaseContext(), R.layout.list_item_leaderboard, list);
+                View header = getLayoutInflater().inflate(R.layout.list_head_foot_leaderboard, leaderboardList, false);
                 TextView head = (TextView) header.findViewById(R.id.head_foot_text);
                 head.setText("Load 10 higher ranks");
                 leaderboardList.addHeaderView(header);
-                View footer = getLayoutInflater().inflate(R.layout.leaderboard_head_foot, leaderboardList, false);
+                View footer = getLayoutInflater().inflate(R.layout.list_head_foot_leaderboard, leaderboardList, false);
                 TextView foot = (TextView) footer.findViewById(R.id.head_foot_text);
                 foot.setText("Load 10 lower ranks");
                 leaderboardList.addFooterView(footer);

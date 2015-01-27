@@ -43,7 +43,7 @@ public abstract class DrawerActivity extends ServiceActivity {
         }
         ListView listView = (ListView) findViewById(R.id.menulist);
         if(listView == null) Log.e("ListView", "Listview is null");
-        listView.setAdapter(new ArrayAdapter<String>(this, R.layout.drawer_item, menuItems));
+        listView.setAdapter(new ArrayAdapter<String>(this, R.layout.list_item_drawer, menuItems));
         listView.setItemChecked(index, true);
         listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
