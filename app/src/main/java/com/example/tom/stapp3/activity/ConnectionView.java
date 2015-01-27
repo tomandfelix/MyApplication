@@ -27,7 +27,7 @@ import com.example.tom.stapp3.tools.Logging;
 
 import java.util.Set;
 
-public class ConnectionView extends /*DrawerActivity*/ServiceActivity {
+public class ConnectionView extends DrawerActivity {
 
     private static Context context;
     private final static int REQUEST_ENABLE_BT = 1; //this id will be returned after the activity for enabling bluetooth finishes
@@ -100,10 +100,10 @@ public class ConnectionView extends /*DrawerActivity*/ServiceActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         setContentView(R.layout.connection_view);
-        /*if(savedInstanceState == null) {
+        if(savedInstanceState == null) {
             savedInstanceState = new Bundle();
         }
-        savedInstanceState.putInt("ListIndex", CONNECTION);*/
+        savedInstanceState.putInt("ListIndex", CONNECTION);
         super.onCreate(savedInstanceState);
 
         Logging.setHandler(loggingMessageHandler);

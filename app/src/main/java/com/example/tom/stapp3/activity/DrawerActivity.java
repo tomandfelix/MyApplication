@@ -1,6 +1,5 @@
 package com.example.tom.stapp3.activity;
 
-import android.app.Activity;
 import android.content.Intent;
 import android.content.res.Configuration;
 import android.os.Bundle;
@@ -20,7 +19,7 @@ import com.example.tom.stapp3.R;
  * Created by Tom on 18/11/2014.
  * Base class for every activity that needs a side menu, this class takes care of this menu and the event handling for it
  */
-public abstract class DrawerActivity extends Activity {
+public abstract class DrawerActivity extends ServiceActivity {
     protected String[] menuItems;
     protected ActionBarDrawerToggle toggle;
     protected int index;
