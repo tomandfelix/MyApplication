@@ -8,17 +8,30 @@ import android.os.Parcelable;
  */
 public class Challenge extends Quest {
     private int betAmount;
-    public Challenge(int id, String name, String description, int betAmount){
+    private int peopleAmount;
+    public Challenge(int id, String name, String description, int peopleAmount){
         super(id, name, description);
-        this.betAmount = betAmount;
+        this.peopleAmount = peopleAmount;
     }
 
     public int getBetAmount() {
         return betAmount;
     }
 
+    public void setBetAmount(int betAmount) {
+        this.betAmount = betAmount;
+    }
+
+    public int getPeopleAmount() {
+        return peopleAmount;
+    }
+
     public int validate(boolean won, Challenge challenge){
-        return challenge.getBetAmount();
+        if(won) {
+            return challenge.getBetAmount();
+        }else{
+            return 0;
+        }
     }
     @Override
     public String toString() {
@@ -40,6 +53,7 @@ public class Challenge extends Quest {
         dest.writeString(name);
         dest.writeString(description);
         dest.writeInt(betAmount);
+        dest.writeInt(peopleAmount);
     }
 
     protected Challenge(Parcel in) {
@@ -48,6 +62,7 @@ public class Challenge extends Quest {
         name = in.readString();
         description = in.readString();
         betAmount = in.readInt();
+        peopleAmount = in.readInt();
 
     }
 
