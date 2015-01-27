@@ -61,5 +61,6 @@
     <string name="title_activity_quest_view">QuestView</string>
     <string name="hello_world">Hello world!</string>
     <string name="title_activity_solo_list">SoloList</string>
+    <string name="title_activity_challenge_list">ChallengeList</string>
 
 </resources>

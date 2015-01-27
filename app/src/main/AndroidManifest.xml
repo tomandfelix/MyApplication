@@ -4,14 +4,14 @@
 
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
-    <uses-permission android:name="android.permission.BLUETOOTH"/>
-    <uses-permission android:name="android.permission.BLUETOOTH_ADMIN"/>
+    <uses-permission android:name="android.permission.BLUETOOTH" />
+    <uses-permission android:name="android.permission.BLUETOOTH_ADMIN" />
 
     <application
         android:allowBackup="true"
         android:icon="@drawable/ic_launcher"
         android:label="@string/app_name"
-        android:theme="@style/AppTheme">
+        android:theme="@style/AppTheme" >
         <activity
             android:name=".activity.FragmentViewer"
             android:label="Stapp 3" >
@@ -24,7 +24,7 @@
         <activity
             android:name=".activity.ProfileView"
             android:label="@string/title_activity_profile_view"
-            android:windowSoftInputMode="stateAlwaysHidden">
+            android:windowSoftInputMode="stateAlwaysHidden" >
         </activity>
         <activity
             android:name=".activity.LeaderboardView"
@@ -39,10 +39,16 @@
             android:name=".activity.ConnectionView"
             android:label="@string/title_activity_connection_view" >
         </activity>
+
         <service
-            android:enabled="true"
-            android:name=".service.ShimmerService">
+            android:name=".service.ShimmerService"
+            android:enabled="true" >
         </service>
+
+        <activity
+            android:name=".activity.QuestList"
+            android:label="@string/title_activity_quest_view" >
+        </activity>
     </application>
 
 </manifest>

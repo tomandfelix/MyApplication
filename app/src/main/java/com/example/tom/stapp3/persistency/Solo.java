@@ -8,13 +8,17 @@ import android.os.Parcelable;
  */
 public class Solo extends Quest {
     private int money;
-    private int xP;
+    private int xp;
     private int duration;
-    private String difficulty;
-    public Solo( int id, String name, String description, int money, int xP, int duration, String difficulty){
+    private int difficulty;
+    public static final int EASY = 0;
+    public static final int MEDIUM = 1;
+    public static final int HARD = 2;
+
+    public Solo( int id, String name, String description, int money, int xp, int duration, int difficulty){
         super(id, name, description);
         this.money = money;
-        this.xP = xP;
+        this.xp = xp;
         this.duration = duration;
         this.difficulty = difficulty;
     }
@@ -23,26 +27,21 @@ public class Solo extends Quest {
         return money;
     }
 
-    public int getxP() {
-        return xP;
+    public int getxp() {
+        return xp;
     }
 
     public int getDuration() {
         return duration;
     }
 
-    public String getDifficulty() {
+    public int getDifficulty() {
         return difficulty;
     }
 
     public int[] validate(boolean won, Solo solo){
-        if(won) {
-            int[] earningsArray = {solo.getMoney(), solo.getxP()};
-            return earningsArray;
-        }else{
-            int[] lost = {0,0};
-            return lost;
-        }
+        int[] earningsArray = {solo.getMoney(), solo.getxp()};
+        return earningsArray;
         }
 
     @Override
@@ -52,8 +51,20 @@ public class Solo extends Quest {
         info += (name == null ? "":" name:" + name);
         info += (description == null ? "":" description:" + description);
         info += " money:" + money;
-        info += " experience:" + xP;
+        info += " experience:" + xp;
         info += " duration:" + duration;
+        info += " difficulty:";
+        switch(difficulty) {
+            case EASY:
+                info += "EASY";
+                break;
+            case MEDIUM:
+                info += "MEDIUM";
+                break;
+            case HARD:
+                info += "HARD";
+                break;
+        }
         return info;
     }
     @Override
@@ -67,8 +78,8 @@ public class Solo extends Quest {
         dest.writeString(name);
         dest.writeString(description);
         dest.writeInt(money);
-        dest.writeInt(xP);
-        dest.writeString(description);
+        dest.writeInt(xp);
+        dest.writeInt(difficulty);
     }
 
     private Solo(Parcel in) {
@@ -77,10 +88,8 @@ public class Solo extends Quest {
         name = in.readString();
         description = in.readString();
         money = in.readInt();
-        xP = in.readInt();
-
-
-
+        xp = in.readInt();
+        difficulty = in.readInt();
     }
 
     public static final Parcelable.Creator<Solo> CREATOR = new Parcelable.Creator<Solo>() {

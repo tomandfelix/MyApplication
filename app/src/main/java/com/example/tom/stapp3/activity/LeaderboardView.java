@@ -44,11 +44,11 @@ public class LeaderboardView extends DrawerActivity {
             public void call(ArrayList<Profile> param) {
                 list = param;
                 adapter = new LeaderboardListAdapter(getBaseContext(), R.layout.leaderboard_list_item, list);
-                View header = getLayoutInflater().inflate(R.layout.leaderboard_head_foot, null);
+                View header = getLayoutInflater().inflate(R.layout.leaderboard_head_foot, leaderboardList, false);
                 TextView head = (TextView) header.findViewById(R.id.head_foot_text);
                 head.setText("Load 10 higher ranks");
                 leaderboardList.addHeaderView(header);
-                View footer = getLayoutInflater().inflate(R.layout.leaderboard_head_foot, null);
+                View footer = getLayoutInflater().inflate(R.layout.leaderboard_head_foot, leaderboardList, false);
                 TextView foot = (TextView) footer.findViewById(R.id.head_foot_text);
                 foot.setText("Load 10 lower ranks");
                 leaderboardList.addFooterView(footer);
@@ -106,7 +106,7 @@ public class LeaderboardView extends DrawerActivity {
         public View getView(int position, View convertView, ViewGroup parent) {
             if(convertView == null) {
                 LayoutInflater inflater = (LayoutInflater) getContext().getSystemService(LAYOUT_INFLATER_SERVICE);
-                convertView = inflater.inflate(itemLayoutId, null);
+                convertView = inflater.inflate(itemLayoutId, parent, false);
             }
 
             Profile p = data.get(position);

@@ -8,7 +8,7 @@
 
 
     <TextView
-        android:id="@+id/solo_list_name"
+        android:id="@+id/challenge_list_name"
         android:textSize="20sp"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
@@ -20,17 +20,17 @@
         android:id="@+id/challenge_list_people_icon"
         android:layout_width="25dp"
         android:layout_height="25dp"
-        android:layout_below="@id/solo_list_name"
+        android:layout_below="@id/challenge_list_name"
         android:layout_marginTop="3dp"
-        android:layout_toRightOf="@id/solo_list_difficulty"
+        android:layout_alignParentLeft="true"
         android:layout_marginLeft="@dimen/activity_margin"
         android:src="@drawable/icon_people"/>
     <TextView
-        android:id="@+id/solo_list_money"
+        android:id="@+id/challenge_list_people"
         android:textSize="20sp"
         android:layout_width="120dp"
         android:layout_height="wrap_content"
-        android:layout_below="@id/solo_list_name"
+        android:layout_below="@id/challenge_list_name"
         android:layout_marginTop="3dp"
         android:layout_toRightOf="@id/challenge_list_people_icon"
         android:layout_marginLeft="5dp"
