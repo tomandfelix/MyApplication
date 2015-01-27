@@ -14,11 +14,16 @@ import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import com.example.tom.stapp3.persistency.DBLog;
 import com.example.tom.stapp3.persistency.DatabaseHelper;
 import com.example.tom.stapp3.Function;
 import com.example.tom.stapp3.persistency.Profile;
 import com.example.tom.stapp3.R;
 import com.example.tom.stapp3.persistency.ServerHelper;
+import com.example.tom.stapp3.tools.Algorithms;
+
+import java.util.ArrayList;
+import java.util.Date;
 
 /**
  * Created by Tom on 3/11/2014.
@@ -39,6 +44,32 @@ public class FragmentViewer extends FragmentActivity implements FragmentProvider
         mPager.setCurrentItem(1, false);
         DatabaseHelper.getInstance(this).setReadable();
         avatar = "manager";
+
+
+        /*ArrayList<DBLog> logs = new ArrayList<>();
+        logs.add(new DBLog("sit", new Date(2015, 1, 27, 18, 1, 0), ""));
+        logs.add(new DBLog("stand", new Date(2015, 1, 27, 18, 1, 30), ""));
+        logs.add(new DBLog("sensor_disconnect", new Date(2015, 1, 27, 18, 1, 45), ""));
+        logs.add(new DBLog("sensor_connect", new Date(2015, 1, 27, 18, 2, 0), ""));
+        logs.add(new DBLog("stand", new Date(2015, 1, 27, 18, 2, 30), ""));
+        logs.add(new DBLog("sit", new Date(2015, 1, 27, 18, 3, 0), ""));
+        logs.add(new DBLog("sensor_disconnect", new Date(2015, 1, 27, 18, 4, 0), ""));
+        logs.add(new DBLog("sensor_connect", new Date(2015, 1, 27, 18, 5, 0), ""));
+        logs.add(new DBLog("sit", new Date(2015, 1, 27, 18, 5, 30), ""));
+        logs.add(new DBLog("stand", new Date(2015, 1, 27, 18, 5, 45), ""));
+        Log.i("TIME_STOOD", Long.toString(Algorithms.millisecondsStood(logs)));
+        Date start = new Date(2015, 1, 27, 18, 0, 45);
+        DBLog logBefore = new DBLog ("stand", new Date(2015, 1, 27, 18, 0, 30), "");
+        long result = Algorithms.millisecondsStood(logs);
+        if(logBefore.getAction().equals(DatabaseHelper.LOG_STAND)) {
+            result += logs.get(0).getDatetime().getTime() - start.getTime();
+        }
+        Log.i("TIME_STOOD SINCE", Long.toString(result));
+        Date end = new Date(2015, 1, 27, 18, 6, 0);
+        if(logs.get(logs.size() - 1).getAction().equals(DatabaseHelper.LOG_STAND)) {
+            result += end.getTime() - logs.get(logs.size() - 1).getDatetime().getTime();
+        }
+        Log.i("TIME_STOOD SINCE, UNTIL", Long.toString(result));*/
     }
 
     public void loginBtn(View v) {
@@ -59,6 +90,7 @@ public class FragmentViewer extends FragmentActivity implements FragmentProvider
                             username.setText(null);
                             password.setText(null);
                         }
+                finish();
             }
         }, true);
     }
@@ -78,6 +110,7 @@ public class FragmentViewer extends FragmentActivity implements FragmentProvider
                 intent.putExtra("profile", param);
                 startActivity(intent);
                 overridePendingTransition(R.anim.enter_top, R.anim.leave_bottom);
+                finish();
             }
         });
     }

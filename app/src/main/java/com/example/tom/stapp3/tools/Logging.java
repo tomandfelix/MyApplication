@@ -118,8 +118,13 @@ public class Logging {
         return uniqueInstance;
     }
 
+    public static Handler getHandler() {
+        return handler;
+    }
+
     public static void setHandler(Handler newHandler) {
         handler = newHandler;
+        Log.i("Logging", "handler set");
     }
 
     private void sendToHandler(int msg) {
@@ -371,7 +376,6 @@ public class Logging {
                 } else { // resultFirstWrite = false
 
                     if (!previousResult == isStanding) {
-                        System.out.println(Boolean.toString(isStanding));
                         // set firstWroteSitOvertime back to true
                         firstWriteSitOvertime = true;
                         warningSound = true;

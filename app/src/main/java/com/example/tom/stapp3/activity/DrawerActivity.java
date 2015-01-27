@@ -85,6 +85,7 @@ public abstract class DrawerActivity extends ServiceActivity {
                             startActivity(intent);
                             break;
                     }
+                    finish();
                 }
             }
         });

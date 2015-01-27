@@ -1,6 +1,7 @@
 package com.example.tom.stapp3.activity;
 
 import android.content.Context;
+import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -16,8 +17,10 @@ import com.example.tom.stapp3.R;
 import com.example.tom.stapp3.persistency.Challenge;
 import com.example.tom.stapp3.persistency.Quest;
 import com.example.tom.stapp3.persistency.Solo;
+import com.example.tom.stapp3.tools.Algorithms;
 
 import java.util.ArrayList;
+import java.util.Date;
 
 public class QuestList extends DrawerActivity {
     private ListView questList;
@@ -39,15 +42,26 @@ public class QuestList extends DrawerActivity {
         switch(position) {
             case SOLO_QUEST:
                 list = new ArrayList<Quest>();
-                list.add(new Solo(1, "testQuest1", "This Quest is for testing purposes only. Do not try this at home!", 1, 10, 30, Solo.EASY));
-                list.add(new Solo(2, "testQuest2", "This Quest is for testing purposes only. Do not try this at home!", 2, 20, 30, Solo.MEDIUM));
-                list.add(new Solo(3, "testQuest3", "This Quest is for testing purposes only. Do not try this at home!", 3, 30, 30, Solo.HARD));
+                list.add(new Solo(1, "testQuest1", "Stand for more than 10 seconds within 30 seconds", 1, 10, 30, Solo.EASY, new Runnable() {
+                    @Override
+                    public void run() {
+                        long now = System.currentTimeMillis();
+                        Date start = new Date(now - 30 * 1000);
+                        Date end = new Date(now);
+                        Log.i("TestQuest", Long.toString(Algorithms.millisecondsStood(getBaseContext(), start, end)));
+                    }
+                }));
+                //list.add(new Solo(2, "testQuest2", "This Quest is for testing purposes only. Do not try this at home!", 2, 20, 30, Solo.MEDIUM));
+                //list.add(new Solo(3, "testQuest3", "This Quest is for testing purposes only. Do not try this at home!", 3, 30, 30, Solo.HARD));
                 soloAdapter = new SoloQuestListAdapter(getBaseContext(), R.layout.list_item_solo_quest, list);
                 questList.setAdapter(soloAdapter);
                 questList.setOnItemClickListener(new AdapterView.OnItemClickListener() {
                     @Override
                     public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
                         Log.i("QuestList", list.get(position).toString());
+                        Intent intent = new Intent(getBaseContext(), SoloQuestDescription.class);
+                        intent.setFlags(Intent.FLAG_ACTIVITY_NO_ANIMATION);
+                        startActivity(intent);
                     }
                 });
                 break;

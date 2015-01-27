@@ -71,6 +71,10 @@ public class ShimmerService extends Service {
     public static final int SENSOR_STREAMING = 1;
     public static final int SENSOR_DISCONNECTED = 2;
 
+    public String getAddress() {
+        return address;
+    }
+
     public void removeAddress() {
         address = "";
     }
@@ -180,14 +184,12 @@ public class ShimmerService extends Service {
                     Toast.makeText(getApplicationContext(), msg.getData().getString(Shimmer.TOAST), Toast.LENGTH_SHORT).show();
                     if (msg.getData().getString(Shimmer.TOAST).equals("Device connection was lost")){
                         DatabaseHelper.getInstance(getApplicationContext()).addConnectionStatus(false);
-                        //stopStreamingAllDevices();
-                        //disconnectAllDevices();
                         if(secondaryHandler != null) {
                             secondaryHandler.obtainMessage(SENSOR_DISCONNECTED).sendToTarget();
                         }
-                        /*if(!address.equals("")){
+                        if(!address.equals("")){
                             connectShimmer(address, "Device");
-                        }*/
+                        }
                     } else if (msg.getData().getString(Shimmer.TOAST).contains("is now Streaming")) {
                         DatabaseHelper.getInstance(getApplicationContext()).addConnectionStatus(true);
                         if(secondaryHandler != null) {
@@ -200,7 +202,7 @@ public class ShimmerService extends Service {
                         }
                     } else if (msg.getData().getString(Shimmer.TOAST).contains("stopped streaming")) {
                         Log.d(TAG, "MESSAGE_STOP_STREAMING");
-                        if(address.equals("")) {
+                        if (address.equals("")) {
                             disconnectAllDevices();
                         }
                     }

@@ -62,5 +62,6 @@
     <string name="hello_world">Hello world!</string>
     <string name="title_activity_solo_list">SoloList</string>
     <string name="title_activity_challenge_list">ChallengeList</string>
+    <string name="title_activity_quest_description">QuestDescription</string>
 
 </resources>

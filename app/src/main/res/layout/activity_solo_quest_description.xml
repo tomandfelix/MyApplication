@@ -9,21 +9,22 @@
 
 
     <TextView
+        android:id="@+id/solo_quest_name"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:inputType="number"
-        android:layout_weight="0.5"
-        android:ems="10"
-        android:id="@+id/editText" />
+        android:text="Name"
+        android:textSize="20sp"/>
 
     <TextView
-        android:id="@+id/succes"
+        android:id="@+id/solo_quest_description"
         android:layout_width="match_parent"
         android:layout_height="0dip"
         android:layout_weight="0.5"
-        android:text="Press start to start the solo quest!"/>
+        android:text="Description"/>
 
     <LinearLayout
+        android:id="@+id/solo_quest_buttons"
         android:orientation="horizontal"
         android:layout_width="match_parent"
         android:layout_height="wrap_content">
@@ -32,15 +33,15 @@
             android:layout_width="0dip"
             android:layout_height="wrap_content"
             android:layout_weight="0.5"
-            android:text="start"
-            android:onClick="startButton"/>
+            android:text="Back"
+            android:onClick="backButton"/>
 
         <Button
             android:layout_width="0dip"
             android:layout_height="wrap_content"
             android:layout_weight="0.5"
-            android:text="Back"
-            android:onClick="backButton"/>
+            android:text="start"
+        android:onClick="startButton"/>
     </LinearLayout>
 
 </LinearLayout>

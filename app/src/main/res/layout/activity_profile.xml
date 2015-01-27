@@ -134,6 +134,18 @@ android:layout_height="match_parent">
                 android:layout_marginTop="@dimen/text_separation"
                 android:inputType="textPassword"/>
         </LinearLayout>
+        <RelativeLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+
+            <ImageView
+                android:id="@+id/profile_status_icon"
+                android:layout_width="100dp"
+                android:layout_height="100dp"
+                android:layout_alignParentTop="true"
+                android:layout_alignParentLeft="true"
+                android:src="@drawable/sitting"/>
+        </RelativeLayout>
     </LinearLayout>
 
     <ListView

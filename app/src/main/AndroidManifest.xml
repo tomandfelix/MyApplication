@@ -49,6 +49,10 @@
             android:name=".activity.QuestList"
             android:label="@string/title_activity_quest_view" >
         </activity>
+        <activity
+            android:name=".activity.SoloQuestDescription"
+            android:label="@string/title_activity_quest_description" >
+        </activity>
     </application>
 
 </manifest>

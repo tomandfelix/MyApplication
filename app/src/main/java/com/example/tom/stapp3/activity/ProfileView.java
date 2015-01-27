@@ -2,6 +2,8 @@ package com.example.tom.stapp3.activity;
 
 import android.content.res.TypedArray;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Message;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
@@ -20,6 +22,7 @@ import com.example.tom.stapp3.Function;
 import com.example.tom.stapp3.persistency.Profile;
 import com.example.tom.stapp3.R;
 import com.example.tom.stapp3.persistency.ServerHelper;
+import com.example.tom.stapp3.tools.Logging;
 
 /**
  * Created by Tom on 17/11/2014.
@@ -31,6 +34,24 @@ public class ProfileView extends DrawerActivity {
     private ExpandCollapse avatarGridToggle;
     private FadeInOut infoToggle;
     private boolean avatarChanged;
+    private ImageView statusIcon;
+    protected Handler loggingMessageHandler = new Handler() {
+        @Override
+        public void handleMessage(Message msg) {
+            status = msg.what;
+            switch(msg.what) {
+                case Logging.STATUS_STAND:
+                    statusIcon.setImageResource(R.drawable.standing);
+                    break;
+                case Logging.STATUS_SIT:
+                    statusIcon.setImageResource(R.drawable.sitting);
+                    break;
+                case Logging.STATUS_OVERTIME:
+                    statusIcon.setImageResource(R.drawable.sitting);
+                    break;
+            }
+        }
+    };
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -39,6 +60,7 @@ public class ProfileView extends DrawerActivity {
             savedInstanceState = new Bundle();
         }
         savedInstanceState.putInt("ListIndex", PROFILE);
+
         super.onCreate(savedInstanceState);
 
         Profile profile = getIntent().getParcelableExtra("profile");
@@ -58,6 +80,9 @@ public class ProfileView extends DrawerActivity {
                 }
             }, false);
         }
+
+        statusIcon = (ImageView) findViewById(R.id.profile_status_icon);
+
         avatarChanged = false;
         TypedArray avatars = getResources().obtainTypedArray(R.array.avatars);
         GridView avatarGridView = (GridView) findViewById(R.id.edit_avatar_grid);
@@ -122,6 +147,22 @@ public class ProfileView extends DrawerActivity {
                 return true;
             default:
                 return super.onOptionsItemSelected(item);
+        }
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        if(Logging.getHandler() != loggingMessageHandler) {
+            Logging.setHandler(loggingMessageHandler);
+        }
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        if(Logging.getHandler() == loggingMessageHandler) {
+            Logging.setHandler(null);
         }
     }
 

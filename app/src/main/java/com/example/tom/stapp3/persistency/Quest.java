@@ -9,8 +9,6 @@ import java.util.Date;
  * Created by Flixse on 27/01/2015.
  */
 public class Quest implements Parcelable {
-
-
     protected int id;
     protected String name;
     protected String description;

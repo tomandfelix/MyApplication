@@ -14,13 +14,15 @@ public class Solo extends Quest {
     public static final int EASY = 0;
     public static final int MEDIUM = 1;
     public static final int HARD = 2;
+    private Runnable validator;
 
-    public Solo( int id, String name, String description, int money, int xp, int duration, int difficulty){
+    public Solo( int id, String name, String description, int money, int xp, int duration, int difficulty, Runnable validator){
         super(id, name, description);
         this.money = money;
         this.xp = xp;
         this.duration = duration;
         this.difficulty = difficulty;
+        this.validator = validator;
     }
 
     public int getMoney() {
@@ -39,10 +41,9 @@ public class Solo extends Quest {
         return difficulty;
     }
 
-    public int[] validate(boolean won, Solo solo){
-        int[] earningsArray = {solo.getMoney(), solo.getxp()};
-        return earningsArray;
-        }
+    public Runnable getValidator() {
+        return validator;
+    }
 
     @Override
     public String toString() {

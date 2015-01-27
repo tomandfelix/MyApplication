@@ -140,9 +140,36 @@ public class DatabaseHelper extends SQLiteOpenHelper{
         }
     }
 
+    public ArrayList<DBLog> getLogsBetween(Date start, Date end) {
+        Log.i("getLogsBetween", "getting logs between " + dateToString(start) + " and " + dateToString(end));
+        String query = "SELECT " + KEY_ACTION + ", " + KEY_DATETIME + ", " + KEY_METADATA +  " FROM " + TABLE_LOGS + " WHERE " + KEY_DATETIME + " > '" + dateToString(start) + "' AND " + KEY_DATETIME + " < '" + dateToString(end) + "' ORDER BY " + KEY_ID + " ASC";
+        SQLiteDatabase db = getReadableDatabase();
+        Cursor cursor = db.rawQuery(query, null);
+        ArrayList<DBLog> result = null;
+        if(cursor != null && cursor.getCount() > 0) {
+            result = new ArrayList<>();
+            while(cursor.moveToNext()) {
+                result.add(new DBLog(cursor.getString(0), stringToDate(cursor.getString(1)), cursor.getString(2)));
+            }
+        }
+        return result;
+    }
+
     public DBLog getLastSitStand() {
         Log.i("dayStarted", "checking");
         String query = "SELECT " + KEY_ACTION + ", " + KEY_DATETIME + ", " + KEY_METADATA + " FROM " + TABLE_LOGS + " WHERE " + KEY_ACTION + " IN('" + LOG_SIT + "', '" + LOG_STAND + "') ORDER BY " + KEY_ID + " DESC LIMIT 1";
+        SQLiteDatabase db = getReadableDatabase();
+        Cursor cursor = db.rawQuery(query, null);
+        if(cursor != null && cursor.getCount() > 0) {
+            cursor.moveToFirst();
+            return new DBLog(cursor.getString(0), stringToDate(cursor.getString(1)), cursor.getString(2));
+        } else {
+            return null;
+        }
+    }
+
+    public DBLog getLastLogBefore(Date dateTime) {
+        String query = "SELECT " + KEY_ACTION + ", " + KEY_DATETIME + ", " + KEY_METADATA + " FROM " + TABLE_LOGS + " WHERE " + KEY_DATETIME + " < '" + dateToString(dateTime) + "' ORDER BY " + KEY_ID + " DESC LIMIT 1";
         SQLiteDatabase db = getReadableDatabase();
         Cursor cursor = db.rawQuery(query, null);
         if(cursor != null && cursor.getCount() > 0) {
@@ -205,7 +232,7 @@ public class DatabaseHelper extends SQLiteOpenHelper{
     }
 
     public void addSitStand(boolean standing, String metadata) {
-        Log.i("addSitStand", "standing=" + standing);
+        Log.i("addSitStand", standing ? "stand" : "sit");
         addLog(standing ? LOG_STAND : LOG_SIT, new Date(), metadata);
     }
 
