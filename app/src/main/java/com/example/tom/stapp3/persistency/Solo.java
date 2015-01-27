@@ -35,9 +35,10 @@ public class Solo extends Quest {
         return difficulty;
     }
 
-    public void validate(){
-
-    }
+    public int[] validate(boolean won, Solo solo){
+        int[] earningsArray = {solo.getMoney(), solo.getxP()};
+        return earningsArray;
+        }
 
     @Override
     public String toString() {

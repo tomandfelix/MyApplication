@@ -17,8 +17,8 @@ public class Challenge extends Quest {
         return betAmount;
     }
 
-    public void validate(){
-
+    public int validate(boolean won, Challenge challenge){
+        return challenge.getBetAmount();
     }
     @Override
     public String toString() {
