@@ -13,10 +13,12 @@
         <item>Profile</item>
         <item>Connection</item>
         <item>Leaderboard</item>
+        <item>Solo Quest</item>
+        <item>Challenge</item>
+        <item>Co-operative</item>
         <item>Settings</item>
         <item>Logout</item>
     </string-array>
-    
     <string-array name="avatar_names">
         <item>admin</item>
         <item>african_boss</item>
@@ -55,5 +57,9 @@
         <item>uncle_sam</item>
         <item>wizard</item>
     </string-array>
+
+    <string name="title_activity_quest_view">QuestView</string>
+    <string name="hello_world">Hello world!</string>
+    <string name="title_activity_solo_list">SoloList</string>
 
 </resources>
