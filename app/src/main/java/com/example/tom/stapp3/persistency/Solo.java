@@ -36,8 +36,13 @@ public class Solo extends Quest {
     }
 
     public int[] validate(boolean won, Solo solo){
-        int[] earningsArray = {solo.getMoney(), solo.getxP()};
-        return earningsArray;
+        if(won) {
+            int[] earningsArray = {solo.getMoney(), solo.getxP()};
+            return earningsArray;
+        }else{
+            int[] lost = {0,0};
+            return lost;
+        }
         }
 
     @Override
