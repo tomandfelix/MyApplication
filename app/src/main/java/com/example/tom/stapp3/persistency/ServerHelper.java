@@ -201,6 +201,7 @@ public class ServerHelper {
                 post.setEntity(new StringEntity(query.toString()));
                 HttpResponse response = client.execute(post);
                 String output = EntityUtils.toString(response.getEntity());
+                Log.d("Login", output);
                 JSONObject result = new JSONObject(output);
                 if(! result.toString().contains("{}")) {
                     prof = new Profile(result.getInt("id"), result.getString("firstname"), result.getString("lastname"), params[0], result.getString("email"),result.getInt("money"), result.getInt("experience"), result.getString("avatar"), result.getInt("rank"), new Date());

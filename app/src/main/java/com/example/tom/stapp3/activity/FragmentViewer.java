@@ -76,7 +76,7 @@ public class FragmentViewer extends FragmentActivity implements FragmentProvider
         final EditText username = (EditText) findViewById(R.id.login_username);
         final EditText password = (EditText) findViewById(R.id.login_password);
         final TextView txtView = (TextView) findViewById(R.id.succes);
-        ServerHelper.getInstance(this).getProfile(/*username.getText().toString(), password.getText().toString()*/"tomsalens", "secret", new Function<Profile>() {
+        ServerHelper.getInstance(this).getProfile(username.getText().toString(), password.getText().toString(), new Function<Profile>() {
             @Override
             public void call(Profile param) {
                         if(param != null) {
