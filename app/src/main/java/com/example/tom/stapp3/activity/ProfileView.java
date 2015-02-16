@@ -1,9 +1,14 @@
 package com.example.tom.stapp3.activity;
 
+import android.app.AlertDialog;
+import android.content.DialogInterface;
 import android.content.res.TypedArray;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
+import android.text.InputType;
+import android.text.method.PasswordTransformationMethod;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
@@ -15,8 +20,6 @@ import android.widget.GridView;
 import android.widget.ImageView;
 import android.widget.TextView;
 
-import com.example.tom.stapp3.animation.ExpandCollapse;
-import com.example.tom.stapp3.animation.FadeInOut;
 import com.example.tom.stapp3.persistency.DatabaseHelper;
 import com.example.tom.stapp3.Function;
 import com.example.tom.stapp3.persistency.Profile;
@@ -30,9 +33,6 @@ import com.example.tom.stapp3.tools.Logging;
  */
 public class ProfileView extends DrawerActivity {
     private Profile mProfile;
-    private ExpandCollapse editToggle;
-    private ExpandCollapse avatarGridToggle;
-    private FadeInOut infoToggle;
     private boolean avatarChanged;
     private ImageView statusIcon;
     protected Handler loggingMessageHandler = new Handler() {
@@ -91,17 +91,14 @@ public class ProfileView extends DrawerActivity {
         avatarGridView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
                 String newAvatar;
+                findViewById(R.id.profile_avatar).callOnClick();
                 if(!(newAvatar = getResources().getStringArray(R.array.avatar_names)[position]).equals(mProfile.getAvatar())) {
                     avatarChanged = true;
                     mProfile.setAvatar(newAvatar);
                     updateAvatarImage();
                 }
-                findViewById(R.id.profile_avatar).callOnClick();
             }
         });
-        editToggle = new ExpandCollapse(findViewById(R.id.profile_edit));
-        avatarGridToggle = new ExpandCollapse(findViewById(R.id.edit_avatar_grid));
-        infoToggle = new FadeInOut(findViewById(R.id.profile_info));
     }
 
     @Override
@@ -115,35 +112,26 @@ public class ProfileView extends DrawerActivity {
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
             case R.id.action_edit:
-                if(editToggle.isOpen()) {
+                if(findViewById(R.id.profile_edit).getVisibility() == View.GONE) {
+                    findViewById(R.id.profile_edit).setVisibility(View.VISIBLE);
+                    findViewById(R.id.profile_info).setVisibility(View.INVISIBLE);
+                    findViewById(R.id.profile_status).setVisibility(View.INVISIBLE);
+                    findViewById(R.id.profile_avatar).setOnClickListener(new View.OnClickListener() {
+                        @Override
+                        public void onClick(View v) {
+                            if(findViewById(R.id.edit_avatar_grid).getVisibility() == View.GONE) {
+                                findViewById(R.id.edit_avatar_grid).setVisibility(View.VISIBLE);
+                            } else {
+                                findViewById(R.id.edit_avatar_grid).setVisibility(View.GONE);
+                            }
+                        }
+                    });
+                } else {
+                    findViewById(R.id.profile_edit).setVisibility(View.GONE);
+                    findViewById(R.id.profile_info).setVisibility(View.VISIBLE);
+                    findViewById(R.id.profile_status).setVisibility(View.VISIBLE);
                     saveEditedInfo();
                 }
-                final Animation editToggleAnim = editToggle.getToggleAnimation();
-                editToggleAnim.setAnimationListener(new Animation.AnimationListener() {
-                    @Override
-                    public void onAnimationStart(Animation animation) {}
-
-                    @Override
-                    public void onAnimationEnd(Animation animation) {
-                        if(editToggle.isOpen()) {
-                            findViewById(R.id.profile_avatar).setOnClickListener(new View.OnClickListener() {
-                                @Override
-                                public void onClick(View v) {
-                                    avatarGridToggle.toggle();
-                                }
-                            });
-                        } else {
-                            findViewById(R.id.profile_avatar).setOnClickListener(null);
-                        }
-                    }
-
-                    @Override
-                    public void onAnimationRepeat(Animation animation) {}
-                });
-                final Animation infoToggleAnim = infoToggle.getToggleAnimation();
-                infoToggleAnim.setDuration(editToggleAnim.getDuration());
-                findViewById(R.id.profile_info).startAnimation(infoToggleAnim);
-                findViewById(R.id.profile_edit).startAnimation(editToggleAnim);
                 return true;
             default:
                 return super.onOptionsItemSelected(item);
@@ -193,22 +181,60 @@ public class ProfileView extends DrawerActivity {
         String newEmail =  ((EditText) findViewById(R.id.edit_email)).getText().toString();
         String newPassword = ((EditText) findViewById(R.id.edit_password)).getText().toString();
 
-        if(newUsername == null || newUsername.equals("") || newUsername.equals(mProfile.getUsername()))
+        if(newUsername == null || newUsername.equals("") || newUsername.equals(mProfile.getUsername())) {
             newUsername = null;
-        if(newFirstName == null || newFirstName.equals("") || newFirstName.equals(mProfile.getFirstName()))
+        } else {
+            mProfile.setUsername(newUsername);
+        }
+        if(newFirstName == null || newFirstName.equals("") || newFirstName.equals(mProfile.getFirstName())) {
             newFirstName = null;
-        if(newLastName == null || newLastName.equals("") || newLastName.equals(mProfile.getLastName()))
+        } else {
+            mProfile.setFirstName(newFirstName);
+        }
+        if(newLastName == null || newLastName.equals("") || newLastName.equals(mProfile.getLastName())) {
             newLastName = null;
-        if(newEmail == null || newEmail.equals("") || newEmail.equals(mProfile.getEmail()))
+        } else {
+            mProfile.setLastName(newLastName);
+        }
+        if(newEmail == null || newEmail.equals("") || newEmail.equals(mProfile.getEmail())) {
             newEmail = null;
+        } else {
+            mProfile.setEmail(newEmail);
+        }
         if(newPassword == null || newPassword.equals(""))
             newPassword = null;
-        String newAvatar = avatarChanged ? mProfile.getAvatar() : null;
+        final String newAvatar = avatarChanged ? mProfile.getAvatar() : null;
 
-        if(newUsername == null && newFirstName == null && newLastName == null && newEmail == null && newPassword == null) {
-            return;
-        } else {
-
+        if(newUsername != null || newFirstName != null || newLastName != null || newEmail != null || newPassword != null) {
+            if(newPassword != null) {
+                AlertDialog.Builder alert = new AlertDialog.Builder(this);
+                alert.setMessage("Please enter your current password").setTitle("Password");
+                final EditText input = new EditText(this);
+                input.setInputType(InputType.TYPE_TEXT_VARIATION_PASSWORD);
+                input.setTransformationMethod(PasswordTransformationMethod.getInstance());
+                alert.setView(input);
+                final String finalNewFirstName = newFirstName;
+                final String finalNewLastName = newLastName;
+                final String finalNewUsername = newUsername;
+                final String finalNewEmail = newEmail;
+                final String finalNewPassword = newPassword;
+                alert.setPositiveButton("Ok", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        String oldPassword = input.getText().toString();
+                        ServerHelper.getInstance(getApplicationContext()).updateProfileSettings(finalNewFirstName, finalNewLastName, finalNewUsername, finalNewEmail, newAvatar, oldPassword, finalNewPassword);
+                    }
+                });
+                alert.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        ((EditText) findViewById(R.id.edit_password)).setText(null);
+                    }
+                });
+                alert.show();
+            } else {
+                ServerHelper.getInstance(this).updateProfileSettings(newFirstName, newLastName, newUsername, newEmail, newAvatar);
+            }
         }
     }
 }

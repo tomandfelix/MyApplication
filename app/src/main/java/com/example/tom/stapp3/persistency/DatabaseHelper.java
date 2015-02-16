@@ -49,6 +49,7 @@ public class DatabaseHelper extends SQLiteOpenHelper{
     public static final String OWNER = "owner";
     public static final String NOTIF = "notification";
     public static final String TOKEN = "token";
+    public static final String LAST_ENTERED_USERNAME  = "LEU";
     public static final String LOG_SIT = "sit";
     public static final String LOG_OVERTIME = "sit_overtime";
     public static final String LOG_STAND = "stand";
@@ -92,6 +93,10 @@ public class DatabaseHelper extends SQLiteOpenHelper{
         db.insert(TABLE_SETTINGS, null, values);
         values.clear();
         values.put(KEY_SETTING, TOKEN);
+        values.put(KEY_VALUE_STRING, "");
+        db.insert(TABLE_SETTINGS, null, values);
+        values.clear();
+        values.put(KEY_SETTING, LAST_ENTERED_USERNAME);
         values.put(KEY_VALUE_STRING, "");
         db.insert(TABLE_SETTINGS, null, values);
     }
@@ -306,6 +311,8 @@ public class DatabaseHelper extends SQLiteOpenHelper{
             if(input.getLastUpdate() != null) {
                 value.put(KEY_UPDATED, dateToString(input.getLastUpdate()));
             }
+            if(value.size() == 0)
+                return;
             SQLiteDatabase db = getWritableDatabase();
             db.update(TABLE_PROFILES, value, KEY_ID + " = ?", new String[]{Integer.toString(input.getId())});
         }

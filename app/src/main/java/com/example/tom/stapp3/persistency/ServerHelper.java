@@ -62,13 +62,23 @@ public class ServerHelper {
         temp.execute(firstName, lastName, username, email, avatar, password);
     }
 
-    public void getProfile(String username, String password, Function<Profile> callback, boolean forceUpdate) {
+    public void Login(String username, String password, Function<Profile> callback, boolean forceUpdate) {
         Profile tempProf;
         if(! forceUpdate && (tempProf = DatabaseHelper.getInstance(context).getProfile(username)) != null && minutesAgo(tempProf.getLastUpdate()) < 10) {
             callback.call(tempProf);
         } else {
             GetProfile temp = new GetProfile(callback);
-            temp.execute(username, password);
+            temp.execute("password", username, password);
+        }
+    }
+
+    public void getProfile(Function<Profile> callback, boolean forceUpdate) {
+        Profile tempProf;
+        if(! forceUpdate && (tempProf = DatabaseHelper.getInstance(context).getProfile(DatabaseHelper.getInstance(context).getIntSetting(DatabaseHelper.OWNER))) != null && minutesAgo(tempProf.getLastUpdate()) < 10) {
+            callback.call(tempProf);
+        } else {
+            GetProfile temp = new GetProfile(callback);
+            temp.execute("token", Integer.toString(DatabaseHelper.getInstance(context).getIntSetting(DatabaseHelper.OWNER)), DatabaseHelper.getInstance(context).getStringSetting(DatabaseHelper.TOKEN));
         }
     }
 
@@ -127,9 +137,14 @@ public class ServerHelper {
         new UpdateMoneyAndExperience().execute(id, money, experience);
     }
 
-    public void updateProfileSettings(int id, String password, String firstname, String lastname, String username, String email, String avatar, String new_password) {
-        new UpdateProfileSettings().execute(Integer.toString(id), password, firstname, lastname, username, email, avatar, new_password);
-        DatabaseHelper.getInstance(context).updateProfile(new Profile(id, firstname, lastname, username, email, -1, -1, avatar, -1, null));
+    public void updateProfileSettings(String firstname, String lastname, String username, String email, String avatar, String password, String new_password) {
+        new UpdateProfileSettings().execute(Integer.toString(DatabaseHelper.getInstance(context).getIntSetting(DatabaseHelper.OWNER)), firstname, lastname, username, email, avatar, password, new_password);
+        DatabaseHelper.getInstance(context).updateProfile(new Profile(DatabaseHelper.getInstance(context).getIntSetting(DatabaseHelper.OWNER), firstname, lastname, username, email, -1, -1, avatar, -1, null));
+    }
+
+    public void updateProfileSettings(String firstname, String lastname, String username, String email, String avatar) {
+        new UpdateProfileSettings().execute(Integer.toString(DatabaseHelper.getInstance(context).getIntSetting(DatabaseHelper.OWNER)), firstname, lastname, username, email, avatar);
+        DatabaseHelper.getInstance(context).updateProfile(new Profile(DatabaseHelper.getInstance(context).getIntSetting(DatabaseHelper.OWNER), firstname, lastname, username, email, -1, -1, avatar, -1, null));
     }
 
     private class CreateProfile extends AsyncTask<String, Void, Profile> {
@@ -197,15 +212,27 @@ public class ServerHelper {
             JSONObject query = new JSONObject();
             Profile prof = null;
             try {
-                query.put("username", params[0]);
-                query.put("password", params[1]);
+                if(params[0].equals("token")) {
+                    query.put("id", params[1]);
+                    query.put("token", params[2]);
+                } else if(params[0].equals("password")) {
+                    query.put("username", params[1]);
+                    query.put("password", params[2]);
+                }
                 post.setEntity(new StringEntity(query.toString()));
                 HttpResponse response = client.execute(post);
                 String output = EntityUtils.toString(response.getEntity());
+                Log.d("RESPONSE", output);
                 JSONObject result = new JSONObject(output);
                 if(! result.toString().equals("{}")) {
-                    prof = new Profile(result.getInt("id"), result.getString("firstname"), result.getString("lastname"), params[0], result.getString("email"),result.getInt("money"), result.getInt("experience"), result.getString("avatar"), result.getInt("rank"), new Date());
-                    DatabaseHelper.getInstance(context).setSetting(DatabaseHelper.TOKEN, result.getString("token"));
+                    String username = "";
+                    if(params[0].equals("token")) {
+                        username = result.getString("username");
+                    } else if(params[0].equals("password")) {
+                        DatabaseHelper.getInstance(context).setSetting(DatabaseHelper.TOKEN, result.getString("token"));
+                        username = params[1];
+                    }
+                    prof = new Profile(result.getInt("id"), result.getString("firstname"), result.getString("lastname"), username, result.getString("email"),result.getInt("money"), result.getInt("experience"), result.getString("avatar"), result.getInt("rank"), new Date());
                 }
             } catch (ClientProtocolException e) {
                 Log.e("GetProfile", "Error: ClientProtocolException");
@@ -397,17 +424,21 @@ public class ServerHelper {
             JSONObject query = new JSONObject();
             try {
                 query.put("id", params[0]);
-                query.put("password", params[1]);
-                query.put("firstname", params[2]);
-                query.put("lastname", params[3]);
-                query.put("username", params[4]);
-                query.put("email", params[5]);
-                query.put("avatar", params[6]);
-                query.put("new_password", params[7]);
+                query.put("firstname", params[1]);
+                query.put("lastname", params[2]);
+                query.put("username", params[3]);
+                query.put("email", params[4]);
+                query.put("avatar", params[5]);
+                if(params.length == 8) {
+                    query.put("password", params[6]);
+                    query.put("new_password", params[7]);
+                } else if(params.length == 6) {
+                    query.put("token", DatabaseHelper.getInstance(context).getStringSetting(DatabaseHelper.TOKEN));
+                }
                 post.setEntity(new StringEntity(query.toString()));
-                HttpResponse response = client.execute(post);
-                String output = EntityUtils.toString(response.getEntity());
-                Log.e("OUTPUT", output);
+                /*HttpResponse response = */client.execute(post);
+//                String output = EntityUtils.toString(response.getEntity());
+//                Log.d("UpdateProfileSettings", output + "\n");
             } catch (ClientProtocolException e) {
                 Log.e("UpdateProfileSettings", "Error: ClientProtocolException");
             } catch (IOException e) {

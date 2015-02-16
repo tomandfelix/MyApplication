@@ -9,10 +9,11 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
+import android.widget.EditText;
 import android.widget.GridView;
 
 import com.example.tom.stapp3.R;
-import com.example.tom.stapp3.animation.ExpandCollapse;
+import com.example.tom.stapp3.persistency.DatabaseHelper;
 
 
 /**
@@ -22,7 +23,6 @@ import com.example.tom.stapp3.animation.ExpandCollapse;
 public class FragmentProvider extends Fragment {
     private int position;
     private OnFragmentInteractionListener mListener;
-    private ExpandCollapse avatarGridToggle;
 
     public interface OnFragmentInteractionListener {
         public void onFragmentInteraction(String message);
@@ -54,10 +54,11 @@ public class FragmentProvider extends Fragment {
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-        View layoutView;
+        final View layoutView;
         switch(position) {
             case 0:
                 layoutView = inflater.inflate(R.layout.fragment_login, container, false);
+                ((EditText) layoutView.findViewById(R.id.login_username)).setText(DatabaseHelper.getInstance(getActivity().getApplicationContext()).getStringSetting(DatabaseHelper.LAST_ENTERED_USERNAME));
                 break;
             case 2:
                 layoutView = inflater.inflate(R.layout.fragment_register, container, false);
@@ -66,17 +67,20 @@ public class FragmentProvider extends Fragment {
                 GridView avatarGridView = (GridView) layoutView.findViewById(R.id.new_avatar_grid);
                 AvatarGridAdapter avatarGridAdapter = new AvatarGridAdapter(getActivity(), R.layout.grid_item_avatar, avatars);
                 avatarGridView.setAdapter(avatarGridAdapter);
-                avatarGridToggle = new ExpandCollapse(avatarGridView);
                 layoutView.findViewById(R.id.new_avatar).setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View v) {
-                        avatarGridToggle.toggle();
+                        if(layoutView.findViewById(R.id.new_avatar_grid).getVisibility() == View.GONE) {
+                            layoutView.findViewById(R.id.new_avatar_grid).setVisibility(View.VISIBLE);
+                        } else {
+                            layoutView.findViewById(R.id.new_avatar_grid).setVisibility(View.GONE);
+                        }
                     }
                 });
                 avatarGridView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
                     public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                        layoutView.findViewById(R.id.new_avatar).callOnClick();
                         mListener.onFragmentInteraction(getResources().getStringArray(R.array.avatar_names)[position]);
-                        avatarGridToggle.toggle();
                     }
                 });
                 break;

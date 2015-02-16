@@ -37,14 +37,27 @@ public class FragmentViewer extends FragmentActivity implements FragmentProvider
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_start);
-        PagerAdapter mAdapter = new FragmentAdapter(getFragmentManager());
-        mPager = (ViewPager) findViewById(R.id.pager);
-        mPager.setAdapter(mAdapter);
-        mPager.setCurrentItem(1, false);
-        DatabaseHelper.getInstance(this).setReadable();
-        avatar = "manager";
-
+        String token = DatabaseHelper.getInstance(getApplicationContext()).getStringSetting(DatabaseHelper.TOKEN);
+        if(token != null && !token.equals("")) {
+            Log.d("START", "token present");
+            ServerHelper.getInstance(getApplicationContext()).getProfile(new Function<Profile>() {
+                @Override
+                public void call(Profile param) {
+                    if(param != null) {
+                        Log.d("START", "token accepted");
+                        Intent intent = new Intent(getBaseContext(), ProfileView.class);
+                        intent.putExtra("profile", param);
+                        startActivity(intent);
+                        finish();
+                    }else {
+                        Log.d("START", "token rejected");
+                        loadStart();
+                    }
+                }
+            }, true);
+        } else {
+            loadStart();
+        }
 
         /*ArrayList<DBLog> logs = new ArrayList<>();
         logs.add(new DBLog("sit", new Date(2015, 1, 27, 18, 1, 0), ""));
@@ -72,11 +85,23 @@ public class FragmentViewer extends FragmentActivity implements FragmentProvider
         Log.i("TIME_STOOD SINCE, UNTIL", Long.toString(result));*/
     }
 
-    public void loginBtn(View v) {
+    private void loadStart() {
+        setContentView(R.layout.activity_start);
+        PagerAdapter mAdapter = new FragmentAdapter(getFragmentManager());
+        mPager = (ViewPager) findViewById(R.id.pager);
+        mPager.setAdapter(mAdapter);
+        mPager.setCurrentItem(1, false);
+        DatabaseHelper.getInstance(this).setReadable();
+        avatar = "manager";
+    }
+
+    public void loginBtn(final View v) {
+        v.setEnabled(false);
         final EditText username = (EditText) findViewById(R.id.login_username);
         final EditText password = (EditText) findViewById(R.id.login_password);
         final TextView txtView = (TextView) findViewById(R.id.succes);
-        ServerHelper.getInstance(this).getProfile(username.getText().toString(), password.getText().toString(), new Function<Profile>() {
+        DatabaseHelper.getInstance(getApplicationContext()).setSetting(DatabaseHelper.LAST_ENTERED_USERNAME, username.getText().toString());
+        ServerHelper.getInstance(this).Login(username.getText().toString(), password.getText().toString(), new Function<Profile>() {
             @Override
             public void call(Profile param) {
                         if(param != null) {
@@ -89,6 +114,7 @@ public class FragmentViewer extends FragmentActivity implements FragmentProvider
                         }else {
                             txtView.setText("No such profile exist, please try again");
                             password.setText(null);
+                            v.setEnabled(true);
                         }
             }
         }, true);
