@@ -85,12 +85,11 @@ public class FragmentViewer extends FragmentActivity implements FragmentProvider
                             intent.putExtra("profile", param);
                             startActivity(intent);
                             overridePendingTransition(R.anim.enter_top, R.anim.leave_bottom);
+                            finish();
                         }else {
                             txtView.setText("No such profile exist, please try again");
-                            username.setText(null);
                             password.setText(null);
                         }
-                finish();
             }
         }, true);
     }

@@ -39,7 +39,7 @@ public class LeaderboardView extends DrawerActivity {
         savedInstanceState.putInt("ListIndex", LEADERBOARD);
         super.onCreate(savedInstanceState);
         leaderboardList = (ListView) findViewById(R.id.leaderboard_list);
-        ServerHelper.getInstance(this).getLeaderboardById(DatabaseHelper.getInstance(this).getSetting(DatabaseHelper.OWNER), new Function<ArrayList<Profile>>() {
+        ServerHelper.getInstance(this).getLeaderboardById(DatabaseHelper.getInstance(this).getIntSetting(DatabaseHelper.OWNER), new Function<ArrayList<Profile>>() {
             @Override
             public void call(ArrayList<Profile> param) {
                 list = param;
@@ -77,7 +77,7 @@ public class LeaderboardView extends DrawerActivity {
                         } else  if(position > 0 && position <= list.size()) {
                             int destId = list.get(position - 1).getId();
                             Intent intent;
-                            if(destId == DatabaseHelper.getInstance(getApplicationContext()).getSetting(DatabaseHelper.OWNER)) {
+                            if(destId == DatabaseHelper.getInstance(getApplicationContext()).getIntSetting(DatabaseHelper.OWNER)) {
                                 intent = new Intent(getBaseContext(), ProfileView.class);
                             } else {
                                 intent = new Intent(getBaseContext(), StrangerView.class);

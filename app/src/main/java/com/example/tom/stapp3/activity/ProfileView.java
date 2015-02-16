@@ -68,9 +68,9 @@ public class ProfileView extends DrawerActivity {
             mProfile = profile;
             updateVisual();
         } else {
-            mProfile = DatabaseHelper.getInstance(this).getProfile(DatabaseHelper.getInstance(this).getSetting(DatabaseHelper.OWNER));
+            mProfile = DatabaseHelper.getInstance(this).getProfile(DatabaseHelper.getInstance(this).getIntSetting(DatabaseHelper.OWNER));
             updateVisual();
-            ServerHelper.getInstance(this).getOtherProfile(DatabaseHelper.getInstance(this).getSetting(DatabaseHelper.OWNER), new Function<Profile>() {
+            ServerHelper.getInstance(this).getOtherProfile(DatabaseHelper.getInstance(this).getIntSetting(DatabaseHelper.OWNER), new Function<Profile>() {
                 @Override
                 public void call(Profile profile) {
                     if (profile != null) {

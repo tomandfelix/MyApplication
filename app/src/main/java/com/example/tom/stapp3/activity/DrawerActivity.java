@@ -14,6 +14,7 @@ import android.widget.ArrayAdapter;
 import android.widget.ListView;
 
 import com.example.tom.stapp3.R;
+import com.example.tom.stapp3.persistency.DatabaseHelper;
 
 /**
  * Created by Tom on 18/11/2014.
@@ -74,6 +75,7 @@ public abstract class DrawerActivity extends ServiceActivity {
                             startActivity(intent);
                             break;
                         case LOGOUT:
+                            DatabaseHelper.getInstance(getApplicationContext()).setSetting(DatabaseHelper.TOKEN, "");
                             intent = new Intent(getBaseContext(), FragmentViewer.class);
                             startActivity(intent);
                             overridePendingTransition(R.anim.enter_bottom, R.anim.leave_top);

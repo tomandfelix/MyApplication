@@ -158,8 +158,9 @@ public class ServerHelper {
                 HttpResponse response = client.execute(post);
                 String output = EntityUtils.toString(response.getEntity());
                 JSONObject result = new JSONObject(output);
-                if(! result.toString().contains("{}")) {
+                if(! result.toString().equals("{}")) {
                     prof = new Profile(result.getInt("id") , params[0], params[1], params[2], params[3], 0, 0, params[4], result.getInt("rank"), new Date());
+                    DatabaseHelper.getInstance(context).setSetting(DatabaseHelper.TOKEN, result.getString("token"));
                 }
             } catch (ClientProtocolException e) {
                 Log.e("CreateProfile", "Error: ClientProtocolException");
@@ -201,10 +202,10 @@ public class ServerHelper {
                 post.setEntity(new StringEntity(query.toString()));
                 HttpResponse response = client.execute(post);
                 String output = EntityUtils.toString(response.getEntity());
-                Log.d("Login", output);
                 JSONObject result = new JSONObject(output);
-                if(! result.toString().contains("{}")) {
+                if(! result.toString().equals("{}")) {
                     prof = new Profile(result.getInt("id"), result.getString("firstname"), result.getString("lastname"), params[0], result.getString("email"),result.getInt("money"), result.getInt("experience"), result.getString("avatar"), result.getInt("rank"), new Date());
+                    DatabaseHelper.getInstance(context).setSetting(DatabaseHelper.TOKEN, result.getString("token"));
                 }
             } catch (ClientProtocolException e) {
                 Log.e("GetProfile", "Error: ClientProtocolException");
@@ -249,7 +250,7 @@ public class ServerHelper {
                 HttpResponse response = client.execute(post);
                 String output = EntityUtils.toString(response.getEntity());
                 JSONObject result = new JSONObject(output);
-                if(! result.toString().contains("{}")) {
+                if(! result.toString().equals("{}")) {
                     prof = new Profile(params[0], null, null, result.getString("username"), null, result.getInt("money"), result.getInt("experience"), result.getString("avatar"), result.getInt("rank"), new Date());
                 }
             } catch (ClientProtocolException e) {
@@ -298,7 +299,7 @@ public class ServerHelper {
                 HttpResponse response = client.execute(post);
                 String output = EntityUtils.toString(response.getEntity());
                 JSONArray result = new JSONArray(output);
-                if(result.toString().contains("{}")) {
+                if(result.toString().equals("{}")) {
                     prof = null;
                 } else {
                     for (int i = 0; i < result.length(); i++) {
@@ -363,11 +364,12 @@ public class ServerHelper {
                 query.put("id", params[0]);
                 query.put("money", params[1]);
                 query.put("experience", params[2]);
+                query.put("token", DatabaseHelper.getInstance(context).getStringSetting(DatabaseHelper.TOKEN));
                 post.setEntity(new StringEntity(query.toString()));
                 HttpResponse response = client.execute(post);
                 String output = EntityUtils.toString(response.getEntity());
                 JSONObject result = new JSONObject(output);
-                if(! result.toString().contains("{}")) {
+                if(! result.toString().equals("{}") && result.getInt("rank") != -1) {
                     prof = new Profile(params[0], null, null, null, null, params[1], params[2], null, result.getInt("rank"), new Date());
                 }
             } catch (ClientProtocolException e) {

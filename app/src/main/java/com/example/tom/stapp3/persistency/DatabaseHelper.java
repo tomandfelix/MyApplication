@@ -48,6 +48,7 @@ public class DatabaseHelper extends SQLiteOpenHelper{
     private static final String KEY_VALUE_STRING = "stringValue";
     public static final String OWNER = "owner";
     public static final String NOTIF = "notification";
+    public static final String TOKEN = "token";
     public static final String LOG_SIT = "sit";
     public static final String LOG_OVERTIME = "sit_overtime";
     public static final String LOG_STAND = "stand";
@@ -88,6 +89,10 @@ public class DatabaseHelper extends SQLiteOpenHelper{
         values.clear();
         values.put(KEY_SETTING, NOTIF);
         values.put(KEY_VALUE_INT, 0);
+        db.insert(TABLE_SETTINGS, null, values);
+        values.clear();
+        values.put(KEY_SETTING, TOKEN);
+        values.put(KEY_VALUE_STRING, "");
         db.insert(TABLE_SETTINGS, null, values);
     }
 
@@ -347,7 +352,7 @@ public class DatabaseHelper extends SQLiteOpenHelper{
 
     //--------------------------------------------------------SETTINGS--------------------------------------------------------------------------
 
-    public int getSetting(String name) {
+    public int getIntSetting(String name) {
         String query = "SELECT " + KEY_VALUE_INT + " FROM " + TABLE_SETTINGS + " WHERE " + KEY_SETTING + " = ?";
         SQLiteDatabase db = getReadableDatabase();
         Cursor cursor = db.rawQuery(query, new String[]{name});
@@ -359,9 +364,28 @@ public class DatabaseHelper extends SQLiteOpenHelper{
         }
     }
 
+    public String getStringSetting(String name) {
+        String query = "SELECT " + KEY_VALUE_STRING + " FROM " + TABLE_SETTINGS + " WHERE " + KEY_SETTING + " = ?";
+        SQLiteDatabase db = getReadableDatabase();
+        Cursor cursor = db.rawQuery(query, new String[]{name});
+        if(cursor != null && cursor.getCount() > 0) {
+            cursor.moveToFirst();
+            return cursor.getString(0);
+        } else {
+            return null;
+        }
+    }
+
     public void setSetting(String name, int value) {
         ContentValues input = new ContentValues(1);
         input.put(KEY_VALUE_INT, value);
+        SQLiteDatabase db = getWritableDatabase();
+        db.update(TABLE_SETTINGS, input, KEY_SETTING + " = ?", new String[]{name});
+    }
+
+    public void setSetting(String name, String value) {
+        ContentValues input = new ContentValues(1);
+        input.put(KEY_VALUE_STRING, value);
         SQLiteDatabase db = getWritableDatabase();
         db.update(TABLE_SETTINGS, input, KEY_SETTING + " = ?", new String[]{name});
     }
