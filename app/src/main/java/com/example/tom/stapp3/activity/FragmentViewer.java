@@ -1,11 +1,11 @@
 package com.example.tom.stapp3.activity;
 
+import android.app.Fragment;
+import android.app.FragmentManager;
 import android.content.Intent;
 import android.os.Bundle;
-import android.app.Fragment;
-import android.support.v4.app.FragmentActivity;
-import android.app.FragmentManager;
 import android.support.v13.app.FragmentPagerAdapter;
+import android.support.v4.app.FragmentActivity;
 import android.support.v4.view.PagerAdapter;
 import android.support.v4.view.ViewPager;
 import android.util.Log;
@@ -14,16 +14,11 @@ import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.TextView;
 
-import com.example.tom.stapp3.persistency.DBLog;
-import com.example.tom.stapp3.persistency.DatabaseHelper;
 import com.example.tom.stapp3.Function;
-import com.example.tom.stapp3.persistency.Profile;
 import com.example.tom.stapp3.R;
+import com.example.tom.stapp3.persistency.DatabaseHelper;
+import com.example.tom.stapp3.persistency.Profile;
 import com.example.tom.stapp3.persistency.ServerHelper;
-import com.example.tom.stapp3.tools.Algorithms;
-
-import java.util.ArrayList;
-import java.util.Date;
 
 /**
  * Created by Tom on 3/11/2014.
@@ -58,6 +53,29 @@ public class FragmentViewer extends FragmentActivity implements FragmentProvider
         } else {
             loadStart();
         }
+
+        /*JSONObject request = new JSONObject();
+        try {
+            request.put("username", "tomsalens");
+            request.put("password", "secret");
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+
+        JsonObjectRequest getPerson = new JsonObjectRequest(Request.Method.POST, "http://eng.studev.groept.be/thesis/a14_stapp2/getProfile.php", request, new Response.Listener<JSONObject>() {
+            @Override
+            public void onResponse(JSONObject response) {
+                Log.d("TEST", response.toString());
+            }
+        }, new Response.ErrorListener() {
+            @Override
+            public void onErrorResponse(VolleyError error) {
+                Log.e("TEST", error.toString());
+            }
+        });
+
+        VolleyQueue.getInstance(this.getApplicationContext()).addToRequestQueue(getPerson);*/
+
 
         /*ArrayList<DBLog> logs = new ArrayList<>();
         logs.add(new DBLog("sit", new Date(2015, 1, 27, 18, 1, 0), ""));

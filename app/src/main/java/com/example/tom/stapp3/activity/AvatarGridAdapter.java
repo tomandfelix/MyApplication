@@ -13,6 +13,7 @@ import com.example.tom.stapp3.R;
 
 /**
  * Created by Tom on 15/12/2014.
+ * This class is an adapter for a gridview, it places
  */
 public class AvatarGridAdapter extends BaseAdapter {
     private TypedArray data;
@@ -45,7 +46,7 @@ public class AvatarGridAdapter extends BaseAdapter {
     public View getView(int position, View convertView, ViewGroup parent) {
         if(convertView == null) {
             LayoutInflater inflater = (LayoutInflater) context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
-            convertView = inflater.inflate(itemLayoutId, null);
+            convertView = inflater.inflate(itemLayoutId, parent, false);
         }
 
         if(getItem(position) != null) {

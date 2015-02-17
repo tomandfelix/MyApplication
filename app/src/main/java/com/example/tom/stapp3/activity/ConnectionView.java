@@ -25,8 +25,6 @@ public class ConnectionView extends DrawerActivity {
     private final static int REQUEST_ENABLE_BT = 1; //this id will be returned after the activity for enabling bluetooth finishes
     private BluetoothAdapter mBluetoothAdapter = null;
 
-    private static View startBtn;
-    private static ListView deviceList;
     private static View progress;
     private static View stopBtn;
     private static boolean progressVisible = false;
@@ -83,12 +81,12 @@ public class ConnectionView extends DrawerActivity {
             deviceNames[0] = "No devices Found";
         }
 
-        startBtn = findViewById(R.id.start_day);
+        View startBtn = findViewById(R.id.start_day);
         progress = findViewById(R.id.connection_progress);
         stopBtn = findViewById(R.id.stop_day);
 
         //Populate the listView
-        deviceList = (ListView) findViewById(R.id.paired);
+        ListView deviceList = (ListView) findViewById(R.id.paired);
         deviceList.setAdapter(new ArrayAdapter<>(this, R.layout.list_item_devices, deviceNames));
 
         deviceList.setOnItemClickListener(new AdapterView.OnItemClickListener() {

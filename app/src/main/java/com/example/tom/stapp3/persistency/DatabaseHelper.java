@@ -74,7 +74,9 @@ public class DatabaseHelper extends SQLiteOpenHelper{
     public void setReadable() {
         SQLiteDatabase db = getWritableDatabase();
         if(BuildConfig.DEBUG) {
-            new File(db.getPath()).setReadable(true, false);
+            if(!(new File(db.getPath())).setReadable(true, false)) {
+                Log.e("DatabaseHelper", "Error trying to make database transferable to pc");
+            }
         }
     }
 
@@ -349,7 +351,7 @@ public class DatabaseHelper extends SQLiteOpenHelper{
         SQLiteDatabase db = getReadableDatabase();
         Cursor cursor = db.rawQuery(query, new String[]{Integer.toString(rank)});
         if(cursor != null && cursor.getCount() == 10) {
-            prof = new ArrayList<Profile>(10);
+            prof = new ArrayList<>(10);
             while(cursor.moveToNext()) {
                 prof.add(new Profile(cursor.getInt(0), cursor.getString(1), cursor.getString(2), cursor.getString(3), cursor.getString(4), cursor.getInt(5), cursor.getInt(6), cursor.getString(7), cursor.getInt(8), stringToDate(cursor.getString(9))));
             }
