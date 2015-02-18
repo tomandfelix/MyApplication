@@ -27,11 +27,12 @@ public abstract class DrawerActivity extends ServiceActivity {
     protected final static int PROFILE = 0;
     protected final static int CONNECTION = 1;
     protected final static int LEADERBOARD = 2;
-    protected final static int SOLO_QUEST = 3;
-    protected final static int CHALLENGE = 4;
-    protected final static int CO_OPERATIVE = 5;
-    protected final static int SETTINGS = 6;
-    protected final static int LOGOUT = 7;
+    protected final static int GRAPHS = 3;
+    protected final static int SOLO_QUEST = 4;
+    protected final static int CHALLENGE = 5;
+    protected final static int CO_OPERATIVE = 6;
+    protected final static int SETTINGS = 7;
+    protected final static int LOGOUT = 8;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -63,6 +64,11 @@ public abstract class DrawerActivity extends ServiceActivity {
                             break;
                         case LEADERBOARD:
                             intent = new Intent(getBaseContext(), LeaderboardView.class);
+                            intent.setFlags(Intent.FLAG_ACTIVITY_NO_ANIMATION);
+                            startActivity(intent);
+                            break;
+                        case GRAPHS:
+                            intent = new Intent(getBaseContext(), Graph.class);
                             intent.setFlags(Intent.FLAG_ACTIVITY_NO_ANIMATION);
                             startActivity(intent);
                             break;

@@ -13,6 +13,7 @@
         <item>Profile</item>
         <item>Connection</item>
         <item>Leaderboard</item>
+        <item>Graphs</item>
         <item>Solo Quest</item>
         <item>Challenge</item>
         <item>Co-operative</item>
@@ -63,5 +64,6 @@
     <string name="title_activity_solo_list">SoloList</string>
     <string name="title_activity_challenge_list">ChallengeList</string>
     <string name="title_activity_quest_description">QuestDescription</string>
+    <string name="title_activity_graph">Graph</string>
 
 </resources>
