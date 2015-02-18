@@ -1,5 +1,6 @@
 package com.example.tom.stapp3.activity;
 
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.res.Configuration;
 import android.os.Bundle;
@@ -81,6 +82,15 @@ public abstract class DrawerActivity extends ServiceActivity {
                             startActivity(intent);
                             break;
                         case LOGOUT:
+//                            DialogInterface.OnClickListener dialogClickListener = new DialogInterface.OnClickListener() {
+//                                @Override
+//                                public void onClick(DialogInterface dialog, int which) {
+//                                    switch(which) {
+//                                        case DialogInterface.BUTTON_POSITIVE:
+//
+//                                    }
+//                                }
+//                            }
                             DatabaseHelper.getInstance(getApplicationContext()).setSetting(DatabaseHelper.TOKEN, "");
                             intent = new Intent(getBaseContext(), FragmentViewer.class);
                             startActivity(intent);

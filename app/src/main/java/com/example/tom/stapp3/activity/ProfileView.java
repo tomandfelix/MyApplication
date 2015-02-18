@@ -172,6 +172,12 @@ public class ProfileView extends DrawerActivity {
         avatar.setImageResource(avatarID);
     }
 
+    private String validateInput(String input) {
+        if(input == null || input.equals("")) {
+            return null;
+        }
+    }
+
     public void saveEditedInfo() {
         String newUsername = ((EditText) findViewById(R.id.edit_username)).getText().toString();
         String newFirstName =  ((EditText) findViewById(R.id.edit_firstname)).getText().toString();
