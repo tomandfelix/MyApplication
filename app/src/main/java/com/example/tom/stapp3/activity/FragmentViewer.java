@@ -14,7 +14,8 @@ import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.TextView;
 
-import com.example.tom.stapp3.Function;
+import com.android.volley.Response;
+import com.android.volley.VolleyError;
 import com.example.tom.stapp3.R;
 import com.example.tom.stapp3.persistency.DatabaseHelper;
 import com.example.tom.stapp3.persistency.Profile;
@@ -34,48 +35,31 @@ public class FragmentViewer extends FragmentActivity implements FragmentProvider
         super.onCreate(savedInstanceState);
         String token = DatabaseHelper.getInstance(getApplicationContext()).getStringSetting(DatabaseHelper.TOKEN);
         if(token != null && !token.equals("")) {
-            Log.d("START", "token present");
-            ServerHelper.getInstance(getApplicationContext()).getProfile(new Function<Profile>() {
+            Log.d("start", "Token present");
+            ServerHelper.getInstance(getApplicationContext()).getProfile(new ServerHelper.ResponseFunc<Profile>() {
                 @Override
-                public void call(Profile param) {
-                    if(param != null) {
-                        Log.d("START", "token accepted");
+                public void onResponse(Profile response) {
+                    if(response != null) {
+                        Log.d("start", "Token accepted");
                         Intent intent = new Intent(getBaseContext(), ProfileView.class);
-                        intent.putExtra("profile", param);
+                        intent.putExtra("profile", response);
                         startActivity(intent);
                         finish();
-                    }else {
-                        Log.d("START", "token rejected");
+                    } else {
+                        Log.d("start", "Token rejected");
                         loadStart();
                     }
                 }
+            }, new Response.ErrorListener() {
+                @Override
+                public void onErrorResponse(VolleyError error) {
+                    loadStart();
+                }
             }, true);
         } else {
+            Log.d("start", "Token absent");
             loadStart();
         }
-
-        /*JSONObject request = new JSONObject();
-        try {
-            request.put("username", "tomsalens");
-            request.put("password", "secret");
-        } catch (JSONException e) {
-            e.printStackTrace();
-        }
-
-        JsonObjectRequest getPerson = new JsonObjectRequest(Request.Method.POST, "http://eng.studev.groept.be/thesis/a14_stapp2/getProfile.php", request, new Response.Listener<JSONObject>() {
-            @Override
-            public void onResponse(JSONObject response) {
-                Log.d("TEST", response.toString());
-            }
-        }, new Response.ErrorListener() {
-            @Override
-            public void onErrorResponse(VolleyError error) {
-                Log.e("TEST", error.toString());
-            }
-        });
-
-        VolleyQueue.getInstance(this.getApplicationContext()).addToRequestQueue(getPerson);*/
-
 
         /*ArrayList<DBLog> logs = new ArrayList<>();
         logs.add(new DBLog("sit", new Date(2015, 1, 27, 18, 1, 0), ""));
@@ -119,23 +103,28 @@ public class FragmentViewer extends FragmentActivity implements FragmentProvider
         final EditText password = (EditText) findViewById(R.id.login_password);
         final TextView txtView = (TextView) findViewById(R.id.succes);
         DatabaseHelper.getInstance(getApplicationContext()).setSetting(DatabaseHelper.LAST_ENTERED_USERNAME, username.getText().toString());
-        ServerHelper.getInstance(this).Login(username.getText().toString(), password.getText().toString(), new Function<Profile>() {
+        ServerHelper.getInstance(this).login(username.getText().toString(), password.getText().toString(), new ServerHelper.ResponseFunc<Profile>() {
             @Override
-            public void call(Profile param) {
-                        if(param != null) {
-                            txtView.setText("Profile is being loaded");
-                            Intent intent = new Intent(getBaseContext(), ProfileView.class);
-                            intent.putExtra("profile", param);
-                            startActivity(intent);
-                            overridePendingTransition(R.anim.enter_top, R.anim.leave_bottom);
-                            finish();
-                        }else {
-                            txtView.setText("No such profile exist, please try again");
-                            password.setText(null);
-                            v.setEnabled(true);
-                        }
+            public void onResponse(Profile response) {
+                if(response != null) {
+                    txtView.setText("profile is being loaded");
+                    Intent intent = new Intent(getBaseContext(), ProfileView.class);
+                    intent.putExtra("profile", response);
+                    startActivity(intent);
+                    overridePendingTransition(R.anim.enter_top, R.anim.leave_bottom);
+                } else {
+                    txtView.setText("No such profile exists, please try again");
+                    password.setText(null);
+                    v.setEnabled(true);
+                }
             }
-        }, true);
+        }, new Response.ErrorListener() {
+            @Override
+            public void onErrorResponse(VolleyError error) {
+                Log.e("loginBtn", error.getMessage());
+            }
+        });
+
     }
 
 
@@ -146,14 +135,19 @@ public class FragmentViewer extends FragmentActivity implements FragmentProvider
         EditText email = (EditText) findViewById(R.id.new_email);
         EditText password = (EditText) findViewById(R.id.new_password);
 
-        ServerHelper.getInstance(this).createProfile(firstName.getText().toString(), lastName.getText().toString(), username.getText().toString(), email.getText().toString(), avatar, password.getText().toString(), new Function<Profile>() {
+        ServerHelper.getInstance(this).createProfile(firstName.getText().toString(), lastName.getText().toString(), username.getText().toString(), email.getText().toString(), avatar, password.getText().toString(), new ServerHelper.ResponseFunc<Profile>() {
             @Override
-            public void call(Profile param) {
+            public void onResponse(Profile response) {
                 Intent intent = new Intent(getBaseContext(), ProfileView.class);
-                intent.putExtra("profile", param);
+                intent.putExtra("profile", response);
                 startActivity(intent);
                 overridePendingTransition(R.anim.enter_top, R.anim.leave_bottom);
                 finish();
+            }
+        }, new Response.ErrorListener() {
+            @Override
+            public void onErrorResponse(VolleyError error) {
+                Log.d("registerBtn", error.getMessage());
             }
         });
     }

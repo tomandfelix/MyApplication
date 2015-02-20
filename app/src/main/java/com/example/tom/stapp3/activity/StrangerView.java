@@ -7,7 +7,6 @@ import android.view.MenuItem;
 import android.widget.ImageView;
 import android.widget.TextView;
 
-import com.example.tom.stapp3.Function;
 import com.example.tom.stapp3.R;
 import com.example.tom.stapp3.persistency.Profile;
 import com.example.tom.stapp3.persistency.ServerHelper;
@@ -23,12 +22,13 @@ public class StrangerView extends Activity {
             getActionBar().setDisplayHomeAsUpEnabled(true);
         }
         int strangerId = getIntent().getIntExtra("strangerId", -1);
-        ServerHelper.getInstance(this).getOtherProfile(strangerId, new Function<Profile>() {
-            @Override
-            public void call(Profile param) {
-                updateVisual(param);
-            }
-        }, false);
+        ServerHelper.getInstance(this).getOtherProfile(strangerId,
+                new ServerHelper.ResponseFunc<Profile>() {
+                    @Override
+                    public void onResponse(Profile response) {
+                        updateVisual(response);
+                    }
+                }, null, false); //TODO make this a meaningful errorListener
     }
 
     @Override

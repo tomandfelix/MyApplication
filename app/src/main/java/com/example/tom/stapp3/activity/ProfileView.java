@@ -19,7 +19,6 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.example.tom.stapp3.persistency.DatabaseHelper;
-import com.example.tom.stapp3.Function;
 import com.example.tom.stapp3.persistency.Profile;
 import com.example.tom.stapp3.R;
 import com.example.tom.stapp3.persistency.ServerHelper;
@@ -68,15 +67,16 @@ public class ProfileView extends DrawerActivity {
         } else {
             mProfile = DatabaseHelper.getInstance(this).getProfile(DatabaseHelper.getInstance(this).getIntSetting(DatabaseHelper.OWNER));
             updateVisual();
-            ServerHelper.getInstance(this).getOtherProfile(DatabaseHelper.getInstance(this).getIntSetting(DatabaseHelper.OWNER), new Function<Profile>() {
-                @Override
-                public void call(Profile profile) {
-                    if (profile != null) {
-                        mProfile = profile;
-                        updateVisual();
-                    }
-                }
-            }, false);
+            ServerHelper.getInstance(this).getOtherProfile(DatabaseHelper.getInstance(this).getIntSetting(DatabaseHelper.OWNER),
+                    new ServerHelper.ResponseFunc<Profile>() {
+                        @Override
+                        public void onResponse(Profile response) {
+                            if (response != null) {
+                                mProfile = response;
+                                updateVisual();
+                            }
+                        }
+                    }, null, false); //TODO make this a meaningful errorListener
         }
 
         statusIcon = (ImageView) findViewById(R.id.profile_status_icon);
@@ -172,42 +172,28 @@ public class ProfileView extends DrawerActivity {
         avatar.setImageResource(avatarID);
     }
 
-    private String validateInput(String input) {
-        if(input == null || input.equals("")) {
+    private String validateInput(String input, String old) {
+        if(input == null || input.equals("") || input.equals(old)) {
             return null;
+        } else {
+            return input;
         }
     }
 
     public void saveEditedInfo() {
-        String newUsername = ((EditText) findViewById(R.id.edit_username)).getText().toString();
-        String newFirstName =  ((EditText) findViewById(R.id.edit_firstname)).getText().toString();
-        String newLastName =  ((EditText) findViewById(R.id.edit_lastname)).getText().toString();
-        String newEmail =  ((EditText) findViewById(R.id.edit_email)).getText().toString();
-        String newPassword = ((EditText) findViewById(R.id.edit_password)).getText().toString();
-
-        if(newUsername == null || newUsername.equals("") || newUsername.equals(mProfile.getUsername())) {
-            newUsername = null;
-        } else {
-            mProfile.setUsername(newUsername);
-        }
-        if(newFirstName == null || newFirstName.equals("") || newFirstName.equals(mProfile.getFirstName())) {
-            newFirstName = null;
-        } else {
-            mProfile.setFirstName(newFirstName);
-        }
-        if(newLastName == null || newLastName.equals("") || newLastName.equals(mProfile.getLastName())) {
-            newLastName = null;
-        } else {
-            mProfile.setLastName(newLastName);
-        }
-        if(newEmail == null || newEmail.equals("") || newEmail.equals(mProfile.getEmail())) {
-            newEmail = null;
-        } else {
-            mProfile.setEmail(newEmail);
-        }
-        if(newPassword == null || newPassword.equals(""))
-            newPassword = null;
+        final String newUsername = validateInput(((EditText) findViewById(R.id.edit_username)).getText().toString(), mProfile.getUsername());
+        final String newFirstName =  validateInput(((EditText) findViewById(R.id.edit_firstname)).getText().toString(), mProfile.getFirstName());
+        final String newLastName =  validateInput(((EditText) findViewById(R.id.edit_lastname)).getText().toString(), mProfile.getLastName());
+        final String newEmail =  validateInput(((EditText) findViewById(R.id.edit_email)).getText().toString(), mProfile.getEmail());
+        final String newPassword = validateInput(((EditText) findViewById(R.id.edit_password)).getText().toString(), "");
         final String newAvatar = avatarChanged ? mProfile.getAvatar() : null;
+
+        ((EditText) findViewById(R.id.edit_password)).setText("");
+
+        if(newUsername != null) mProfile.setUsername(newUsername);
+        if(newFirstName != null) mProfile.setFirstName(newFirstName);
+        if(newLastName != null) mProfile.setLastName(newLastName);
+        if(newEmail != null) mProfile.setEmail(newEmail);
 
         if(newUsername != null || newFirstName != null || newLastName != null || newEmail != null || newPassword != null) {
             if(newPassword != null) {
@@ -217,16 +203,11 @@ public class ProfileView extends DrawerActivity {
                 input.setInputType(InputType.TYPE_TEXT_VARIATION_PASSWORD);
                 input.setTransformationMethod(PasswordTransformationMethod.getInstance());
                 alert.setView(input);
-                final String finalNewFirstName = newFirstName;
-                final String finalNewLastName = newLastName;
-                final String finalNewUsername = newUsername;
-                final String finalNewEmail = newEmail;
-                final String finalNewPassword = newPassword;
                 alert.setPositiveButton("Ok", new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
                         String oldPassword = input.getText().toString();
-                        ServerHelper.getInstance(getApplicationContext()).updateProfileSettings(finalNewFirstName, finalNewLastName, finalNewUsername, finalNewEmail, newAvatar, oldPassword, finalNewPassword);
+                        ServerHelper.getInstance(getApplicationContext()).updateProfileSettings(newFirstName, newLastName, newUsername, newEmail, newAvatar, oldPassword, newPassword, null); //TODO make this a meaningful errorListener
                     }
                 });
                 alert.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
@@ -237,7 +218,7 @@ public class ProfileView extends DrawerActivity {
                 });
                 alert.show();
             } else {
-                ServerHelper.getInstance(this).updateProfileSettings(newFirstName, newLastName, newUsername, newEmail, newAvatar);
+                ServerHelper.getInstance(this).updateProfileSettings(newFirstName, newLastName, newUsername, newEmail, newAvatar, null); //TODO make this a meaningful errorListener
             }
         }
     }

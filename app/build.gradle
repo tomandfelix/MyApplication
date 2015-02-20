@@ -27,6 +27,6 @@ dependencies {
     compile 'java3d:vecmath:1.+'
     compile 'org.apache.commons:commons-math:2.+'
     compile 'com.google.guava:guava:18.+'
-    compile 'com.mcxiaoke.volley:library:1.+'
+    compile 'com.android.volley:volley-debug@aar'
     compile files('libs/mpandroidchartlibrary-1-7-4.jar')
 }
