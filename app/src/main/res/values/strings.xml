@@ -19,6 +19,7 @@
         <item>Co-operative</item>
         <item>Settings</item>
         <item>Logout</item>
+        <item>Internet connection</item>
     </string-array>
     <string-array name="avatar_names">
         <item>admin</item>
@@ -65,5 +66,6 @@
     <string name="title_activity_challenge_list">ChallengeList</string>
     <string name="title_activity_quest_description">QuestDescription</string>
     <string name="title_activity_graph">Graph</string>
+    <string name="title_activity_internet__connection">Internet_Connection</string>
 
 </resources>
