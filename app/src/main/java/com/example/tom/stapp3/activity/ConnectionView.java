@@ -1,15 +1,19 @@
 package com.example.tom.stapp3.activity;
 
 import android.app.Activity;
+import android.app.AlertDialog;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
+import android.util.Log;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
+import android.widget.EditText;
 import android.widget.ListView;
 import android.widget.Toast;
 
@@ -18,6 +22,8 @@ import com.example.tom.stapp3.service.ShimmerService;
 import com.example.tom.stapp3.persistency.DatabaseHelper;
 import com.example.tom.stapp3.tools.Logging;
 
+import java.lang.ref.WeakReference;
+import java.util.ArrayList;
 import java.util.Set;
 
 public class ConnectionView extends DrawerActivity {
@@ -28,36 +34,16 @@ public class ConnectionView extends DrawerActivity {
     private static View progress;
     private static View stopBtn;
     private static boolean progressVisible = false;
-    private String[] deviceNames;
+    private ArrayList<String> deviceNames;
+    private ArrayList<BluetoothDevice> shimmerDevices = null;
+    private ArrayAdapter<String> deviceNamesAdapter;
 
-    private static Handler serviceMessageHandler = new Handler() {
-        @Override
-        public void handleMessage(Message msg) {
-            switch(msg.what) {
-                case ShimmerService.SENSOR_STREAMING:
-                    if (progressVisible) {
-                        progressVisible = false;
-                        progress.setVisibility(View.INVISIBLE);
-                        stopBtn.setVisibility(View.VISIBLE);
-                    }
-                    break;
-                case ShimmerService.SENSOR_DISCONNECTED:
-                    if(stopBtn.getVisibility() == View.VISIBLE) {
-                        stopBtn.setVisibility(View.INVISIBLE);
-                        progress.setVisibility(View.VISIBLE);
-                    }
-                    break;
-            }
-        }
-    };
+    private final Handler serviceMessageHandler = new ConnectionHandler(this);
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         setContentView(R.layout.activity_connection);
-        if(savedInstanceState == null) {
-            savedInstanceState = new Bundle();
-        }
-        savedInstanceState.putInt("ListIndex", CONNECTION);
+        index = CONNECTION;
         super.onCreate(savedInstanceState);
         mService.setSecondaryHandler(serviceMessageHandler);
 
@@ -70,15 +56,22 @@ public class ConnectionView extends DrawerActivity {
         //Get paired devices and add their address to the list
         Set<BluetoothDevice> pairedDevices = mBluetoothAdapter.getBondedDevices();
         if(pairedDevices.size() > 0) {
-            deviceNames = new String[pairedDevices.size()];
-            int i = 0;
-            for(BluetoothDevice d : pairedDevices) {
-                deviceNames[i] = d.getAddress();
-                i++;
+            deviceNames = new ArrayList<>();
+            shimmerDevices = new ArrayList<>();
+            for(BluetoothDevice d:pairedDevices) {
+                if(d.getName().contains("RN42")) {
+                    shimmerDevices.add(d);
+                    String friendlyName = DatabaseHelper.getInstance(this).getFriendlyName(d.getAddress());
+                    if(friendlyName == null) {
+                        deviceNames.add(d.getName());
+                    } else {
+                        deviceNames.add(friendlyName);
+                    }
+                }
             }
         } else {
-            deviceNames = new String[1];
-            deviceNames[0] = "No devices Found";
+            deviceNames = new ArrayList<>();
+            deviceNames.add("No devices Found");
         }
 
         View startBtn = findViewById(R.id.start_day);
@@ -86,19 +79,41 @@ public class ConnectionView extends DrawerActivity {
         stopBtn = findViewById(R.id.stop_day);
 
         //Populate the listView
-        ListView deviceList = (ListView) findViewById(R.id.paired);
-        deviceList.setAdapter(new ArrayAdapter<>(this, R.layout.list_item_devices, deviceNames));
+        final ListView deviceList = (ListView) findViewById(R.id.paired);
+        deviceNamesAdapter = new ArrayAdapter<>(this, R.layout.list_item_devices, deviceNames);
+        deviceList.setAdapter(deviceNamesAdapter);
 
-        deviceList.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-            @Override
-            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                String bluetoothAddress = deviceNames[position];
-                mService.connectShimmer(bluetoothAddress, "Device");
-                findViewById(R.id.paired).setVisibility(View.INVISIBLE);
-                progress.setVisibility(View.VISIBLE);
-                progressVisible = true;
-            }
-        });
+        if(shimmerDevices != null && shimmerDevices.size() > 0) {
+            deviceList.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+                @Override
+                public void onItemClick(AdapterView<?> parent, View view, final int position, long id) {
+                    final String bluetoothAddress = shimmerDevices.get(position).getAddress();
+                    mService.connectShimmer(bluetoothAddress, "Device");
+                    findViewById(R.id.paired).setVisibility(View.INVISIBLE);
+                    progress.setVisibility(View.VISIBLE);
+                    progressVisible = true;
+
+                    if(DatabaseHelper.getInstance(getApplicationContext()).getFriendlyName(shimmerDevices.get(position).getAddress()) == null) {
+                        AlertDialog.Builder alert = new AlertDialog.Builder(ConnectionView.this);
+                        alert.setMessage("This is your first time connecting to this sensor, please provide a friendly name for this device").setTitle("Friendly Name");
+                        final EditText input = new EditText(ConnectionView.this);
+                        input.setSingleLine();
+                        alert.setView(input);
+                        alert.setPositiveButton("Ok", new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialog, int which) {
+                                String friendlyName = input.getText().toString();
+                                Log.d("onClick", "setting pos " + position + " to " + friendlyName);
+                                deviceNames.set(position, friendlyName);
+                                deviceNamesAdapter.notifyDataSetChanged();
+                                DatabaseHelper.getInstance(getApplicationContext()).setFriendlyName(bluetoothAddress, friendlyName);
+                            }
+                        });
+                        alert.show();
+                    }
+                }
+            });
+        }
 
         if(DatabaseHelper.getInstance(this).dayStarted() == null) {
             startBtn.setVisibility(View.VISIBLE);
@@ -155,12 +170,41 @@ public class ConnectionView extends DrawerActivity {
 
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
-        if(requestCode == REQUEST_ENABLE_BT) {
-            if(resultCode == Activity.RESULT_OK) {
+        if (requestCode == REQUEST_ENABLE_BT) {
+            if (resultCode == Activity.RESULT_OK) {
                 Toast.makeText(this, "Bluetooth is now enabled", Toast.LENGTH_SHORT).show();
             } else {
                 Toast.makeText(this, "Bluetooth not enabled\nExiting...", Toast.LENGTH_SHORT).show();
                 finish();
+            }
+        }
+    }
+
+    private static class ConnectionHandler extends Handler{
+        private final WeakReference<ConnectionView> mConnectionView;
+
+        public ConnectionHandler(ConnectionView aConnectionView) {
+            mConnectionView = new WeakReference<>(aConnectionView);
+        }
+
+        @Override
+        public void handleMessage(Message msg) {
+            if(mConnectionView.get() != null) {
+                switch (msg.what) {
+                    case ShimmerService.SENSOR_STREAMING:
+                        if (progressVisible) {
+                            progressVisible = false;
+                            progress.setVisibility(View.INVISIBLE);
+                            stopBtn.setVisibility(View.VISIBLE);
+                        }
+                        break;
+                    case ShimmerService.SENSOR_DISCONNECTED:
+                        if (stopBtn.getVisibility() == View.VISIBLE) {
+                            stopBtn.setVisibility(View.INVISIBLE);
+                            progress.setVisibility(View.VISIBLE);
+                        }
+                        break;
+                }
             }
         }
     }
