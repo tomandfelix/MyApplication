@@ -12,7 +12,7 @@ import com.example.tom.stapp3.persistency.Profile;
 import com.example.tom.stapp3.persistency.ServerHelper;
 
 
-public class StrangerView extends Activity {
+public class StrangerView extends ServiceActivity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {

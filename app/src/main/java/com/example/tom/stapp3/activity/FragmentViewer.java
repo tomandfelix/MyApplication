@@ -41,7 +41,7 @@ public class FragmentViewer extends FragmentActivity implements FragmentProvider
                 public void onResponse(Profile response) {
                     if(response != null) {
                         Log.d("start", "Token accepted");
-                        Intent intent = new Intent(getBaseContext(), ProfileView.class);
+                        Intent intent = new Intent(FragmentViewer.this, ProfileView.class);
                         intent.putExtra("profile", response);
                         startActivity(intent);
                         finish();
@@ -108,10 +108,11 @@ public class FragmentViewer extends FragmentActivity implements FragmentProvider
             public void onResponse(Profile response) {
                 if(response != null) {
                     txtView.setText("profile is being loaded");
-                    Intent intent = new Intent(getBaseContext(), ProfileView.class);
+                    Intent intent = new Intent(FragmentViewer.this, ProfileView.class);
                     intent.putExtra("profile", response);
                     startActivity(intent);
                     overridePendingTransition(R.anim.enter_top, R.anim.leave_bottom);
+                    finish();
                 } else {
                     txtView.setText("No such profile exists, please try again");
                     password.setText(null);
@@ -138,7 +139,7 @@ public class FragmentViewer extends FragmentActivity implements FragmentProvider
         ServerHelper.getInstance(this).createProfile(firstName.getText().toString(), lastName.getText().toString(), username.getText().toString(), email.getText().toString(), avatar, password.getText().toString(), new ServerHelper.ResponseFunc<Profile>() {
             @Override
             public void onResponse(Profile response) {
-                Intent intent = new Intent(getBaseContext(), ProfileView.class);
+                Intent intent = new Intent(FragmentViewer.this, ProfileView.class);
                 intent.putExtra("profile", response);
                 startActivity(intent);
                 overridePendingTransition(R.anim.enter_top, R.anim.leave_bottom);

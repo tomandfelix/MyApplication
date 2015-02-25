@@ -1,6 +1,8 @@
 package com.example.tom.stapp3.activity;
 
+import android.app.AlertDialog;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
 import android.view.LayoutInflater;
@@ -13,6 +15,8 @@ import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.TextView;
 
+import com.android.volley.Response;
+import com.android.volley.VolleyError;
 import com.example.tom.stapp3.persistency.DatabaseHelper;
 import com.example.tom.stapp3.persistency.Profile;
 import com.example.tom.stapp3.R;
@@ -28,22 +32,21 @@ public class LeaderboardView extends DrawerActivity {
     private ListView leaderboardList;
     private LeaderboardListAdapter adapter;
     private ArrayList<Profile> list;
+    private Context context;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
         setContentView(R.layout.activity_leaderboard);
-        if(savedInstanceState == null) {
-            savedInstanceState = new Bundle();
-        }
-        savedInstanceState.putInt("ListIndex", LEADERBOARD);
+        index = LEADERBOARD;
         super.onCreate(savedInstanceState);
         leaderboardList = (ListView) findViewById(R.id.leaderboard_list);
+        context = this;
         ServerHelper.getInstance(this).getLeaderboardById(DatabaseHelper.getInstance(this).getIntSetting(DatabaseHelper.OWNER),
                 new ServerHelper.ResponseFunc<ArrayList<Profile>>() {
                     @Override
                     public void onResponse(ArrayList<Profile> response) {
                         list = response;
-                        adapter = new LeaderboardListAdapter(getBaseContext(), R.layout.list_item_leaderboard, list);
+                        adapter = new LeaderboardListAdapter(LeaderboardView.this, R.layout.list_item_leaderboard, list);
                         View header = getLayoutInflater().inflate(R.layout.list_head_foot_leaderboard, leaderboardList, false);
                         TextView head = (TextView) header.findViewById(R.id.head_foot_text);
                         head.setText("Load 10 higher ranks");
@@ -66,7 +69,7 @@ public class LeaderboardView extends DrawerActivity {
                                                     list.addAll(0, response);
                                                     ((ArrayAdapter) ((HeaderViewListAdapter) leaderboardList.getAdapter()).getWrappedAdapter()).notifyDataSetChanged();
                                                 }
-                                            }, null, false); //TODO make this a meaningful errorListener
+                                            }, null, false);
                                 } else if (position == list.size() + 1 && (endRank = list.get(list.size() - 1).getRank()) % 10 == 0) {
                                     ServerHelper.getInstance(getApplicationContext()).getLeaderboardByRank(endRank + 1,
                                             new ServerHelper.ResponseFunc<ArrayList<Profile>>() {
@@ -75,14 +78,14 @@ public class LeaderboardView extends DrawerActivity {
                                                     list.addAll(response);
                                                     ((ArrayAdapter) ((HeaderViewListAdapter) leaderboardList.getAdapter()).getWrappedAdapter()).notifyDataSetChanged();
                                                 }
-                                            }, null, false); //TODO make this a meaningful errorListener
+                                            }, null, false);
                                 } else  if(position > 0 && position <= list.size()) {
                                     int destId = list.get(position - 1).getId();
                                     Intent intent;
                                     if(destId == DatabaseHelper.getInstance(getApplicationContext()).getIntSetting(DatabaseHelper.OWNER)) {
-                                        intent = new Intent(getBaseContext(), ProfileView.class);
+                                        intent = new Intent(LeaderboardView.this, ProfileView.class);
                                     } else {
-                                        intent = new Intent(getBaseContext(), StrangerView.class);
+                                        intent = new Intent(LeaderboardView.this, StrangerView.class);
                                         intent.putExtra("strangerId", destId);
                                     }
                                     startActivity(intent);
@@ -91,7 +94,20 @@ public class LeaderboardView extends DrawerActivity {
                             }
                         });
                     }
-                }, null, false); //TODO make this a meaningful errorListener
+                }, new Response.ErrorListener() {
+                    @Override
+                    public void onErrorResponse(VolleyError volleyError) {
+                        final AlertDialog alertDialog = new AlertDialog.Builder(context).create();
+                        alertDialog.setMessage("It seems like an error occured, please logout and try again");
+                        alertDialog.setButton("Dismiss", new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialog, int which) {
+                                alertDialog.dismiss();
+                            }
+                        });
+                        alertDialog.show();
+                    }
+                }, false);
     }
 
     private class LeaderboardListAdapter extends ArrayAdapter<Profile> {

@@ -18,11 +18,15 @@ import android.widget.GridView;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import com.android.volley.Response;
+import com.android.volley.VolleyError;
 import com.example.tom.stapp3.persistency.DatabaseHelper;
 import com.example.tom.stapp3.persistency.Profile;
 import com.example.tom.stapp3.R;
 import com.example.tom.stapp3.persistency.ServerHelper;
 import com.example.tom.stapp3.tools.Logging;
+
+import java.lang.ref.WeakReference;
 
 /**
  * Created by Tom on 17/11/2014.
@@ -31,35 +35,14 @@ import com.example.tom.stapp3.tools.Logging;
 public class ProfileView extends DrawerActivity {
     private Profile mProfile;
     private boolean avatarChanged;
-    private ImageView statusIcon;
-    protected Handler loggingMessageHandler = new Handler() {
-        @Override
-        public void handleMessage(Message msg) {
-            status = msg.what;
-            switch(msg.what) {
-                case Logging.STATUS_STAND:
-                    statusIcon.setImageResource(R.drawable.standing);
-                    break;
-                case Logging.STATUS_SIT:
-                    statusIcon.setImageResource(R.drawable.sitting);
-                    break;
-                case Logging.STATUS_OVERTIME:
-                    statusIcon.setImageResource(R.drawable.sitting);
-                    break;
-            }
-        }
-    };
+    private static ImageView statusIcon;
+    private Handler loggingMessageHandler = new ProfileHandler(this);
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
         setContentView(R.layout.activity_profile);
-        if (savedInstanceState == null) {
-            savedInstanceState = new Bundle();
-        }
-        savedInstanceState.putInt("ListIndex", PROFILE);
-
+        index = PROFILE;
         super.onCreate(savedInstanceState);
-
         Profile profile = getIntent().getParcelableExtra("profile");
         if (profile != null) {
             mProfile = profile;
@@ -67,16 +50,28 @@ public class ProfileView extends DrawerActivity {
         } else {
             mProfile = DatabaseHelper.getInstance(this).getProfile(DatabaseHelper.getInstance(this).getIntSetting(DatabaseHelper.OWNER));
             updateVisual();
-            ServerHelper.getInstance(this).getOtherProfile(DatabaseHelper.getInstance(this).getIntSetting(DatabaseHelper.OWNER),
-                    new ServerHelper.ResponseFunc<Profile>() {
+            ServerHelper.getInstance(this).getProfile(new ServerHelper.ResponseFunc<Profile>() {
+                @Override
+                public void onResponse(Profile response) {
+                    if (response != null) {
+                        mProfile = response;
+                        updateVisual();
+                    }
+                }
+            }, new Response.ErrorListener() {
+                @Override
+                public void onErrorResponse(VolleyError volleyError) {
+                    final AlertDialog alertDialog = new AlertDialog.Builder(ProfileView.this).create();
+                    alertDialog.setMessage("It seems like an error occured, please logout and try again");
+                    alertDialog.setButton("Dismiss", new DialogInterface.OnClickListener() {
                         @Override
-                        public void onResponse(Profile response) {
-                            if (response != null) {
-                                mProfile = response;
-                                updateVisual();
-                            }
+                        public void onClick(DialogInterface dialog, int which) {
+                            alertDialog.dismiss();
                         }
-                    }, null, false); //TODO make this a meaningful errorListener
+                    });
+                    alertDialog.show();
+                }
+            }, true);
         }
 
         statusIcon = (ImageView) findViewById(R.id.profile_status_icon);
@@ -219,6 +214,32 @@ public class ProfileView extends DrawerActivity {
                 alert.show();
             } else {
                 ServerHelper.getInstance(this).updateProfileSettings(newFirstName, newLastName, newUsername, newEmail, newAvatar, null); //TODO make this a meaningful errorListener
+            }
+        }
+    }
+
+    private static class ProfileHandler extends Handler {
+        private final WeakReference<ProfileView> mProfileView;
+
+        public ProfileHandler(ProfileView aProfileView) {
+            mProfileView = new WeakReference<>(aProfileView);
+        }
+
+        @Override
+        public void handleMessage(Message msg) {
+            if(mProfileView.get() != null) {
+                status = msg.what;
+                switch (msg.what) {
+                    case Logging.STATUS_STAND:
+                        statusIcon.setImageResource(R.drawable.standing);
+                        break;
+                    case Logging.STATUS_SIT:
+                        statusIcon.setImageResource(R.drawable.sitting);
+                        break;
+                    case Logging.STATUS_OVERTIME:
+                        statusIcon.setImageResource(R.drawable.sitting);
+                        break;
+                }
             }
         }
     }

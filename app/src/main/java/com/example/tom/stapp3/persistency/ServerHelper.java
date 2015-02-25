@@ -50,7 +50,7 @@ public class ServerHelper {
 
     public static ServerHelper getInstance(Context context) {
         if(uniqueInstance == null) {
-            uniqueInstance = new ServerHelper(context);
+            uniqueInstance = new ServerHelper(context.getApplicationContext());
         }
         return uniqueInstance;
     }

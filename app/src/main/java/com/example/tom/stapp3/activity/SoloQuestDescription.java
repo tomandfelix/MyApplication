@@ -31,7 +31,7 @@ public class SoloQuestDescription extends ServiceActivity {
                 long now = System.currentTimeMillis();
                 Date start = new Date(now - 30 * 1000);
                 Date end = new Date(now);
-                long result = Algorithms.millisecondsStood(getBaseContext(), start, end);
+                long result = Algorithms.millisecondsStood(SoloQuestDescription.this, start, end);
                 Log.i("TestQuest", Long.toString(result));
                 if(result > 10000) {
                     description.setText("YOU WON!");
@@ -45,7 +45,7 @@ public class SoloQuestDescription extends ServiceActivity {
     }
 
     public void backButton(View v) {
-        Intent intent = new Intent(getBaseContext(), QuestList.class);
+        Intent intent = new Intent(SoloQuestDescription.this, QuestList.class);
         intent.putExtra("Position", 3);
         intent.setFlags(Intent.FLAG_ACTIVITY_NO_ANIMATION);
         startActivity(intent);

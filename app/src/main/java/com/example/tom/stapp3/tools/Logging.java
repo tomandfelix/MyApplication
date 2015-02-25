@@ -113,7 +113,7 @@ public class Logging {
 
     public static Logging getInstance(Context context) {
         if (uniqueInstance == null) {
-            uniqueInstance = new Logging(context);
+            uniqueInstance = new Logging(context.getApplicationContext());
         }
         return uniqueInstance;
     }

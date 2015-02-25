@@ -1,8 +1,6 @@
 package com.example.tom.stapp3.activity;
 
 import android.os.Bundle;
-import android.view.Menu;
-import android.view.MenuItem;
 
 import com.example.tom.stapp3.R;
 import com.github.mikephil.charting.charts.LineChart;
@@ -18,10 +16,7 @@ public class Graph extends DrawerActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         setContentView(R.layout.activity_graph);
-        if (savedInstanceState == null) {
-            savedInstanceState = new Bundle();
-        }
-        savedInstanceState.putInt("ListIndex", GRAPHS);
+        index = GRAPHS;
         super.onCreate(savedInstanceState);
         LineChart chart = (LineChart) findViewById(R.id.chart);
         chart.setDescription("Daily score");

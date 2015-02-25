@@ -30,10 +30,7 @@ public class QuestList extends DrawerActivity {
     protected void onCreate(Bundle savedInstanceState) {
         setContentView(R.layout.activity_quest_list);
         int position = getIntent().getExtras().getInt("Position");
-        if(savedInstanceState == null) {
-            savedInstanceState = new Bundle();
-        }
-        savedInstanceState.putInt("ListIndex", position);
+        index = position;
         super.onCreate(savedInstanceState);
         ListView questList = (ListView) findViewById(R.id.quest_list);
         switch(position) {
@@ -45,18 +42,18 @@ public class QuestList extends DrawerActivity {
                         long now = System.currentTimeMillis();
                         Date start = new Date(now - 30 * 1000);
                         Date end = new Date(now);
-                        Log.i("TestQuest", Long.toString(Algorithms.millisecondsStood(getBaseContext(), start, end)));
+                        Log.i("TestQuest", Long.toString(Algorithms.millisecondsStood(QuestList.this, start, end)));
                     }
                 }));
                 //list.add(new Solo(2, "testQuest2", "This Quest is for testing purposes only. Do not try this at home!", 2, 20, 30, Solo.MEDIUM));
                 //list.add(new Solo(3, "testQuest3", "This Quest is for testing purposes only. Do not try this at home!", 3, 30, 30, Solo.HARD));
-                SoloQuestListAdapter soloAdapter = new SoloQuestListAdapter(getBaseContext(), R.layout.list_item_solo_quest, list);
+                SoloQuestListAdapter soloAdapter = new SoloQuestListAdapter(this, R.layout.list_item_solo_quest, list);
                 questList.setAdapter(soloAdapter);
                 questList.setOnItemClickListener(new AdapterView.OnItemClickListener() {
                     @Override
                     public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
                         Log.i("QuestList", list.get(position).toString());
-                        Intent intent = new Intent(getBaseContext(), SoloQuestDescription.class);
+                        Intent intent = new Intent(QuestList.this, SoloQuestDescription.class);
                         intent.setFlags(Intent.FLAG_ACTIVITY_NO_ANIMATION);
                         startActivity(intent);
                     }
@@ -67,7 +64,7 @@ public class QuestList extends DrawerActivity {
                 list.add(new Challenge(1, "testChallenge1", "This Challenge is for testing purposes only. Do not try this at home!", 2));
                 list.add(new Challenge(2, "testChallenge2", "This Challenge is for testing purposes only. Do not try this at home!", 2));
                 list.add(new Challenge(3, "testChallenge3", "This Challenge is for testing purposes only. Do not try this at home!", 5));
-                ChallengeListAdapter challengeAdapter = new ChallengeListAdapter(getBaseContext(), R.layout.list_item_challenge, list);
+                ChallengeListAdapter challengeAdapter = new ChallengeListAdapter(this, R.layout.list_item_challenge, list);
                 questList.setAdapter(challengeAdapter);
                 questList.setOnItemClickListener(new AdapterView.OnItemClickListener() {
                     @Override

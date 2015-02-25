@@ -24,7 +24,7 @@ import com.example.tom.stapp3.persistency.DatabaseHelper;
 public abstract class DrawerActivity extends ServiceActivity {
     protected String[] menuItems;
     protected ActionBarDrawerToggle toggle;
-    protected int index;
+    protected static int index;
     protected final static int PROFILE = 0;
     protected final static int CONNECTION = 1;
     protected final static int LEADERBOARD = 2;
@@ -34,11 +34,11 @@ public abstract class DrawerActivity extends ServiceActivity {
     protected final static int CO_OPERATIVE = 6;
     protected final static int SETTINGS = 7;
     protected final static int LOGOUT = 8;
+    protected final static int INTERNET_CONNECTION = 9;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        index = savedInstanceState.getInt("ListIndex");
 
         menuItems = getResources().getStringArray(R.array.sideMenu);
         if(getActionBar() != null) {
@@ -59,24 +59,24 @@ public abstract class DrawerActivity extends ServiceActivity {
                     Intent intent;
                     switch(position) {
                         case CONNECTION:
-                            intent = new Intent(getBaseContext(), ConnectionView.class);
+                            intent = new Intent(DrawerActivity.this, ConnectionView.class);
                             intent.setFlags(Intent.FLAG_ACTIVITY_NO_ANIMATION);
                             startActivity(intent);
                             break;
                         case LEADERBOARD:
-                            intent = new Intent(getBaseContext(), LeaderboardView.class);
+                            intent = new Intent(DrawerActivity.this, LeaderboardView.class);
                             intent.setFlags(Intent.FLAG_ACTIVITY_NO_ANIMATION);
                             startActivity(intent);
                             break;
                         case GRAPHS:
-                            intent = new Intent(getBaseContext(), Graph.class);
+                            intent = new Intent(DrawerActivity.this, Graph.class);
                             intent.setFlags(Intent.FLAG_ACTIVITY_NO_ANIMATION);
                             startActivity(intent);
                             break;
                         case SOLO_QUEST:
                         case CHALLENGE:
                         case CO_OPERATIVE:
-                            intent = new Intent(getBaseContext(), QuestList.class);
+                            intent = new Intent(DrawerActivity.this, QuestList.class);
                             intent.putExtra("Position", position);
                             intent.setFlags(Intent.FLAG_ACTIVITY_NO_ANIMATION);
                             startActivity(intent);
@@ -92,13 +92,18 @@ public abstract class DrawerActivity extends ServiceActivity {
 //                                }
 //                            }
                             DatabaseHelper.getInstance(getApplicationContext()).setSetting(DatabaseHelper.TOKEN, "");
-                            intent = new Intent(getBaseContext(), FragmentViewer.class);
+                            intent = new Intent(DrawerActivity.this, FragmentViewer.class);
                             startActivity(intent);
                             overridePendingTransition(R.anim.enter_bottom, R.anim.leave_top);
                             break;
+                        case INTERNET_CONNECTION:
+                            intent = new Intent(getBaseContext(), Internet_Connection.class);
+                            intent.setFlags(Intent.FLAG_ACTIVITY_NO_ANIMATION);
+                            startActivity(intent);
+                            break;
                         case PROFILE:
                         default:
-                            intent = new Intent(getBaseContext(), ProfileView.class);
+                            intent = new Intent(DrawerActivity.this, ProfileView.class);
                             intent.setFlags(Intent.FLAG_ACTIVITY_NO_ANIMATION);
                             startActivity(intent);
                             break;

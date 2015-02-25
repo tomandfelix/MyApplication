@@ -17,13 +17,14 @@ import java.io.*;
 
 import com.example.tom.stapp3.R;
 
-public class Internet_Connection extends Activity  {
+public class Internet_Connection extends DrawerActivity  {
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
-
-        super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_internet__connection);
+        index = INTERNET_CONNECTION;
+        super.onCreate(savedInstanceState);
+
         new GetUDPData().execute();
         final Button button = (Button) findViewById(R.id.send_button);
         button.setOnClickListener(new View.OnClickListener() {
@@ -85,4 +86,5 @@ public class Internet_Connection extends Activity  {
     }
     public void sendButton(final View v) {
 
+    }
 }
