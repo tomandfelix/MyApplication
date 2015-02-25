@@ -17,14 +17,36 @@ import java.io.*;
 
 import com.example.tom.stapp3.R;
 
-public class Internet_Connection extends DrawerActivity  {
+public class Internet_Connection extends Activity  {
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
-        
+
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_internet__connection);
         new GetUDPData().execute();
+        final Button button = (Button) findViewById(R.id.send_button);
+        button.setOnClickListener(new View.OnClickListener() {
+
+
+            @Override
+            public void onClick(View v) {
+                try {
+                    
+                    String messageStr = "Het werkt :)";
+                    String host = "10.166.162.88";
+                    int server_port = 4567;
+                    DatagramSocket s = new DatagramSocket();
+                    InetAddress address = InetAddress.getByName(host);
+                    int msg_length = messageStr.length();
+                    byte[] message = messageStr.getBytes();
+                    DatagramPacket p = new DatagramPacket(message, msg_length, address, server_port);
+                    s.send(p);
+                } catch (IOException iOe) {
+                    System.out.println("error");
+                }
+            }
+        });
     }
    private class GetUDPData extends AsyncTask<Void, Void, String> {
         @Override
@@ -51,6 +73,7 @@ public class Internet_Connection extends DrawerActivity  {
                 // TODO Auto-generated catch block
                 e.printStackTrace();
             }
+
             return null;
         }
        @Override
@@ -60,5 +83,6 @@ public class Internet_Connection extends DrawerActivity  {
        }
        
     }
+    public void sendButton(final View v) {
 
 }
