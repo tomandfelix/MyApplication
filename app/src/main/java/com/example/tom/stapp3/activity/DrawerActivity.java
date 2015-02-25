@@ -34,6 +34,7 @@ public abstract class DrawerActivity extends ServiceActivity {
     protected final static int CO_OPERATIVE = 6;
     protected final static int SETTINGS = 7;
     protected final static int LOGOUT = 8;
+    protected final static int INTERNET_CONNECTION = 9;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -99,6 +100,11 @@ public abstract class DrawerActivity extends ServiceActivity {
                         case PROFILE:
                         default:
                             intent = new Intent(getBaseContext(), ProfileView.class);
+                            intent.setFlags(Intent.FLAG_ACTIVITY_NO_ANIMATION);
+                            startActivity(intent);
+                            break;
+                        case INTERNET_CONNECTION:
+                            intent = new Intent(getBaseContext(), Internet_Connection.class);
                             intent.setFlags(Intent.FLAG_ACTIVITY_NO_ANIMATION);
                             startActivity(intent);
                             break;
