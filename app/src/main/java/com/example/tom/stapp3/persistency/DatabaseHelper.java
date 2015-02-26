@@ -26,7 +26,7 @@ public class DatabaseHelper extends SQLiteOpenHelper{
     private static DatabaseHelper uniqueInstance = null;
     private static final int DATABASE_VERSION = 1;
     private static final DateFormat df = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss.SSS");
-    private static final String DATABASE_NAME = "data.sqlite";
+    private static final String DATABASE_NAME = "data.db";
     private static final String TABLE_LOGS = "logs";
     private static final String TABLE_PROFILES = "profiles";
     private static final String TABLE_SETTINGS = "settings";
@@ -72,16 +72,6 @@ public class DatabaseHelper extends SQLiteOpenHelper{
 
     private DatabaseHelper(Context context) {
         super(context, DATABASE_NAME, null, DATABASE_VERSION);
-    }
-
-    public void setReadable() {
-        SQLiteDatabase db = getWritableDatabase();
-        if(BuildConfig.DEBUG) {
-            if(!(new File(db.getPath())).setReadable(true, false)) {
-                Log.e("DatabaseHelper", "Error trying to make database transferable to pc");
-            }
-        }
-        db.close();
     }
 
     @Override
@@ -134,6 +124,12 @@ public class DatabaseHelper extends SQLiteOpenHelper{
         return null;
     }
 
+    public void truncateLogs() {
+        SQLiteDatabase db = getWritableDatabase();
+        db.execSQL("DELETE FROM " + TABLE_LOGS + "; VACUUM;");
+        db.close();
+    }
+
     //--------------------------------------------------------LOGS------------------------------------------------------------------------------
 
     private void addLog(String action, Date datetime, String metadata) {
@@ -148,7 +144,7 @@ public class DatabaseHelper extends SQLiteOpenHelper{
 
     public DBLog getLastLog() {
         Log.i("getLastLog", "getting last log");
-        String query = "SELECT " + KEY_ACTION + ", " + KEY_DATETIME + ", " + KEY_METADATA +  " FROM " + TABLE_LOGS + " WHERE " + KEY_ACTION + " IN('" + LOG_SIT + "', '" + LOG_STAND + "', '" + LOG_START_DAY + "', '" + LOG_OVERTIME + "') ORDER BY " + KEY_ID + " DESC LIMIT 1";
+        String query = "SELECT " + KEY_ACTION + ", " + KEY_DATETIME + ", " + KEY_METADATA +  " FROM " + TABLE_LOGS + " WHERE " + KEY_ACTION + " IN('" + LOG_SIT + "', '" + LOG_STAND + "', '" + LOG_CONNECT + "', '" + LOG_OVERTIME + "') ORDER BY " + KEY_ID + " DESC LIMIT 1";
         SQLiteDatabase db = getReadableDatabase();
         Cursor cursor = db.rawQuery(query, null);
         DBLog result = null;
@@ -252,18 +248,22 @@ public class DatabaseHelper extends SQLiteOpenHelper{
     }
 
     public void addConnectionStatus(boolean connected) {
-        Log.i("addConnectionStatus", "connected=" + connected);
-        addLog(connected ? LOG_CONNECT : LOG_DISCONNECT, new Date(), null);
+        Log.i("addConnectionStatus", connected ? "connected" : "disconnected");
+        Date time = new Date();
+        DBLog before = getLastLogBefore(time);
+        if(!before.getAction().equals(connected ? LOG_CONNECT : LOG_DISCONNECT)) {
+            addLog(connected ? LOG_CONNECT : LOG_DISCONNECT, time, null);
+        }
     }
 
-    public void addSitStand(boolean standing, String metadata) {
+    public void addSitStand(Date datetime, boolean standing, String metadata) {
         Log.i("addSitStand", standing ? "stand" : "sit");
-        addLog(standing ? LOG_STAND : LOG_SIT, new Date(), metadata);
+        addLog(standing ? LOG_STAND : LOG_SIT, datetime, metadata);
     }
 
-    public void addSitOvertime(String metadata) {
+    public void addSitOvertime(Date datetime, String metadata) {
         Log.i("addSitOvertime", metadata);
-        addLog(LOG_OVERTIME, new Date(), metadata);
+        addLog(LOG_OVERTIME, datetime, metadata);
     }
 
     //--------------------------------------------------------PROFILES--------------------------------------------------------------------------

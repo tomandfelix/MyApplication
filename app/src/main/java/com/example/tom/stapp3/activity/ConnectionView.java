@@ -192,8 +192,7 @@ public class ConnectionView extends DrawerActivity {
             if(mConnectionView.get() != null) {
                 switch (msg.what) {
                     case ShimmerService.SENSOR_STREAMING:
-                        if (progressVisible) {
-                            progressVisible = false;
+                        if (progress.getVisibility() == View.VISIBLE) {
                             progress.setVisibility(View.INVISIBLE);
                             stopBtn.setVisibility(View.VISIBLE);
                         }

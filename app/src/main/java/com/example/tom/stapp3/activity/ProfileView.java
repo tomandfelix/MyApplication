@@ -8,6 +8,7 @@ import android.os.Handler;
 import android.os.Message;
 import android.text.InputType;
 import android.text.method.PasswordTransformationMethod;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
@@ -75,6 +76,14 @@ public class ProfileView extends DrawerActivity {
         }
 
         statusIcon = (ImageView) findViewById(R.id.profile_status_icon);
+        //String lastAction = DatabaseHelper.getInstance(this).getLastLog().getAction();
+        int result = Logging.STATUS_SIT;
+        /*if(lastAction.equals(DatabaseHelper.LOG_STAND)) {
+            result = Logging.STATUS_STAND;
+        } else if(lastAction.equals(DatabaseHelper.LOG_OVERTIME)) {
+            result = Logging.STATUS_OVERTIME;
+        }*/
+        loggingMessageHandler.obtainMessage(result).sendToTarget();
 
         avatarChanged = false;
         TypedArray avatars = getResources().obtainTypedArray(R.array.avatars);

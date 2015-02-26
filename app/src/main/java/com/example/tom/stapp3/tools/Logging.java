@@ -40,7 +40,6 @@
 package com.example.tom.stapp3.tools;
 
 import java.util.ArrayList;
-import java.util.Calendar;
 import java.util.Collection;
 import java.util.Date;
 import java.util.Iterator;
@@ -60,12 +59,13 @@ public class Logging {
     private static Logging uniqueInstance;
     private final long _30mn_to_ms = 30 * 60 * 1000;
     private final long _25mn_to_ms = 25 * 60 * 1000;
+    private final long _24h_to_ms = 24 * 60 * 60 * 1000;
     private boolean mFirstWrite = true;
     private boolean resultFirstWrite = true;
     private boolean firstWriteSitOvertime = true;
     private boolean warningSound = true;
 
-    private static Context context;
+    private Context context;
     // private DatabaseManager db;
 
     private Date startTime = new Date();
@@ -90,9 +90,9 @@ public class Logging {
 
     private final double ppmax = 100.0;
     private final double k = 1.5;
-    private double achievedScore = 0.0;
-    private double delta_t = 0.0;
-    private double previous_sit_achievedScore = 0.0;
+//    private double achievedScore = 0.0;
+//    private double delta_t = 0.0;
+//    private double previous_sit_achievedScore = 0.0;
 
     private boolean isStanding = true;
 
@@ -103,12 +103,15 @@ public class Logging {
     public static final int STATUS_SIT = 0;
     public static final int STATUS_STAND = 1;
     public static final int STATUS_OVERTIME = 2;
+    private Date lastUpdate = new Date();
+    private DBLog last = null;
+    private boolean pendingReset = true;
 
     private Logging(Context context){
         this.context = context;
-        achievedScore = 0.0;
-        delta_t = 0;
-        previous_sit_achievedScore = 0.0;
+//        achievedScore = 0.0;
+//        delta_t = 0;
+//        previous_sit_achievedScore = 0.0;
     }
 
     public static Logging getInstance(Context context) {
@@ -136,28 +139,25 @@ public class Logging {
     public void logAchievedScore() {
         DBLog last = DatabaseHelper.getInstance(context).getLastLog();
         Date stopTime = new Date();
+        double achievedScore = 0.0;
         if(last != null) {
             if(last.getAction().equals(DatabaseHelper.LOG_START_DAY)) {
                 achievedScore = 0.0;
             } else if(last.getAction().equals(DatabaseHelper.LOG_OVERTIME)) {
                 DBLog lastSitStand = DatabaseHelper.getInstance(context).getLastSitStand();
                 if(lastSitStand != null) {
-                    previous_sit_achievedScore = Double.parseDouble(last.getMetadata().split("\\|")[1]) - Double.parseDouble(lastSitStand.getMetadata().split("\\|")[1]);
-                    achievedScore = Double.parseDouble(last.getMetadata().split("\\|")[1]);
-                    startTime = last.getDatetime();
-                    double delta_t = stopTime.getTime() - startTime.getTime();
-                    achievedScore += (Math.pow((1440.0 * 60000.0 / delta_t) - 1, k) * (100.0 / Math.pow(47.0, k))) - previous_sit_achievedScore;
+                    String endMetadata = getDecreasingMetadata(lastSitStand.getDatetime(), lastSitStand.getMetadata(), stopTime);
+                    String[] metaData = endMetadata.split("\\|");
+                    achievedScore = Double.parseDouble(metaData[1]);
                 }
             } else {
-                String[] metadata = last.getMetadata().split("\\|");
-                achievedScore = Double.parseDouble(metadata[1]);
+                String endMetaData = getIncreasingMetadata(last.getDatetime(), last.getMetadata(), stopTime);
+                String[] metaData = endMetaData.split("\\|");
+                achievedScore = Double.parseDouble(metaData[1]);
                 startTime = last.getDatetime();
-                // calculate the achievedscore from the last state until now
-                delta_t = stopTime.getTime() - startTime.getTime();
-                achievedScore += (ppmax * delta_t) / _30mn_to_ms;
             }
         }
-        double achievedScorePercentage = 0.0;
+        double achievedScorePercentage;
         DBLog first = DatabaseHelper.getInstance(context).getFirstRecordOfDay();
         if(first != null) {
             double connectionTime = stopTime.getTime() - first.getDatetime().getTime();
@@ -165,6 +165,23 @@ public class Logging {
             achievedScorePercentage = achievedScore * 100 / maxScoreToBeAchieved;
             DatabaseHelper.getInstance(context).endDay(stopTime, achievedScore, achievedScorePercentage, connectionTime);
         }
+    }
+
+    private String getIncreasingMetadata(Date start, String metaDataBefore, Date stop) {
+        String[] metadata = metaDataBefore.split("\\|");
+        double previousScore = Double.parseDouble(metadata[1]);
+        double delta_t = stop.getTime() - start.getTime();
+        double score = previousScore + ppmax * delta_t / _30mn_to_ms;
+        return delta_t + "|" + score;
+    }
+
+    private String getDecreasingMetadata(Date startedSitting, String metaDataStartedSitting, Date now) {
+        String[] metaDataLastSit = metaDataStartedSitting.split("\\|");
+        double previousSitScore = Double.parseDouble(metaDataLastSit[1]);
+
+        double delta_t = now.getTime() - startedSitting.getTime();
+        double score = Math.pow((_24h_to_ms / delta_t) - 1, k) * (100 / Math.pow(47.0, k)) + previousSitScore;
+        return delta_t + "|" + score;
     }
 
     public void logData(ObjectCluster objectCluster) {
@@ -290,14 +307,101 @@ public class Logging {
                 Log.d("LOGDATA", isStanding ? "STAND" : "SIT");*/
                 isStanding = Math.abs(meanY - 41500) > 4500;
 
-                if (resultFirstWrite) {
+                Date now = new Date();
+                if(last == null || now.getTime() - lastUpdate.getTime() > 500) {
+                    last = DatabaseHelper.getInstance(context).getLastLog();
+                }
+                lastUpdate = now;
+                if(last.getAction().equals(DatabaseHelper.LOG_SIT)) {
+                    if(isStanding) {
+                        DatabaseHelper.getInstance(context).addSitStand(now, true, getIncreasingMetadata(last.getDatetime(), last.getMetadata(), now));
+                        last = null;
+                    } else if(now.getTime() - last.getDatetime().getTime() >= _30mn_to_ms) {
+                        DatabaseHelper.getInstance(context).addSitOvertime(now, getIncreasingMetadata(last.getDatetime(), last.getMetadata(), now));
+                        last = null;
+                    }
+                } else if(last.getAction().equals(DatabaseHelper.LOG_STAND)) {
+                    if(!isStanding) {
+                        DatabaseHelper.getInstance(context).addSitStand(now, false, getIncreasingMetadata(last.getDatetime(), last.getMetadata(), now));
+                        last = null;
+                    }
+                } else if(last.getAction().equals(DatabaseHelper.LOG_OVERTIME)) {
+                    if(isStanding) {
+                        DBLog startedSitting = DatabaseHelper.getInstance(context).getLastSitStand();
+                        Log.d("LogData", "stand after sit_overtime\n" + startedSitting.toString() + "\n" + last.toString() + "\n" + now.toString());
+                        DatabaseHelper.getInstance(context).addSitStand(now, true, getDecreasingMetadata(startedSitting.getDatetime(), startedSitting.getMetadata(), now));
+                        last = null;
+                    }
+                } else if(last.getAction().equals(DatabaseHelper.LOG_CONNECT)) {
+                    if(pendingReset) {
+                        accXList.clear();
+                        accYList.clear();
+                        accZList.clear();
+                        pendingReset = false;
+                        return;
+                    }
+                    DBLog secondLast = DatabaseHelper.getInstance(context).getLastLogBefore(last.getDatetime());
+                    if(secondLast.getAction().equals(DatabaseHelper.LOG_START_DAY)) {
+                        DatabaseHelper.getInstance(context).addSitStand(now, isStanding, "0.0|0.0");
+                        last = null;
+                        pendingReset = true;
+                    } else if(secondLast.getAction().equals(DatabaseHelper.LOG_DISCONNECT)) {
+                        DBLog thirdLast = DatabaseHelper.getInstance(context).getLastLogBefore(secondLast.getDatetime());
+                        if(thirdLast.getAction().equals(DatabaseHelper.LOG_OVERTIME)) {
+                            if(isStanding) {
+                                DBLog startedSitting = DatabaseHelper.getInstance(context).getLastSitStand();
+                                DatabaseHelper.getInstance(context).addSitStand(now, true, getDecreasingMetadata(startedSitting.getDatetime(), startedSitting.getMetadata(), now));
+                                last = null;
+                                pendingReset = true;
+                            }
+                        } else if(thirdLast.getAction().equals(DatabaseHelper.LOG_SIT)) {
+                            if(now.getTime() - thirdLast.getDatetime().getTime() <= _30mn_to_ms) {
+                                if(isStanding) {
+                                    DatabaseHelper.getInstance(context).addSitStand(now, true, getIncreasingMetadata(thirdLast.getDatetime(), thirdLast.getMetadata(), now));
+                                    last = null;
+                                    pendingReset = true;
+                                }
+                            } else {
+                                Date overTimeDate = new Date(thirdLast.getDatetime().getTime() + _30mn_to_ms);
+                                String overTimeMetaData = getIncreasingMetadata(thirdLast.getDatetime(), thirdLast.getMetadata(), overTimeDate);
+                                DatabaseHelper.getInstance(context).addSitOvertime(overTimeDate, overTimeMetaData);
+                                if(isStanding) {
+                                    DatabaseHelper.getInstance(context).addSitStand(now, true, getDecreasingMetadata(thirdLast.getDatetime(), thirdLast.getMetadata(), now));
+                                }
+                                last = null;
+                                pendingReset = true;
+                            }
+                        } else if(thirdLast.getAction().equals(DatabaseHelper.LOG_STAND)) {
+                            Date sitTime = secondLast.getDatetime();
+                            String sitMeta = getIncreasingMetadata(thirdLast.getDatetime(), thirdLast.getMetadata(), sitTime);
+                            DatabaseHelper.getInstance(context).addSitStand(sitTime, false, sitMeta);
+                            if(now.getTime() - sitTime.getTime() <= _30mn_to_ms) {
+                                if(isStanding) {
+                                    DatabaseHelper.getInstance(context).addSitStand(now, true, getIncreasingMetadata(sitTime, sitMeta, now));
+                                    last = null;
+                                    pendingReset = true;
+                                }
+                            } else {
+                                Date overTimeDate = new Date(sitTime.getTime() + _30mn_to_ms);
+                                String overTimeMetaData = getIncreasingMetadata(sitTime, sitMeta, overTimeDate);
+                                DatabaseHelper.getInstance(context).addSitOvertime(overTimeDate, overTimeMetaData);
+                                if(isStanding) {
+                                    DatabaseHelper.getInstance(context).addSitStand(now, true, getDecreasingMetadata(sitTime, sitMeta, now));
+                                }
+                                last = null;
+                                pendingReset = true;
+                            }
+                        }
+                    }
+                }
+
+                /*if (resultFirstWrite) {
                     DBLog log = DatabaseHelper.getInstance(context).getLastLog();
 
                     if (log != null) {
                         // after changing something in the log_begin_newday, it
                         // should never come to this blog
                         if (log.getAction().equals(DatabaseHelper.LOG_START_DAY)) {
-
                             resultFirstWrite = false;
                             startTime = new Date();
                             previousResult = isStanding;
@@ -320,12 +424,11 @@ public class Logging {
                                                     .split("\\|")[1])
                                             - Double.parseDouble(lastsitstandlog
                                             .getMetadata().split("\\|")[1]);
-
                                     achievedScore = Double.parseDouble(log
                                             .getMetadata().split("\\|")[1]);
 
                                     startTime = lastsitstandlog.getDatetime();
-
+                                    Log.e("Print 1", previous_sit_achievedScore + "|" + achievedScore + "|" + startTime);
                                 }
 
                             } catch (Exception e) {
@@ -370,6 +473,7 @@ public class Logging {
                         achievedScore = 0.0;
                         previous_sit_achievedScore = 0.0;
                         DatabaseHelper.getInstance(context).addSitStand(isStanding, delta_t + "|" + achievedScore);
+                        Log.e("Print 2", achievedScore + "");
                         sendToHandler(isStanding ? STATUS_STAND : STATUS_SIT);
                     }
 
@@ -409,6 +513,7 @@ public class Logging {
                         previousResult = isStanding;
                         startTime = new Date();
                         DatabaseHelper.getInstance(context).addSitStand(isStanding, delta_t + "|" + achievedScore);
+                        Log.e("Print 3", delta_t + "|" + achievedScore);
                         sendToHandler(isStanding ? STATUS_STAND : STATUS_SIT);
                     }
 
@@ -432,7 +537,7 @@ public class Logging {
                         }
                     }
 
-                }
+                }*/
             }
         } catch (Exception e) {
             // TODO Auto-generated catch block

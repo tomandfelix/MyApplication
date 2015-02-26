@@ -43,7 +43,6 @@ public abstract class ServiceActivity extends Activity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-
         //start service if needed
         if(!isMyServiceRunning()) {
             Log.d("SERVICE", "Creating service");
@@ -55,6 +54,11 @@ public abstract class ServiceActivity extends Activity {
                 getApplicationContext().bindService(intent, mTestServiceConnection, Context.BIND_AUTO_CREATE);
                 mServiceFirstTime = false;
             }
+        } else if(mService == null) {
+            Log.d("SERVICE", "Attempting to rebind service");
+            Intent intent = new Intent(this, ShimmerService.class);
+            getApplicationContext().bindService(intent, mTestServiceConnection, Context.BIND_AUTO_CREATE);
+            mServiceFirstTime = false;
         }
     }
 

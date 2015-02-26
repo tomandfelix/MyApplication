@@ -1,7 +1,9 @@
 package com.example.tom.stapp3.activity;
 
+import android.app.ActivityManager;
 import android.app.Fragment;
 import android.app.FragmentManager;
+import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.v13.app.FragmentPagerAdapter;
@@ -33,6 +35,7 @@ public class FragmentViewer extends FragmentActivity implements FragmentProvider
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+//        DatabaseHelper.getInstance(this).truncateLogs();
         String token = DatabaseHelper.getInstance(getApplicationContext()).getStringSetting(DatabaseHelper.TOKEN);
         if(token != null && !token.equals("")) {
             Log.d("start", "Token present");
@@ -93,7 +96,6 @@ public class FragmentViewer extends FragmentActivity implements FragmentProvider
         mPager = (ViewPager) findViewById(R.id.pager);
         mPager.setAdapter(mAdapter);
         mPager.setCurrentItem(1, false);
-        DatabaseHelper.getInstance(this).setReadable();
         avatar = "manager";
     }
 

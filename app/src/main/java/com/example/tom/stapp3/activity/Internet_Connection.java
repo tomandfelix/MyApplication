@@ -1,6 +1,5 @@
 package com.example.tom.stapp3.activity;
 
-
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.util.Log;
@@ -22,7 +21,7 @@ public class Internet_Connection extends DrawerActivity {
         index = INTERNET_CONNECTION;
         super.onCreate(savedInstanceState);
 
-        new GetUDPData().execute();
+        //new GetUDPData().execute();
         final Button button = (Button) findViewById(R.id.send_button);
         button.setOnClickListener(new View.OnClickListener() {
 
@@ -30,7 +29,7 @@ public class Internet_Connection extends DrawerActivity {
             @Override
             public void onClick(View v) {
                 Log.d("button clicked","clicked");
-                new SendUDPData().execute();
+                new SendUDPData().execute(((EditText) findViewById(R.id.send_data)).getText().toString());
             }
         });
     }
@@ -72,32 +71,27 @@ public class Internet_Connection extends DrawerActivity {
 
     }
 
-    private class SendUDPData extends AsyncTask<Void, Void, String> {
+    private class SendUDPData extends AsyncTask<String, Void, Void> {
         @Override
-        protected String doInBackground(Void... strings) {
-
-
-            return null;
-        }
-        @Override
-        protected void onPostExecute(String result){
-            super.onPostExecute(result);
+        protected Void doInBackground(String... params) {
             try {
-                Log.d("sending data","sending");
-                String messageStr = "Het werkt :)";
-                String host = "10.166.162.88";
+                Log.d("sending data", params[0]);
+                String host = "10.166.161.73";
                 int server_port = 4567;
                 DatagramSocket s = new DatagramSocket();
                 InetAddress address = InetAddress.getByName(host);
-                int msg_length = messageStr.length();
-                byte[] message = messageStr.getBytes();
+                int msg_length = params[0].length();
+                byte[] message = params[0].getBytes();
                 DatagramPacket p = new DatagramPacket(message, msg_length, address, server_port);
                 s.send(p);
             } catch (IOException iOe) {
                 Log.d("IOException", "error");
             }
+            return null;
+        }
+        @Override
+        protected void onPostExecute(Void v) {
+            Log.d("Data sent", "hopefully successfull");
         }
     }
 }
-
-
