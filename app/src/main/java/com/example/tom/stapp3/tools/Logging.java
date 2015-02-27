@@ -57,9 +57,9 @@ import com.example.tom.stapp3.driver.ObjectCluster;
 
 public class Logging {
     private static Logging uniqueInstance;
-    private final long _30mn_to_ms = 30 * 60 * 1000;
-    private final long _25mn_to_ms = 25 * 60 * 1000;
-    private final long _24h_to_ms = 24 * 60 * 60 * 1000;
+    private final long _30mn_to_ms = 30 * 1000;
+    private final long _25mn_to_ms = 25 * 1000;
+    private final long _24h_to_ms = 24 * 60 * 1000;
     private boolean mFirstWrite = true;
     private boolean resultFirstWrite = true;
     private boolean firstWriteSitOvertime = true;
@@ -105,7 +105,6 @@ public class Logging {
     public static final int STATUS_OVERTIME = 2;
     private Date lastUpdate = new Date();
     private DBLog last = null;
-    private boolean pendingReset = true;
 
     private Logging(Context context){
         this.context = context;
@@ -146,12 +145,12 @@ public class Logging {
             } else if(last.getAction().equals(DatabaseHelper.LOG_OVERTIME)) {
                 DBLog lastSitStand = DatabaseHelper.getInstance(context).getLastSitStand();
                 if(lastSitStand != null) {
-                    String endMetadata = getDecreasingMetadata(lastSitStand.getDatetime(), lastSitStand.getMetadata(), stopTime);
+                    String endMetadata = getDecreasingMetadata(stopTime.getTime() - lastSitStand.getDatetime().getTime(), lastSitStand.getMetadata());
                     String[] metaData = endMetadata.split("\\|");
                     achievedScore = Double.parseDouble(metaData[1]);
                 }
             } else {
-                String endMetaData = getIncreasingMetadata(last.getDatetime(), last.getMetadata(), stopTime);
+                String endMetaData = getIncreasingMetadata(stopTime.getTime() - last.getDatetime().getTime(), last.getMetadata());
                 String[] metaData = endMetaData.split("\\|");
                 achievedScore = Double.parseDouble(metaData[1]);
                 startTime = last.getDatetime();
@@ -161,27 +160,29 @@ public class Logging {
         DBLog first = DatabaseHelper.getInstance(context).getFirstRecordOfDay();
         if(first != null) {
             double connectionTime = stopTime.getTime() - first.getDatetime().getTime();
+            ArrayList<DBLog> connectionLogs = DatabaseHelper.getInstance(context).getTodaysConnectionLogs();
+            for(int i = 2; i < connectionLogs.size(); i+=2) {
+                connectionTime -= connectionLogs.get(i).getDatetime().getTime() - connectionLogs.get(i - 1).getDatetime().getTime();
+            }
             double maxScoreToBeAchieved = (ppmax * connectionTime) / _30mn_to_ms;
-            achievedScorePercentage = achievedScore * 100 / maxScoreToBeAchieved;
+            achievedScorePercentage = Math.round(achievedScore * 10000 / maxScoreToBeAchieved) / 100.0;
             DatabaseHelper.getInstance(context).endDay(stopTime, achievedScore, achievedScorePercentage, connectionTime);
         }
     }
 
-    private String getIncreasingMetadata(Date start, String metaDataBefore, Date stop) {
+    private String getIncreasingMetadata(long delta_t, String metaDataBefore) {
         String[] metadata = metaDataBefore.split("\\|");
         double previousScore = Double.parseDouble(metadata[1]);
-        double delta_t = stop.getTime() - start.getTime();
         double score = previousScore + ppmax * delta_t / _30mn_to_ms;
         return delta_t + "|" + score;
     }
 
-    private String getDecreasingMetadata(Date startedSitting, String metaDataStartedSitting, Date now) {
+    private String getDecreasingMetadata(long millisecondsSitting, String metaDataStartedSitting) {
         String[] metaDataLastSit = metaDataStartedSitting.split("\\|");
         double previousSitScore = Double.parseDouble(metaDataLastSit[1]);
 
-        double delta_t = now.getTime() - startedSitting.getTime();
-        double score = Math.pow((_24h_to_ms / delta_t) - 1, k) * (100 / Math.pow(47.0, k)) + previousSitScore;
-        return delta_t + "|" + score;
+        double score = Math.pow((_24h_to_ms / millisecondsSitting) - 1, k) * (100 / Math.pow(47.0, k)) + previousSitScore;
+        return millisecondsSitting + "|" + score;
     }
 
     public void logData(ObjectCluster objectCluster) {
@@ -314,230 +315,58 @@ public class Logging {
                 lastUpdate = now;
                 if(last.getAction().equals(DatabaseHelper.LOG_SIT)) {
                     if(isStanding) {
-                        DatabaseHelper.getInstance(context).addSitStand(now, true, getIncreasingMetadata(last.getDatetime(), last.getMetadata(), now));
+                        DatabaseHelper.getInstance(context).addSitStand(now, true, getIncreasingMetadata(now.getTime() - last.getDatetime().getTime(), last.getMetadata()));
                         last = null;
                     } else if(now.getTime() - last.getDatetime().getTime() >= _30mn_to_ms) {
-                        DatabaseHelper.getInstance(context).addSitOvertime(now, getIncreasingMetadata(last.getDatetime(), last.getMetadata(), now));
+                        DatabaseHelper.getInstance(context).addSitOvertime(now, getIncreasingMetadata(now.getTime() - last.getDatetime().getTime(), last.getMetadata()));
                         last = null;
                     }
                 } else if(last.getAction().equals(DatabaseHelper.LOG_STAND)) {
                     if(!isStanding) {
-                        DatabaseHelper.getInstance(context).addSitStand(now, false, getIncreasingMetadata(last.getDatetime(), last.getMetadata(), now));
+                        DatabaseHelper.getInstance(context).addSitStand(now, false, getIncreasingMetadata(now.getTime() - last.getDatetime().getTime(), last.getMetadata()));
                         last = null;
                     }
                 } else if(last.getAction().equals(DatabaseHelper.LOG_OVERTIME)) {
                     if(isStanding) {
                         DBLog startedSitting = DatabaseHelper.getInstance(context).getLastSitStand();
                         Log.d("LogData", "stand after sit_overtime\n" + startedSitting.toString() + "\n" + last.toString() + "\n" + now.toString());
-                        DatabaseHelper.getInstance(context).addSitStand(now, true, getDecreasingMetadata(startedSitting.getDatetime(), startedSitting.getMetadata(), now));
+                        DatabaseHelper.getInstance(context).addSitStand(now, true, getDecreasingMetadata(now.getTime() - startedSitting.getDatetime().getTime(), startedSitting.getMetadata()));
                         last = null;
                     }
                 } else if(last.getAction().equals(DatabaseHelper.LOG_CONNECT)) {
-                    if(pendingReset) {
-                        accXList.clear();
-                        accYList.clear();
-                        accZList.clear();
-                        pendingReset = false;
-                        return;
-                    }
                     DBLog secondLast = DatabaseHelper.getInstance(context).getLastLogBefore(last.getDatetime());
                     if(secondLast.getAction().equals(DatabaseHelper.LOG_START_DAY)) {
                         DatabaseHelper.getInstance(context).addSitStand(now, isStanding, "0.0|0.0");
                         last = null;
-                        pendingReset = true;
                     } else if(secondLast.getAction().equals(DatabaseHelper.LOG_DISCONNECT)) {
                         DBLog thirdLast = DatabaseHelper.getInstance(context).getLastLogBefore(secondLast.getDatetime());
+                        long disconnectedDuration = last.getDatetime().getTime() - secondLast.getDatetime().getTime();
                         if(thirdLast.getAction().equals(DatabaseHelper.LOG_OVERTIME)) {
                             if(isStanding) {
                                 DBLog startedSitting = DatabaseHelper.getInstance(context).getLastSitStand();
-                                DatabaseHelper.getInstance(context).addSitStand(now, true, getDecreasingMetadata(startedSitting.getDatetime(), startedSitting.getMetadata(), now));
+                                long sittingDuration = now.getTime() - startedSitting.getDatetime().getTime() - disconnectedDuration;
+                                DatabaseHelper.getInstance(context).addSitStand(now, true, getDecreasingMetadata(sittingDuration, startedSitting.getMetadata()));
                                 last = null;
-                                pendingReset = true;
+
                             }
                         } else if(thirdLast.getAction().equals(DatabaseHelper.LOG_SIT)) {
-                            if(now.getTime() - thirdLast.getDatetime().getTime() <= _30mn_to_ms) {
-                                if(isStanding) {
-                                    DatabaseHelper.getInstance(context).addSitStand(now, true, getIncreasingMetadata(thirdLast.getDatetime(), thirdLast.getMetadata(), now));
-                                    last = null;
-                                    pendingReset = true;
-                                }
-                            } else {
-                                Date overTimeDate = new Date(thirdLast.getDatetime().getTime() + _30mn_to_ms);
-                                String overTimeMetaData = getIncreasingMetadata(thirdLast.getDatetime(), thirdLast.getMetadata(), overTimeDate);
-                                DatabaseHelper.getInstance(context).addSitOvertime(overTimeDate, overTimeMetaData);
-                                if(isStanding) {
-                                    DatabaseHelper.getInstance(context).addSitStand(now, true, getDecreasingMetadata(thirdLast.getDatetime(), thirdLast.getMetadata(), now));
-                                }
+                            long sittingTime = now.getTime() - thirdLast.getDatetime().getTime() - disconnectedDuration;
+                            if(isStanding) {
+                                DatabaseHelper.getInstance(context).addSitStand(now, true, getIncreasingMetadata(sittingTime, thirdLast.getMetadata()));
                                 last = null;
-                                pendingReset = true;
+                            } else if(sittingTime >= _30mn_to_ms) {
+                                DatabaseHelper.getInstance(context).addSitOvertime(now, getIncreasingMetadata(sittingTime, thirdLast.getMetadata()));
+                                last = null;
                             }
                         } else if(thirdLast.getAction().equals(DatabaseHelper.LOG_STAND)) {
-                            Date sitTime = secondLast.getDatetime();
-                            String sitMeta = getIncreasingMetadata(thirdLast.getDatetime(), thirdLast.getMetadata(), sitTime);
-                            DatabaseHelper.getInstance(context).addSitStand(sitTime, false, sitMeta);
-                            if(now.getTime() - sitTime.getTime() <= _30mn_to_ms) {
-                                if(isStanding) {
-                                    DatabaseHelper.getInstance(context).addSitStand(now, true, getIncreasingMetadata(sitTime, sitMeta, now));
-                                    last = null;
-                                    pendingReset = true;
-                                }
-                            } else {
-                                Date overTimeDate = new Date(sitTime.getTime() + _30mn_to_ms);
-                                String overTimeMetaData = getIncreasingMetadata(sitTime, sitMeta, overTimeDate);
-                                DatabaseHelper.getInstance(context).addSitOvertime(overTimeDate, overTimeMetaData);
-                                if(isStanding) {
-                                    DatabaseHelper.getInstance(context).addSitStand(now, true, getDecreasingMetadata(sitTime, sitMeta, now));
-                                }
+                            if(!isStanding) {
+                                long standingTime = now.getTime() - thirdLast.getDatetime().getTime() - disconnectedDuration;
+                                DatabaseHelper.getInstance(context).addSitStand(now, false, getIncreasingMetadata(standingTime, thirdLast.getMetadata()));
                                 last = null;
-                                pendingReset = true;
                             }
                         }
                     }
                 }
-
-                /*if (resultFirstWrite) {
-                    DBLog log = DatabaseHelper.getInstance(context).getLastLog();
-
-                    if (log != null) {
-                        // after changing something in the log_begin_newday, it
-                        // should never come to this blog
-                        if (log.getAction().equals(DatabaseHelper.LOG_START_DAY)) {
-                            resultFirstWrite = false;
-                            startTime = new Date();
-                            previousResult = isStanding;
-                            delta_t = 0;
-                            achievedScore = 0.0;
-                            previous_sit_achievedScore = 0.0;
-                            DatabaseHelper.getInstance(context).addSitStand(isStanding, delta_t + "|" + achievedScore);
-                            sendToHandler(isStanding ? STATUS_STAND : STATUS_SIT);
-                        } else if (log.getAction().equals(DatabaseHelper.LOG_OVERTIME)) {
-
-                            try {
-                                resultFirstWrite = false;
-                                firstWriteSitOvertime = false;
-                                previousResult = false;
-                                DBLog lastsitstandlog = DatabaseHelper.getInstance(context).getLastSitStand();
-
-                                if (lastsitstandlog != null) {
-                                    previous_sit_achievedScore = Double
-                                            .parseDouble(log.getMetadata()
-                                                    .split("\\|")[1])
-                                            - Double.parseDouble(lastsitstandlog
-                                            .getMetadata().split("\\|")[1]);
-                                    achievedScore = Double.parseDouble(log
-                                            .getMetadata().split("\\|")[1]);
-
-                                    startTime = lastsitstandlog.getDatetime();
-                                    Log.e("Print 1", previous_sit_achievedScore + "|" + achievedScore + "|" + startTime);
-                                }
-
-                            } catch (Exception e) {
-                                e.printStackTrace();
-                                Log.d("Logging", "catch_sit_overtime");
-                            }
-
-                        } else { // last log is sit or stand
-                            try {
-                                resultFirstWrite = false;
-                                String[] metadata = log.getMetadata().split(
-                                        "\\|");
-                                previousResult = log.getAction().equals(DatabaseHelper.LOG_STAND);
-                                startTime = log.getDatetime();
-                                achievedScore = Double.parseDouble(metadata[1]);
-                                previous_sit_achievedScore = 0.0;
-                                long sit_overtime_ms_from70 = startTime.getTime()
-                                        + _30mn_to_ms;
-                                if (log.getAction().equals(DatabaseHelper.LOG_SIT)
-                                        && System.currentTimeMillis() > sit_overtime_ms_from70) {
-                                    Calendar calendar = Calendar.getInstance();
-                                    calendar.setTimeInMillis(sit_overtime_ms_from70);
-                                    firstWriteSitOvertime = false;
-                                    delta_t = _30mn_to_ms;
-                                    previous_sit_achievedScore = (ppmax * delta_t) / _30mn_to_ms;
-                                    achievedScore += previous_sit_achievedScore;
-                                    DatabaseHelper.getInstance(context).addSitOvertime(delta_t + "|" + achievedScore);
-                                    sendToHandler(STATUS_OVERTIME);
-                                }
-
-                            } catch (Exception e) {
-                                e.printStackTrace();
-                                Log.d("Logging", "catch sit_stand");
-                            }
-                            // no state is logged for now, but the next sample
-                        }
-                    } else { // the very first time with empty database
-                        resultFirstWrite = false;
-                        startTime = new Date();
-                        previousResult = isStanding;
-                        delta_t = 0;
-                        achievedScore = 0.0;
-                        previous_sit_achievedScore = 0.0;
-                        DatabaseHelper.getInstance(context).addSitStand(isStanding, delta_t + "|" + achievedScore);
-                        Log.e("Print 2", achievedScore + "");
-                        sendToHandler(isStanding ? STATUS_STAND : STATUS_SIT);
-                    }
-
-                } else { // resultFirstWrite = false
-
-                    if (!previousResult == isStanding) {
-                        // set firstWroteSitOvertime back to true
-                        firstWriteSitOvertime = true;
-                        warningSound = true;
-                        // if (!isStanding) {
-                        // configurationAlert(isStanding,
-                        // R.drawable.icon_sitting_green, "alert");
-                        // } else {
-                        // configurationAlert(isStanding,
-                        // R.drawable.icon_standing_green, "pebbles");
-                        // }
-                        // calculate achieved score and log
-
-                        delta_t = System.currentTimeMillis() - startTime.getTime();
-                        if (!isStanding) {
-                            achievedScore += ppmax * delta_t
-                                    / (_30mn_to_ms);
-                        } else {
-                            if (delta_t <= _30mn_to_ms) {
-                                achievedScore += (ppmax * delta_t) / (_30mn_to_ms);
-                            } else {
-                                double temp_score = Math.pow(
-                                        (1440.0 * 60000.0 / delta_t) - 1.0, k) * (100.0 / Math
-                                        .pow(47.0, k))
-                                        - previous_sit_achievedScore;
-                                achievedScore += temp_score;
-                                previous_sit_achievedScore = 0.0;
-                            }
-                        }
-
-                        // user change state
-                        previousResult = isStanding;
-                        startTime = new Date();
-                        DatabaseHelper.getInstance(context).addSitStand(isStanding, delta_t + "|" + achievedScore);
-                        Log.e("Print 3", delta_t + "|" + achievedScore);
-                        sendToHandler(isStanding ? STATUS_STAND : STATUS_SIT);
-                    }
-
-                    if (firstWriteSitOvertime && !isStanding) {
-                        if (System.currentTimeMillis() > startTime.getTime()
-                                + _25mn_to_ms
-                                && System.currentTimeMillis() < startTime.getTime()
-                                + _30mn_to_ms) {
-                            if (warningSound) {
-
-                                warningSound = false;
-                            }
-                        } else if (System.currentTimeMillis() > startTime.getTime()
-                                + _30mn_to_ms) {
-                            firstWriteSitOvertime = false;
-                            delta_t = System.currentTimeMillis() - startTime.getTime();
-                            previous_sit_achievedScore = (ppmax * delta_t) / (_30mn_to_ms);
-                            achievedScore += previous_sit_achievedScore;
-                            DatabaseHelper.getInstance(context).addSitOvertime(delta_t + "|" + achievedScore);
-                            sendToHandler(STATUS_OVERTIME);
-                        }
-                    }
-
-                }*/
             }
         } catch (Exception e) {
             // TODO Auto-generated catch block

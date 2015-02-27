@@ -35,7 +35,7 @@ public class FragmentViewer extends FragmentActivity implements FragmentProvider
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-//        DatabaseHelper.getInstance(this).truncateLogs();
+        DatabaseHelper.getInstance(this).truncateLogs();
         String token = DatabaseHelper.getInstance(getApplicationContext()).getStringSetting(DatabaseHelper.TOKEN);
         if(token != null && !token.equals("")) {
             Log.d("start", "Token present");

@@ -155,6 +155,21 @@ public class DatabaseHelper extends SQLiteOpenHelper{
         db.close();
         return result;
     }
+    public ArrayList<DBLog> getTodaysConnectionLogs() {
+        Log.i("getTodaysConnectionLogs", "getting today's connect & disconnect logs");
+        String query = "SELECT " + KEY_ACTION + ", " + KEY_DATETIME + ", " + KEY_METADATA + " FROM " + TABLE_LOGS + " WHERE " + KEY_ACTION + " IN('" + LOG_CONNECT + "', '" + LOG_DISCONNECT + "') AND " + KEY_ID + " > (SELECT " + KEY_ID + " FROM " + TABLE_LOGS + " WHERE " + KEY_ACTION + " = '" + LOG_START_DAY + "' ORDER BY " + KEY_ID + " DESC LIMIT 1) ORDER BY " + KEY_ID + " ASC";
+        SQLiteDatabase db = getReadableDatabase();
+        Cursor cursor = db.rawQuery(query, null);
+        ArrayList<DBLog> result = null;
+        if(cursor != null && cursor.getCount() > 0) {
+            result = new ArrayList<>();
+            while(cursor.moveToNext()) {
+                result.add(new DBLog(cursor.getString(0), stringToDate(cursor.getString(1)), cursor.getString(2)));
+            }
+        }
+        db.close();
+        return result;
+    }
 
     public ArrayList<DBLog> getLogsBetween(Date start, Date end) {
         Log.i("getLogsBetween", "getting logs between " + dateToString(start) + " and " + dateToString(end));

@@ -129,7 +129,7 @@ public class Internet_Connection extends DrawerActivity {
             try{
                 Log.d("in DatagramSender","run");
                 String messageStr = data;
-                String host = "10.0.2.3";
+                String host = "10.166.161.73";
                 int server_port = 4567;
                 DatagramSocket s = new DatagramSocket();
                 InetAddress address = InetAddress.getByName(host);
