@@ -11,12 +11,12 @@ import java.util.Date;
 public class DBLog {
     private String action;
     private Date datetime;
-    private String metadata;
+    private double data;
 
-    public DBLog(String action, Date datetime, String metadata) {
+    public DBLog(String action, Date datetime, double data) {
         this.action = action;
         this.datetime = datetime;
-        this.metadata = metadata;
+        this.data = data;
     }
 
     public String getAction() {
@@ -35,16 +35,16 @@ public class DBLog {
         this.datetime = datetime;
     }
 
-    public String getMetadata() {
-        return metadata;
+    public double getData() {
+        return data;
     }
 
-    public void setMetadata(String metadata) {
-        this.metadata = metadata;
+    public void setData(double data) {
+        this.data = data;
     }
 
     @Override
     public String toString() {
-        return action + " " + datetime.toString() + " " + metadata;
+        return action + " " + datetime.toString() + " " + data;
     }
 }

@@ -57,23 +57,15 @@ import com.example.tom.stapp3.driver.ObjectCluster;
 
 public class Logging {
     private static Logging uniqueInstance;
-    private final long _30mn_to_ms = 30 * 1000;
-    private final long _25mn_to_ms = 25 * 1000;
-    private final long _24h_to_ms = 24 * 60 * 1000;
+    private final long _30mn_to_ms = 30 * 60 * 1000;
+    private final long _24h_to_ms = 24 * 60 * 60 * 1000;
     private boolean mFirstWrite = true;
-    private boolean resultFirstWrite = true;
-    private boolean firstWriteSitOvertime = true;
-    private boolean warningSound = true;
 
     private Context context;
-    // private DatabaseManager db;
 
-    private Date startTime = new Date();
     private String[] mSensorNames;
     private String[] mSensorFormats;
     private String[] mSensorUnits;
-
-    private boolean previousResult;
 
     private final double logDetSigma = 58.2792;
     private double meanY = 0.0;
@@ -90,11 +82,6 @@ public class Logging {
 
     private final double ppmax = 100.0;
     private final double k = 1.5;
-//    private double achievedScore = 0.0;
-//    private double delta_t = 0.0;
-//    private double previous_sit_achievedScore = 0.0;
-
-    private boolean isStanding = true;
 
     private double S[] = { 219.2, 98.4, 98.6, 1089.4, 1951.5 };
     private double gmeans[][] = { { 77.2, -113.9, -85.7, 823.4, 3917.8 },
@@ -108,9 +95,6 @@ public class Logging {
 
     private Logging(Context context){
         this.context = context;
-//        achievedScore = 0.0;
-//        delta_t = 0;
-//        previous_sit_achievedScore = 0.0;
     }
 
     public static Logging getInstance(Context context) {
@@ -126,13 +110,25 @@ public class Logging {
 
     public static void setHandler(Handler newHandler) {
         handler = newHandler;
-        Log.i("Logging", "handler set");
+        if(newHandler == null) {
+            Log.i("Logging", "handler unset");
+        } else {
+            Log.i("Logging", "handler set");
+        }
     }
 
     private void sendToHandler(int msg) {
         if(handler != null) {
             handler.obtainMessage(msg).sendToTarget();
         }
+    }
+
+    private double getIncreasingScore(long delta_t, double scoreBefore) {
+        return scoreBefore + ppmax * delta_t / _30mn_to_ms;
+    }
+
+    private double getDecreasingScore(long millisecondsSitting, double scoreStartedSitting) {
+        return Math.pow((_24h_to_ms / millisecondsSitting) - 1, k) * (100 / Math.pow(47.0, k)) + scoreStartedSitting;
     }
 
     public void logAchievedScore() {
@@ -145,15 +141,10 @@ public class Logging {
             } else if(last.getAction().equals(DatabaseHelper.LOG_OVERTIME)) {
                 DBLog lastSitStand = DatabaseHelper.getInstance(context).getLastSitStand();
                 if(lastSitStand != null) {
-                    String endMetadata = getDecreasingMetadata(stopTime.getTime() - lastSitStand.getDatetime().getTime(), lastSitStand.getMetadata());
-                    String[] metaData = endMetadata.split("\\|");
-                    achievedScore = Double.parseDouble(metaData[1]);
+                    achievedScore = getDecreasingScore(stopTime.getTime() - lastSitStand.getDatetime().getTime(), lastSitStand.getData());
                 }
             } else {
-                String endMetaData = getIncreasingMetadata(stopTime.getTime() - last.getDatetime().getTime(), last.getMetadata());
-                String[] metaData = endMetaData.split("\\|");
-                achievedScore = Double.parseDouble(metaData[1]);
-                startTime = last.getDatetime();
+                achievedScore = getIncreasingScore(stopTime.getTime() - last.getDatetime().getTime(), last.getData());
             }
         }
         double achievedScorePercentage;
@@ -168,21 +159,6 @@ public class Logging {
             achievedScorePercentage = Math.round(achievedScore * 10000 / maxScoreToBeAchieved) / 100.0;
             DatabaseHelper.getInstance(context).endDay(stopTime, achievedScore, achievedScorePercentage, connectionTime);
         }
-    }
-
-    private String getIncreasingMetadata(long delta_t, String metaDataBefore) {
-        String[] metadata = metaDataBefore.split("\\|");
-        double previousScore = Double.parseDouble(metadata[1]);
-        double score = previousScore + ppmax * delta_t / _30mn_to_ms;
-        return delta_t + "|" + score;
-    }
-
-    private String getDecreasingMetadata(long millisecondsSitting, String metaDataStartedSitting) {
-        String[] metaDataLastSit = metaDataStartedSitting.split("\\|");
-        double previousSitScore = Double.parseDouble(metaDataLastSit[1]);
-
-        double score = Math.pow((_24h_to_ms / millisecondsSitting) - 1, k) * (100 / Math.pow(47.0, k)) + previousSitScore;
-        return millisecondsSitting + "|" + score;
     }
 
     public void logData(ObjectCluster objectCluster) {
@@ -306,7 +282,7 @@ public class Logging {
                 }
                 isStanding = !(D.get(0) > D.get(1));
                 Log.d("LOGDATA", isStanding ? "STAND" : "SIT");*/
-                isStanding = Math.abs(meanY - 41500) > 4500;
+                boolean isStanding = Math.abs(meanY - 41500) > 4500;
 
                 Date now = new Date();
                 if(last == null || now.getTime() - lastUpdate.getTime() > 500) {
@@ -315,28 +291,33 @@ public class Logging {
                 lastUpdate = now;
                 if(last.getAction().equals(DatabaseHelper.LOG_SIT)) {
                     if(isStanding) {
-                        DatabaseHelper.getInstance(context).addSitStand(now, true, getIncreasingMetadata(now.getTime() - last.getDatetime().getTime(), last.getMetadata()));
+                        DatabaseHelper.getInstance(context).addSitStand(now, true, getIncreasingScore(now.getTime() - last.getDatetime().getTime(), last.getData()));
+                        sendToHandler(STATUS_STAND);
                         last = null;
                     } else if(now.getTime() - last.getDatetime().getTime() >= _30mn_to_ms) {
-                        DatabaseHelper.getInstance(context).addSitOvertime(now, getIncreasingMetadata(now.getTime() - last.getDatetime().getTime(), last.getMetadata()));
+                        DatabaseHelper.getInstance(context).addSitOvertime(now, getIncreasingScore(now.getTime() - last.getDatetime().getTime(), last.getData()));
+                        sendToHandler(STATUS_OVERTIME);
                         last = null;
                     }
                 } else if(last.getAction().equals(DatabaseHelper.LOG_STAND)) {
                     if(!isStanding) {
-                        DatabaseHelper.getInstance(context).addSitStand(now, false, getIncreasingMetadata(now.getTime() - last.getDatetime().getTime(), last.getMetadata()));
+                        DatabaseHelper.getInstance(context).addSitStand(now, false, getIncreasingScore(now.getTime() - last.getDatetime().getTime(), last.getData()));
+                        sendToHandler(STATUS_SIT);
                         last = null;
                     }
                 } else if(last.getAction().equals(DatabaseHelper.LOG_OVERTIME)) {
                     if(isStanding) {
                         DBLog startedSitting = DatabaseHelper.getInstance(context).getLastSitStand();
                         Log.d("LogData", "stand after sit_overtime\n" + startedSitting.toString() + "\n" + last.toString() + "\n" + now.toString());
-                        DatabaseHelper.getInstance(context).addSitStand(now, true, getDecreasingMetadata(now.getTime() - startedSitting.getDatetime().getTime(), startedSitting.getMetadata()));
+                        DatabaseHelper.getInstance(context).addSitStand(now, true, getDecreasingScore(now.getTime() - startedSitting.getDatetime().getTime(), startedSitting.getData()));
+                        sendToHandler(STATUS_STAND);
                         last = null;
                     }
                 } else if(last.getAction().equals(DatabaseHelper.LOG_CONNECT)) {
                     DBLog secondLast = DatabaseHelper.getInstance(context).getLastLogBefore(last.getDatetime());
                     if(secondLast.getAction().equals(DatabaseHelper.LOG_START_DAY)) {
-                        DatabaseHelper.getInstance(context).addSitStand(now, isStanding, "0.0|0.0");
+                        DatabaseHelper.getInstance(context).addSitStand(now, isStanding, 0);
+                        sendToHandler(isStanding ? STATUS_STAND : STATUS_SIT);
                         last = null;
                     } else if(secondLast.getAction().equals(DatabaseHelper.LOG_DISCONNECT)) {
                         DBLog thirdLast = DatabaseHelper.getInstance(context).getLastLogBefore(secondLast.getDatetime());
@@ -345,23 +326,27 @@ public class Logging {
                             if(isStanding) {
                                 DBLog startedSitting = DatabaseHelper.getInstance(context).getLastSitStand();
                                 long sittingDuration = now.getTime() - startedSitting.getDatetime().getTime() - disconnectedDuration;
-                                DatabaseHelper.getInstance(context).addSitStand(now, true, getDecreasingMetadata(sittingDuration, startedSitting.getMetadata()));
+                                DatabaseHelper.getInstance(context).addSitStand(now, true, getDecreasingScore(sittingDuration, startedSitting.getData()));
+                                sendToHandler(STATUS_STAND);
                                 last = null;
 
                             }
                         } else if(thirdLast.getAction().equals(DatabaseHelper.LOG_SIT)) {
                             long sittingTime = now.getTime() - thirdLast.getDatetime().getTime() - disconnectedDuration;
                             if(isStanding) {
-                                DatabaseHelper.getInstance(context).addSitStand(now, true, getIncreasingMetadata(sittingTime, thirdLast.getMetadata()));
+                                DatabaseHelper.getInstance(context).addSitStand(now, true, getIncreasingScore(sittingTime, thirdLast.getData()));
+                                sendToHandler(STATUS_STAND);
                                 last = null;
                             } else if(sittingTime >= _30mn_to_ms) {
-                                DatabaseHelper.getInstance(context).addSitOvertime(now, getIncreasingMetadata(sittingTime, thirdLast.getMetadata()));
+                                DatabaseHelper.getInstance(context).addSitOvertime(now, getIncreasingScore(sittingTime, thirdLast.getData()));
+                                sendToHandler(STATUS_OVERTIME);
                                 last = null;
                             }
                         } else if(thirdLast.getAction().equals(DatabaseHelper.LOG_STAND)) {
                             if(!isStanding) {
                                 long standingTime = now.getTime() - thirdLast.getDatetime().getTime() - disconnectedDuration;
-                                DatabaseHelper.getInstance(context).addSitStand(now, false, getIncreasingMetadata(standingTime, thirdLast.getMetadata()));
+                                DatabaseHelper.getInstance(context).addSitStand(now, false, getIncreasingScore(standingTime, thirdLast.getData()));
+                                sendToHandler(STATUS_SIT);
                                 last = null;
                             }
                         }
