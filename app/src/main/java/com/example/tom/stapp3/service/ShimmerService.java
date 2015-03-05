@@ -76,6 +76,7 @@ public class ShimmerService extends Service {
     }
 
     public void removeAddress() {
+        Log.i(TAG, "Address removed");
         address = "";
     }
 

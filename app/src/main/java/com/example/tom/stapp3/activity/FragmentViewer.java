@@ -19,9 +19,12 @@ import android.widget.TextView;
 import com.android.volley.Response;
 import com.android.volley.VolleyError;
 import com.example.tom.stapp3.R;
+import com.example.tom.stapp3.persistency.DBLog;
 import com.example.tom.stapp3.persistency.DatabaseHelper;
 import com.example.tom.stapp3.persistency.Profile;
 import com.example.tom.stapp3.persistency.ServerHelper;
+
+import java.util.Date;
 
 /**
  * Created by Tom on 3/11/2014.
@@ -35,7 +38,7 @@ public class FragmentViewer extends FragmentActivity implements FragmentProvider
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        DatabaseHelper.getInstance(this).truncateLogs();
+//        DatabaseHelper.getInstance(this).truncateLogs();
         String token = DatabaseHelper.getInstance(getApplicationContext()).getStringSetting(DatabaseHelper.TOKEN);
         if(token != null && !token.equals("")) {
             Log.d("start", "Token present");
