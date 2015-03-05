@@ -31,5 +31,5 @@ dependencies {
     compile('com.mikepenz.materialdrawer:library:1.0.0@aar') {
         transitive = true
     }
-    compile files('libs/mpandroidchartlibrary-1-7-4.jar')
+    compile 'com.androidplot:androidplot-core:0.6.1'
 }
