@@ -62,5 +62,4 @@
             android:label="@string/title_activity_internet__connection" >
         </activity>
     </application>
-
 </manifest>

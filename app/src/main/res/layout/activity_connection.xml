@@ -13,7 +13,9 @@ android:layout_height="match_parent">
             android:text="Start the day"
             android:visibility="invisible"
             android:layout_centerVertical="true"
-            android:onClick="startDay"/>
+            android:onClick="startDay"
+            android:background="@drawable/custom_button"
+            android:textColor="@color/material_drawer_primary_text"/>
         <ListView
             android:id="@+id/paired"
             android:layout_width="match_parent"
@@ -35,7 +37,9 @@ android:layout_height="match_parent">
             android:text="Stop the day"
             android:visibility="invisible"
             android:layout_centerVertical="true"
-            android:onClick="stopDay"/>
+            android:onClick="stopDay"
+            android:background="@drawable/custom_button"
+            android:textColor="@color/material_drawer_primary_text"/>
     </RelativeLayout>
 
 <ListView

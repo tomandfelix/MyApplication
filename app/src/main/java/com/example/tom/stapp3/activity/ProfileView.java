@@ -34,7 +34,6 @@ import java.lang.ref.WeakReference;
  * The activity that shows you your own profile
  */
 public class ProfileView extends DrawerActivity {
-    private Profile mProfile;
     private boolean avatarChanged;
     private static ImageView statusIcon;
     private Handler loggingMessageHandler = new ProfileHandler(this);
@@ -191,6 +190,9 @@ public class ProfileView extends DrawerActivity {
         final String newEmail =  validateInput(((EditText) findViewById(R.id.edit_email)).getText().toString(), mProfile.getEmail());
         final String newPassword = validateInput(((EditText) findViewById(R.id.edit_password)).getText().toString(), "");
         final String newAvatar = avatarChanged ? mProfile.getAvatar() : null;
+        int avatarID = getResources().getIdentifier("avatar_" + mProfile.getAvatar() + "_512", "drawable", getPackageName());
+        result.updateIcon(getResources().getDrawable(avatarID),0);
+
 
         ((EditText) findViewById(R.id.edit_password)).setText("");
 

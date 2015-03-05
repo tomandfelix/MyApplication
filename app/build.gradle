@@ -28,5 +28,8 @@ dependencies {
     compile 'org.apache.commons:commons-math:2.+'
     compile 'com.google.guava:guava:18.+'
     compile 'com.android.volley:volley-debug@aar'
+    compile('com.mikepenz.materialdrawer:library:1.0.0@aar') {
+        transitive = true
+    }
     compile files('libs/mpandroidchartlibrary-1-7-4.jar')
 }

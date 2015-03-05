@@ -100,13 +100,17 @@ android:layout_height="fill_parent">
             android:layout_height="wrap_content"
             android:layout_weight="1"
             android:text="Back"
-            android:onClick="toStart"/>
+            android:onClick="toStart"
+            android:background="@drawable/custom_button"
+            android:textColor="@color/material_drawer_primary_text"/>
 
         <Button
             android:layout_width="0dip"
             android:layout_height="wrap_content"
             android:layout_weight="1"
             android:text="Register"
-            android:onClick="registerBtn"/>
+            android:onClick="registerBtn"
+            android:background="@drawable/custom_button"
+            android:textColor="@color/material_drawer_primary_text"/>
     </LinearLayout>
 </LinearLayout>

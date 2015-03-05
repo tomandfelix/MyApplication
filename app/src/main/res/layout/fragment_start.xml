@@ -33,13 +33,17 @@
             android:layout_height="wrap_content"
             android:layout_weight="0.50"
             android:text="Login"
-            android:onClick="toLogin"/>
+            android:onClick="toLogin"
+            android:background="@drawable/custom_button"
+            android:textColor="@color/material_drawer_primary_text"/>
 
         <Button
             android:layout_width="0dip"
             android:layout_height="wrap_content"
             android:layout_weight=".50"
             android:text="New"
-            android:onClick="toNewProfile"/>
+            android:onClick="toNewProfile"
+            android:background="@drawable/custom_button"
+            android:textColor="@color/material_drawer_primary_text"/>
     </LinearLayout>
 </LinearLayout>

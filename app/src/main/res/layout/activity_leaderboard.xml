@@ -8,7 +8,9 @@ android:layout_height="match_parent">
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:paddingLeft="@dimen/activity_margin"
-    android:paddingRight="@dimen/activity_margin"/>
+    android:paddingRight="@dimen/activity_margin"
+    android:scrollbarStyle="outsideOverlay"
+    android:scrollbarThumbVertical="@drawable/custom_scrollbar"/>
 
 <ListView
     android:id="@+id/menulist"

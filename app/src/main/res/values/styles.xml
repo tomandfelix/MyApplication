@@ -1,8 +1,27 @@
 <resources>
 
-    <!-- Base application theme. -->
-    <style name="AppTheme" parent="android:Theme.Holo.Light.DarkActionBar">
-        <!-- Customize your theme here. -->
+    <!-- Base application theme.-->
+    <style name="AppTheme" parent="Theme.AppCompat.Light">
+        <item name="colorPrimary">@color/material_drawer_primary</item>
+        <item name="colorPrimaryDark">@color/material_drawer_primary_dark</item>
+        <item name="colorAccent">@color/material_drawer_primary_light</item>
     </style>
+
+    <!--Material DEFAULT colors -->
+    <color name="material_drawer_primary">#3F51B5</color>
+    <color name="material_drawer_primary_dark">#303F9F</color>
+    <color name="material_drawer_primary_light">#C5CAE9</color>
+    <color name="material_drawer_accent">#FFEA00</color>
+    <color name="material_drawer_window_background">#3F51B5</color>
+    <color name="material_drawer_background">#3F51B5</color>
+    <!-- Material DEFAULT text / items colors -->
+    <color name="material_drawer_icons">#8affffff</color>
+    <color name="material_drawer_primary_text">#deffffff</color>
+    <color name="material_drawer_secondary_text">#8affffff</color>
+    <color name="material_drawer_hint_text">#42ffffff</color>
+    <color name="material_drawer_divider">#1fffffff</color>
+    <!-- Material DEFAULT drawer colors -->
+    <color name="material_drawer_selected">#FFFFFF</color>
+    <color name="material_drawer_selected_text">#000000</color>
 
 </resources>

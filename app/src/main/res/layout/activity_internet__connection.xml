@@ -42,6 +42,8 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:text="Send"
+                android:background="@drawable/custom_button"
+                android:textColor="@color/material_drawer_primary_text"
                 android:onClick="toSend"/>
             <TextView
                 android:textSize="@dimen/textSize"

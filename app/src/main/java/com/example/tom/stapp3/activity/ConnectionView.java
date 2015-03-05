@@ -21,6 +21,7 @@ import com.example.tom.stapp3.R;
 import com.example.tom.stapp3.service.ShimmerService;
 import com.example.tom.stapp3.persistency.DatabaseHelper;
 import com.example.tom.stapp3.tools.Logging;
+import com.mikepenz.materialdrawer.Drawer;
 
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
@@ -46,6 +47,7 @@ public class ConnectionView extends DrawerActivity {
         index = CONNECTION;
         super.onCreate(savedInstanceState);
         mService.setSecondaryHandler(serviceMessageHandler);
+
 
         //Create BT adapter and checks its existence
         mBluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
