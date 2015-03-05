@@ -132,7 +132,7 @@ public class DatabaseHelper extends SQLiteOpenHelper{
 
     //--------------------------------------------------------LOGS------------------------------------------------------------------------------
 
-    private void addLog(String action, Date datetime, double achievedScore) {
+    public void addLog(String action, Date datetime, double achievedScore) {
         ContentValues input = new ContentValues(2);
         input.put(KEY_ACTION, action);
         input.put(KEY_DATETIME, dateToString(datetime));
@@ -173,7 +173,7 @@ public class DatabaseHelper extends SQLiteOpenHelper{
 
     public ArrayList<DBLog> getTodaysLogs() {
         Log.i("getTodaysLogs", "getting today's logs");
-        String query = "SELECT " + KEY_ACTION + ", " + KEY_DATETIME + ", " + KEY_DATA + " FROM " + TABLE_LOGS + " WHERE " + KEY_ACTION + " NOT IN ('" + LOG_START_DAY + "', '" + LOG_ACH_SCORE_PERC + "', '" + LOG_STOP_DAY + "') AND " + KEY_ID + " > SELECT " + KEY_ID + " FROM " + TABLE_LOGS + " WHERE " + KEY_ACTION + " = '" + LOG_START_DAY + "' ORDER BY " + KEY_ID + " DESC LIMIT 1) ORDER BY " + KEY_ID + " ASC";
+        String query = "SELECT " + KEY_ACTION + ", " + KEY_DATETIME + ", " + KEY_DATA + " FROM " + TABLE_LOGS + " WHERE " + KEY_ACTION + " NOT IN ('" + LOG_START_DAY + "', '" + LOG_ACH_SCORE_PERC + "', '" + LOG_STOP_DAY + "') AND " + KEY_ID + " > (SELECT " + KEY_ID + " FROM " + TABLE_LOGS + " WHERE " + KEY_ACTION + " = '" + LOG_START_DAY + "' ORDER BY " + KEY_ID + " DESC LIMIT 1) ORDER BY " + KEY_ID + " ASC";
         SQLiteDatabase db = getReadableDatabase();
         Cursor cursor = db.rawQuery(query, null);
         ArrayList<DBLog> result = null;
@@ -204,7 +204,7 @@ public class DatabaseHelper extends SQLiteOpenHelper{
     }
 
     public DBLog getLastSitStand() {
-        Log.i("dayStarted", "checking");
+        Log.i("getLastSitStand", "running");
         String query = "SELECT " + KEY_ACTION + ", " + KEY_DATETIME + ", " + KEY_DATA + " FROM " + TABLE_LOGS + " WHERE " + KEY_ACTION + " IN('" + LOG_SIT + "', '" + LOG_STAND + "') ORDER BY " + KEY_ID + " DESC LIMIT 1";
         SQLiteDatabase db = getReadableDatabase();
         Cursor cursor = db.rawQuery(query, null);
@@ -217,7 +217,22 @@ public class DatabaseHelper extends SQLiteOpenHelper{
         return result;
     }
 
+    public DBLog getLastSitStandOver() {
+        Log.i("getLastSitStandOver", "running");
+        String query = "SELECT " + KEY_ACTION + ", " + KEY_DATETIME + ", " + KEY_DATA + " FROM " + TABLE_LOGS + " WHERE " + KEY_ACTION + " IN('" + LOG_SIT + "', '" + LOG_STAND + "', '" + LOG_OVERTIME + "') ORDER BY " + KEY_ID + " DESC LIMIT 1";
+        SQLiteDatabase db = getReadableDatabase();
+        Cursor cursor = db.rawQuery(query, null);
+        DBLog result = null;
+        if(cursor != null && cursor.getCount() > 0) {
+            cursor.moveToFirst();
+            result = new DBLog(cursor.getString(0), stringToDate(cursor.getString(1)), cursor.getDouble(2));
+        }
+        db.close();
+        return result;
+    }
+
     public DBLog getLastLogBefore(Date dateTime) {
+        Log.i("getLastLogBefore", "running");
         String query = "SELECT " + KEY_ACTION + ", " + KEY_DATETIME + ", " + KEY_DATA + " FROM " + TABLE_LOGS + " WHERE " + KEY_DATETIME + " < '" + dateToString(dateTime) + "' ORDER BY " + KEY_ID + " DESC LIMIT 1";
         SQLiteDatabase db = getReadableDatabase();
         Cursor cursor = db.rawQuery(query, null);
@@ -231,6 +246,7 @@ public class DatabaseHelper extends SQLiteOpenHelper{
     }
 
     public DBLog getFirstRecordOfDay() {
+        Log.i("getFirstRecordOfDay", "running");
         String query = "SELECT " + KEY_ACTION + ", " + KEY_DATETIME + ", " + KEY_DATA + " FROM " + TABLE_LOGS + " WHERE " + KEY_ACTION + " IN('" + LOG_SIT + "', '" + LOG_STAND + "') AND " + KEY_ID + " > (SELECT " + KEY_ID + " FROM " + TABLE_LOGS + " WHERE " + KEY_ACTION + " = '" + LOG_START_DAY + "' ORDER BY " + KEY_ID + " DESC LIMIT 1) ORDER BY " + KEY_ID + " ASC LIMIT 1";
         SQLiteDatabase db = getReadableDatabase();
         Cursor cursor = db.rawQuery(query, null);
@@ -238,6 +254,23 @@ public class DatabaseHelper extends SQLiteOpenHelper{
         if(cursor != null && cursor.getCount() > 0) {
             cursor.moveToFirst();
             result = new DBLog(cursor.getString(0), stringToDate(cursor.getString(1)), cursor.getDouble(2));
+        }
+        db.close();
+        return result;
+    }
+
+    private boolean isConnected() {
+        Log.i("isConnected", "checking");
+        String query = "SELECT " + KEY_ACTION + " FROM " + TABLE_LOGS + " WHERE " + KEY_ACTION + " IN('" + LOG_CONNECT + "', '" + LOG_DISCONNECT + "') AND " + KEY_ID + " > (SELECT " + KEY_ID + " FROM " + TABLE_LOGS + " WHERE " + KEY_ACTION + " = '" + LOG_START_DAY + "' ORDER BY " + KEY_ID + " DESC LIMIT 1) ORDER BY " + KEY_ID + " DESC LIMIT 1";
+        SQLiteDatabase db = getReadableDatabase();
+        Cursor cursor = db.rawQuery(query, null);
+        boolean result = false;
+        if(cursor != null && cursor.getCount() > 0) {
+            cursor.moveToFirst();
+            if(cursor.getString(0).equals(LOG_DISCONNECT))
+                result = false;
+            else
+                result = true;
         }
         db.close();
         return result;
@@ -272,8 +305,7 @@ public class DatabaseHelper extends SQLiteOpenHelper{
     public void addConnectionStatus(boolean connected) {
         Log.i("addConnectionStatus", connected ? "connected" : "disconnected");
         Date time = new Date();
-        DBLog before = getLastLogBefore(time);
-        if(!before.getAction().equals(connected ? LOG_CONNECT : LOG_DISCONNECT)) {
+        if(!connected == isConnected()) {
             addLog(connected ? LOG_CONNECT : LOG_DISCONNECT, time, -1);
         }
     }

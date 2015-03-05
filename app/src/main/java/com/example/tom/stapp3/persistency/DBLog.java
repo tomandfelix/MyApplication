@@ -45,6 +45,6 @@ public class DBLog {
 
     @Override
     public String toString() {
-        return action + " " + datetime.toString() + " " + data;
+        return action + " " + DatabaseHelper.df.format(datetime) + " " + data;
     }
 }
