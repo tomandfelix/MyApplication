@@ -8,6 +8,7 @@ import android.os.Handler;
 import android.os.Message;
 import android.text.InputType;
 import android.text.method.PasswordTransformationMethod;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
@@ -39,6 +40,7 @@ public class ProfileView extends DrawerActivity {
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
+        Log.i("onCreate", "ProfileView");
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_profile);
         Profile profile = getIntent().getParcelableExtra("profile");
@@ -59,14 +61,9 @@ public class ProfileView extends DrawerActivity {
             }, new Response.ErrorListener() {
                 @Override
                 public void onErrorResponse(VolleyError volleyError) {
-                    final AlertDialog alertDialog = new AlertDialog.Builder(ProfileView.this).create();
+                    final AlertDialog.Builder alertDialog = new AlertDialog.Builder(ProfileView.this);
                     alertDialog.setMessage("It seems like an error occured, please logout and try again");
-                    alertDialog.setButton("Dismiss", new DialogInterface.OnClickListener() {
-                        @Override
-                        public void onClick(DialogInterface dialog, int which) {
-                            alertDialog.dismiss();
-                        }
-                    });
+                    alertDialog.setPositiveButton("Dismiss", null);
                     alertDialog.show();
                 }
             }, true);
@@ -207,19 +204,22 @@ public class ProfileView extends DrawerActivity {
                 input.setInputType(InputType.TYPE_TEXT_VARIATION_PASSWORD);
                 input.setTransformationMethod(PasswordTransformationMethod.getInstance());
                 alert.setView(input);
-                alert.setPositiveButton("Ok", new DialogInterface.OnClickListener() {
+                DialogInterface.OnClickListener listener = new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
-                        String oldPassword = input.getText().toString();
-                        ServerHelper.getInstance(getApplicationContext()).updateProfileSettings(newFirstName, newLastName, newUsername, newEmail, newAvatar, oldPassword, newPassword, null); //TODO make this a meaningful errorListener
+                        switch(which) {
+                            case DialogInterface.BUTTON_POSITIVE:
+                                String oldPassword = input.getText().toString();
+                                ServerHelper.getInstance(getApplicationContext()).updateProfileSettings(newFirstName, newLastName, newUsername, newEmail, newAvatar, oldPassword, newPassword, null); //TODO make this a meaningful errorListener
+                                break;
+                            case DialogInterface.BUTTON_NEGATIVE:
+                                ((EditText) findViewById(R.id.edit_password)).setText(null);
+                                break;
+                        }
                     }
-                });
-                alert.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialog, int which) {
-                        ((EditText) findViewById(R.id.edit_password)).setText(null);
-                    }
-                });
+                };
+                alert.setPositiveButton("CONFIRM", listener);
+                alert.setNegativeButton("CANCEL", listener);
                 alert.show();
             } else {
                 ServerHelper.getInstance(this).updateProfileSettings(newFirstName, newLastName, newUsername, newEmail, newAvatar, null); //TODO make this a meaningful errorListener

@@ -39,8 +39,6 @@ public abstract class DrawerActivity extends ServiceActivity {
     protected Drawer.Result result;
     protected Profile mProfile;
     protected String[] menuItems;
-    private static int index;
-    protected ActionBarDrawerToggle toggle;
     protected final static int PROFILE = 0;
     protected final static int LEADERBOARD = 2;
     protected final static int GRAPHS = 3;
@@ -51,6 +49,7 @@ public abstract class DrawerActivity extends ServiceActivity {
     protected final static int INTERNET_CONNECTION = 9;
     protected final static int SETTINGS = 10;
     protected final static int LOGOUT = 12;
+    private static int index = PROFILE;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -63,7 +62,8 @@ public abstract class DrawerActivity extends ServiceActivity {
         menuItems = getResources().getStringArray(R.array.sideMenu);
         mProfile = DatabaseHelper.getInstance(this).getProfile(DatabaseHelper.getInstance(this).getIntSetting(DatabaseHelper.OWNER));
         int avatar_id = getResources().getIdentifier("avatar_" + mProfile.getAvatar() + "_512", "drawable", getPackageName());
-    result = new Drawer()
+        final int oldIndex = index;
+        result = new Drawer()
                 .withActivity(this)
                 .addDrawerItems(
                         new PrimaryDrawerItem().withName(menuItems[0]).withIcon(avatar_id),
@@ -83,10 +83,7 @@ public abstract class DrawerActivity extends ServiceActivity {
                 .withOnDrawerItemClickListener(new Drawer.OnDrawerItemClickListener() {
                     @Override
                     public void onItemClick(AdapterView<?> parent, View view, int position, long id, IDrawerItem drawerItem) {
-                        ListView tempListView = (ListView) findViewById(R.id.menulist);
-                        tempListView.setItemChecked(position, true);
-                        DrawerLayout tempDrawerLayout = (DrawerLayout) findViewById(R.id.drawer);
-                        tempDrawerLayout.closeDrawer(tempListView);
+                        Log.i("onItemClick", "id=" + position);
                         if (position != index) {
                             index = position;
                             Intent intent;
@@ -96,12 +93,14 @@ public abstract class DrawerActivity extends ServiceActivity {
                                     intent = new Intent(DrawerActivity.this, LeaderboardView.class);
                                     intent.setFlags(Intent.FLAG_ACTIVITY_NO_ANIMATION);
                                     startActivity(intent);
+                                    finish();
                                     break;
                                 case GRAPHS:
                                     Log.d("Graphs","clicked");
                                     intent = new Intent(DrawerActivity.this, Graph.class);
                                     intent.setFlags(Intent.FLAG_ACTIVITY_NO_ANIMATION);
                                     startActivity(intent);
+                                    finish();
                                     break;
                                 case SOLO_QUEST:
                                 case CHALLENGE:
@@ -111,57 +110,60 @@ public abstract class DrawerActivity extends ServiceActivity {
                                     intent.putExtra("Position", position);
                                     intent.setFlags(Intent.FLAG_ACTIVITY_NO_ANIMATION);
                                     startActivity(intent);
+                                    finish();
                                     break;
                                 case CONNECTION:
                                     Log.d("Connection","clicked");
                                     intent = new Intent(DrawerActivity.this, ConnectionView.class);
                                     intent.setFlags(Intent.FLAG_ACTIVITY_NO_ANIMATION);
                                     startActivity(intent);
+                                    finish();
                                     break;
                                 case INTERNET_CONNECTION:
                                     Log.d("internet connection","clicked");
                                     intent = new Intent(getBaseContext(), Internet_Connection.class);
                                     intent.setFlags(Intent.FLAG_ACTIVITY_NO_ANIMATION);
                                     startActivity(intent);
+                                    finish();
                                     break;
                                 case LOGOUT:
+                                    index = oldIndex;
                                     Log.d("logout","clicked");
-//                            DialogInterface.OnClickListener dialogClickListener = new DialogInterface.OnClickListener() {
-//                                @Override
-//                                public void onClick(DialogInterface dialog, int which) {
-//                                    switch(which) {
-//                                        case DialogInterface.BUTTON_POSITIVE:
-//
-//                                    }
-//                                }
-//                            }
-                                    DatabaseHelper.getInstance(getApplicationContext()).setSetting(DatabaseHelper.TOKEN, "");
-                                    intent = new Intent(DrawerActivity.this, FragmentViewer.class);
-                                    startActivity(intent);
-                                    overridePendingTransition(R.anim.enter_bottom, R.anim.leave_top);
+                                    DialogInterface.OnClickListener listener = new DialogInterface.OnClickListener() {
+                                        @Override
+                                        public void onClick(DialogInterface dialog, int which) {
+                                            switch(which) {
+                                                case DialogInterface.BUTTON_POSITIVE:
+                                                    DatabaseHelper.getInstance(getApplicationContext()).setSetting(DatabaseHelper.TOKEN, "");
+                                                    Intent intent = new Intent(DrawerActivity.this, FragmentViewer.class);
+                                                    startActivity(intent);
+                                                    overridePendingTransition(R.anim.enter_bottom, R.anim.leave_top);
+                                                    finish();
+                                                    break;
+                                                case DialogInterface.BUTTON_NEGATIVE:
+                                                    result.setSelection(oldIndex);
+                                                    break;
+                                            }
+                                        }
+                                    };
+                                    final AlertDialog.Builder alertDialog = new AlertDialog.Builder(DrawerActivity.this);
+                                    alertDialog.setMessage("Are you sure you want to log out?");
+                                    alertDialog.setPositiveButton("Logout", listener);
+                                    alertDialog.setNegativeButton("Cancel", listener);
+                                    alertDialog.show();
                                     break;
-
                                 case PROFILE:
                                     Log.d("Profile","clicked");
                                     intent = new Intent(DrawerActivity.this, ProfileView.class);
                                     intent.setFlags(Intent.FLAG_ACTIVITY_NO_ANIMATION);
                                     startActivity(intent);
+                                    finish();
                                     break;
                             }
-                            finish();
                         }
                     }
                 })
                 .build();
+        result.setSelection(index);
     }
-
-    @Override
-    public void onConfigurationChanged(Configuration newConfig) {
-        super.onConfigurationChanged(newConfig);
-        toggle.onConfigurationChanged(newConfig);
-    }
-
-
-
-
 }

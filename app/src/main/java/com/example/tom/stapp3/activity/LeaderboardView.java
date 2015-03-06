@@ -39,6 +39,7 @@ public class LeaderboardView extends DrawerActivity {
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
+        Log.i("onCreate", "LeaderBoardView");
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_leaderboard);
         leaderboardList = (ListView) findViewById(R.id.leaderboard_list);
@@ -52,14 +53,10 @@ public class LeaderboardView extends DrawerActivity {
                         View header = getLayoutInflater().inflate(R.layout.list_head_foot_leaderboard, leaderboardList, false);
                         TextView head = (TextView) header.findViewById(R.id.head_foot_text);
                         head.setText("Load 10 higher ranks");
-                        head.setTextColor(getResources().getColor(R.color.material_drawer_secondary_text));
-                        head.setBackgroundColor(getResources().getColor(R.color.material_drawer_primary_light));
                         leaderboardList.addHeaderView(header);
                         View footer = getLayoutInflater().inflate(R.layout.list_head_foot_leaderboard, leaderboardList, false);
                         TextView foot = (TextView) footer.findViewById(R.id.head_foot_text);
                         foot.setText("Load 10 lower ranks");
-                        foot.setTextColor(getResources().getColor(R.color.material_drawer_secondary_text));
-                        foot.setBackgroundColor(getResources().getColor(R.color.material_drawer_primary_light));
                         leaderboardList.addFooterView(footer);
                         leaderboardList.setAdapter(adapter);
                         leaderboardList.setOnItemClickListener(new AdapterView.OnItemClickListener() {
@@ -117,6 +114,8 @@ public class LeaderboardView extends DrawerActivity {
     }
 
     private class LeaderboardListAdapter extends ArrayAdapter<Profile> {
+        private int normalColor = getResources().getColor(R.color.material_drawer_primary_text);
+        private int accentColor = getResources().getColor(R.color.material_drawer_accent);
         private ArrayList<Profile> data;
         private int itemLayoutId;
 
@@ -143,9 +142,13 @@ public class LeaderboardView extends DrawerActivity {
 
                 int avatarID = getResources().getIdentifier("avatar_" + p.getAvatar() +"_128", "drawable", getPackageName());
                 if(p.getId() == mProfile.getId()){
-                    convertView.setBackgroundColor(getResources().getColor(R.color.material_drawer_accent));
+                    rank.setTextColor(accentColor);
+                    username.setTextColor(accentColor);
+                    experience.setTextColor(accentColor);
                 } else {
-                    convertView.setBackgroundColor(Color.TRANSPARENT);
+                    rank.setTextColor(normalColor);
+                    username.setTextColor(normalColor);
+                    experience.setTextColor(normalColor);
                 }
                 if(rank != null) {rank.setText(Integer.toString(p.getRank()));}
                 if(avatar != null) {avatar.setImageResource(avatarID);}
