@@ -11,14 +11,14 @@ import com.example.tom.stapp3.service.ShimmerService.LocalBinder;
 import android.content.Intent;
 import android.os.Bundle;
 import android.os.IBinder;
-import android.app.Activity;
 import android.app.ActivityManager;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.ServiceConnection;
+import android.support.v7.app.ActionBarActivity;
 import android.util.Log;
 
-public abstract class ServiceActivity extends Activity {
+public abstract class ServiceActivity extends ActionBarActivity {
     protected static ShimmerService mService;
     protected static boolean mServiceBind=false;
     protected static boolean mServiceFirstTime=true;

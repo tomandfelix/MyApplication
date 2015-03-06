@@ -39,8 +39,8 @@ public abstract class DrawerActivity extends ServiceActivity {
     protected Drawer.Result result;
     protected Profile mProfile;
     protected String[] menuItems;
+    private static int index;
     protected ActionBarDrawerToggle toggle;
-    protected static int index;
     protected final static int PROFILE = 0;
     protected final static int LEADERBOARD = 2;
     protected final static int GRAPHS = 3;
@@ -55,107 +55,14 @@ public abstract class DrawerActivity extends ServiceActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-
-
-        /*
-        ListView listView = (ListView) findViewById(R.id.menulist);
-        if(listView == null) Log.e("ListView", "Listview is null");
-        listView.setAdapter(new ArrayAdapter<>(this, R.layout.list_item_drawer, menuItems));
-        listView.setItemChecked(index, true);
-        listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-            @Override
-            public void onItemClick(AdapterView parent, View view, int position, long id) {
-                ListView tempListView = (ListView) findViewById(R.id.menulist);
-                tempListView.setItemChecked(position, true);
-                DrawerLayout tempDrawerLayout = (DrawerLayout) findViewById(R.id.drawer);
-                tempDrawerLayout.closeDrawer(tempListView);
-                if(position != index) {
-                    Intent intent;
-                    switch(position) {
-                        case CONNECTION:
-                            intent = new Intent(DrawerActivity.this, ConnectionView.class);
-                            intent.setFlags(Intent.FLAG_ACTIVITY_NO_ANIMATION);
-                            startActivity(intent);
-                            break;
-                        case LEADERBOARD:
-                            intent = new Intent(DrawerActivity.this, LeaderboardView.class);
-                            intent.setFlags(Intent.FLAG_ACTIVITY_NO_ANIMATION);
-                            startActivity(intent);
-                            break;
-                        case GRAPHS:
-                            intent = new Intent(DrawerActivity.this, Graph.class);
-                            intent.setFlags(Intent.FLAG_ACTIVITY_NO_ANIMATION);
-                            startActivity(intent);
-                            break;
-                        case SOLO_QUEST:
-                        case CHALLENGE:
-                        case CO_OPERATIVE:
-                            intent = new Intent(DrawerActivity.this, QuestList.class);
-                            intent.putExtra("Position", position);
-                            intent.setFlags(Intent.FLAG_ACTIVITY_NO_ANIMATION);
-                            startActivity(intent);
-                            break;
-                        case LOGOUT:
-//                            DialogInterface.OnClickListener dialogClickListener = new DialogInterface.OnClickListener() {
-//                                @Override
-//                                public void onClick(DialogInterface dialog, int which) {
-//                                    switch(which) {
-//                                        case DialogInterface.BUTTON_POSITIVE:
-//
-//                                    }
-//                                }
-//                            }
-                            DatabaseHelper.getInstance(getApplicationContext()).setSetting(DatabaseHelper.TOKEN, "");
-                            intent = new Intent(DrawerActivity.this, FragmentViewer.class);
-                            startActivity(intent);
-                            overridePendingTransition(R.anim.enter_bottom, R.anim.leave_top);
-                            break;
-                        case INTERNET_CONNECTION:
-                            intent = new Intent(getBaseContext(), Internet_Connection.class);
-                            intent.setFlags(Intent.FLAG_ACTIVITY_NO_ANIMATION);
-                            startActivity(intent);
-                            break;
-                        case PROFILE:
-                        default:
-                            intent = new Intent(DrawerActivity.this, ProfileView.class);
-                            intent.setFlags(Intent.FLAG_ACTIVITY_NO_ANIMATION);
-                            startActivity(intent);
-                            break;
-                    }
-                    finish();
-                }
-            }
-        });}
-        DrawerLayout drawerLayout = (DrawerLayout) findViewById(R.id.drawer);
-        drawerLayout.setDrawerShadow(R.drawable.drawer_shadow, GravityCompat.START);
-        toggle = new ActionBarDrawerToggle(this, drawerLayout, R.drawable.ic_drawer, R.string.app_name, R.string.app_name) {
-            @Override
-            public void onDrawerClosed(View view) {
-                super.onDrawerClosed(view);
-                getActionBar().setTitle(menuItems[index]);
-            }
-
-            @Override
-            public void onDrawerOpened(View drawerView) {
-                super.onDrawerOpened(drawerView);
-                getActionBar().setTitle("Menu");
-            }
-        };
-        drawerLayout.setDrawerListener(toggle);
-
-        getActionBar().setDisplayHomeAsUpEnabled(true);
-        getActionBar().setHomeButtonEnabled(true);
-    }*/}
+    }
 
     @Override
     protected void onPostCreate(Bundle savedInstanceState) {
         super.onPostCreate(savedInstanceState);
-        // Sync the toggle state after onRestoreInstanceState has occurred.
-        //toggle.syncState();
         menuItems = getResources().getStringArray(R.array.sideMenu);
         mProfile = DatabaseHelper.getInstance(this).getProfile(DatabaseHelper.getInstance(this).getIntSetting(DatabaseHelper.OWNER));
         int avatar_id = getResources().getIdentifier("avatar_" + mProfile.getAvatar() + "_512", "drawable", getPackageName());
-        int selected;
     result = new Drawer()
                 .withActivity(this)
                 .addDrawerItems(
@@ -181,6 +88,7 @@ public abstract class DrawerActivity extends ServiceActivity {
                         DrawerLayout tempDrawerLayout = (DrawerLayout) findViewById(R.id.drawer);
                         tempDrawerLayout.closeDrawer(tempListView);
                         if (position != index) {
+                            index = position;
                             Intent intent;
                             switch (position) {
                                 case LEADERBOARD:

@@ -43,11 +43,9 @@ public class ConnectionView extends DrawerActivity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-        setContentView(R.layout.activity_connection);
-        index = CONNECTION;
         super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_connection);
         mService.setSecondaryHandler(serviceMessageHandler);
-
 
         //Create BT adapter and checks its existence
         mBluetoothAdapter = BluetoothAdapter.getDefaultAdapter();

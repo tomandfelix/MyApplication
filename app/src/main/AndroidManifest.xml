@@ -23,8 +23,7 @@
         </activity>
         <activity
             android:name=".activity.ProfileView"
-            android:label="@string/title_activity_profile_view"
-            android:windowSoftInputMode="stateAlwaysHidden" >
+            android:label="@string/title_activity_profile_view">
         </activity>
         <activity
             android:name=".activity.LeaderboardView"

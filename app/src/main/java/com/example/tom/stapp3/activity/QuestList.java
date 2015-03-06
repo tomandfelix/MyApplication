@@ -28,10 +28,9 @@ public class QuestList extends DrawerActivity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_quest_list);
         int position = getIntent().getExtras().getInt("Position");
-        index = position;
-        super.onCreate(savedInstanceState);
         ListView questList = (ListView) findViewById(R.id.quest_list);
         switch(position) {
             case SOLO_QUEST:

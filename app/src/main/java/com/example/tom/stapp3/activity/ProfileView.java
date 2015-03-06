@@ -8,7 +8,6 @@ import android.os.Handler;
 import android.os.Message;
 import android.text.InputType;
 import android.text.method.PasswordTransformationMethod;
-import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
@@ -40,9 +39,8 @@ public class ProfileView extends DrawerActivity {
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
-        setContentView(R.layout.activity_profile);
-        index = PROFILE;
         super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_profile);
         Profile profile = getIntent().getParcelableExtra("profile");
         if (profile != null) {
             mProfile = profile;

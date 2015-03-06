@@ -43,9 +43,8 @@ public class Internet_Connection extends DrawerActivity {
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
-        setContentView(R.layout.activity_internet__connection);
-        index = INTERNET_CONNECTION;
         super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_internet__connection);
         final Button button = (Button) findViewById(R.id.send_button);
         button.setOnClickListener(new View.OnClickListener() {
             @Override

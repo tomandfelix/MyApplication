@@ -39,10 +39,8 @@ public class LeaderboardView extends DrawerActivity {
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
-        Log.d("going in","leaderboard view");
-        setContentView(R.layout.activity_leaderboard);
-        index = LEADERBOARD;
         super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_leaderboard);
         leaderboardList = (ListView) findViewById(R.id.leaderboard_list);
         context = this;
         ServerHelper.getInstance(this).getLeaderboardById(DatabaseHelper.getInstance(this).getIntSetting(DatabaseHelper.OWNER),
