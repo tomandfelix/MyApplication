@@ -135,16 +135,18 @@ public class FragmentViewer extends FragmentActivity implements FragmentProvider
                     startActivity(intent);
                     overridePendingTransition(R.anim.enter_top, R.anim.leave_bottom);
                     finish();
-                } else {
-                    txtView.setText("No such profile exists, please try again");
-                    password.setText(null);
-                    v.setEnabled(true);
                 }
             }
         }, new Response.ErrorListener() {
             @Override
             public void onErrorResponse(VolleyError error) {
-                Log.e("loginBtn", error.getMessage());
+                if(error.getMessage().equals("wrong")) {
+                    txtView.setText("No such profile exists, please try again");
+                    password.setText(null);
+                    v.setEnabled(true);
+                } else {
+                    Log.e("loginBtn", error.getMessage());
+                }
             }
         });
 

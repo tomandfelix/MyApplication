@@ -94,22 +94,20 @@ android:layout_height="fill_parent">
         android:layout_height="wrap_content"
         android:layout_marginTop="@dimen/text_separation">
 
-        <Button
+        <com.gc.materialdesign.views.ButtonFlat
             android:layout_width="0dip"
             android:layout_height="wrap_content"
             android:layout_weight="1"
             android:text="Back"
             android:onClick="toStart"
-            android:background="@drawable/custom_button"
-            android:textColor="@color/material_drawer_primary_text"/>
+            android:background="@color/material_drawer_primary"/>
 
-        <Button
+        <com.gc.materialdesign.views.ButtonFlat
             android:layout_width="0dip"
             android:layout_height="wrap_content"
             android:layout_weight="1"
             android:text="Register"
             android:onClick="registerBtn"
-            android:background="@drawable/custom_button"
-            android:textColor="@color/material_drawer_primary_text"/>
+            android:background="@color/material_drawer_primary"/>
     </LinearLayout>
 </LinearLayout>

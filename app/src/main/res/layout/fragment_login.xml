@@ -35,24 +35,21 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content">
 
-        <Button
+        <com.gc.materialdesign.views.ButtonFlat
             android:layout_width="0dip"
             android:layout_height="wrap_content"
-            android:layout_weight="0.5"
-            android:text="Login"
-            android:onClick="loginBtn"
-            android:background="@drawable/custom_button"
-            android:textColor="@color/material_drawer_primary_text"/>
-
-        <Button
-            android:layout_width="0dip"
-            android:layout_height="wrap_content"
-            android:layout_weight="0.5"
+            android:layout_weight="1"
             android:text="Back"
             android:onClick="toStart"
+            android:background="@color/material_drawer_primary"/>
 
-            android:background="@drawable/custom_button"
-            android:textColor="@color/material_drawer_primary_text"/>
+        <com.gc.materialdesign.views.ButtonFlat
+            android:layout_width="0dip"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="Login"
+            android:onClick="loginBtn"
+            android:background="@color/material_drawer_primary"/>
     </LinearLayout>
 
 </LinearLayout>
