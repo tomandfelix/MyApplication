@@ -146,6 +146,6 @@
             android:layout_height="100dp"
             android:layout_alignParentTop="true"
             android:layout_alignParentLeft="true"
-            android:src="@drawable/sitting"/>
+            android:src="@drawable/icon_sit_red"/>
     </RelativeLayout>
 </LinearLayout>

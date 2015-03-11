@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <item name="green" type="color">#8BC34A</item>
+    <item name="yellow" type="color">#FFEB3B</item>
+    <item name="orange" type="color">#FF9800</item>
+    <item name="red" type="color">#F44336</item>
+</resources>

@@ -10,6 +10,7 @@ import android.util.Log;
 import com.example.tom.stapp3.BuildConfig;
 
 import java.io.File;
+import java.security.Key;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -53,6 +54,7 @@ public class DatabaseHelper extends SQLiteOpenHelper{
     public static final String NOTIF = "notification";
     public static final String TOKEN = "token";
     public static final String LAST_ENTERED_USERNAME  = "LEU";
+    public static final String UPLOAD3G = "upload_if_3g";
     public static final String LOG_SIT = "sit";
     public static final String LOG_OVERTIME = "sit_overtime";
     public static final String LOG_STAND = "stand";
@@ -95,6 +97,10 @@ public class DatabaseHelper extends SQLiteOpenHelper{
         values.clear();
         values.put(KEY_SETTING, LAST_ENTERED_USERNAME);
         values.put(KEY_VALUE_STRING, "");
+        db.insert(TABLE_SETTINGS, null, values);
+        values.clear();
+        values.put(KEY_SETTING, UPLOAD3G);
+        values.put(KEY_VALUE_INT, 0);
         db.insert(TABLE_SETTINGS, null, values);
     }
 
@@ -173,7 +179,7 @@ public class DatabaseHelper extends SQLiteOpenHelper{
 
     public ArrayList<DBLog> getTodaysLogs() {
         Log.i("getTodaysLogs", "getting today's logs");
-        String query = "SELECT " + KEY_ACTION + ", " + KEY_DATETIME + ", " + KEY_DATA + " FROM " + TABLE_LOGS + " WHERE " + KEY_ACTION + " NOT IN ('" + LOG_START_DAY + "', '" + LOG_ACH_SCORE_PERC + "', '" + LOG_STOP_DAY + "') AND " + KEY_ID + " > (SELECT " + KEY_ID + " FROM " + TABLE_LOGS + " WHERE " + KEY_ACTION + " = '" + LOG_START_DAY + "' ORDER BY " + KEY_ID + " DESC LIMIT 1) ORDER BY " + KEY_ID + " ASC";
+        String query = "SELECT " + KEY_ACTION + ", " + KEY_DATETIME + ", " + KEY_DATA + " FROM " + TABLE_LOGS + " WHERE " + KEY_ACTION + " NOT IN ('" + LOG_START_DAY + "', '" + LOG_ACH_SCORE_PERC + "', '" + LOG_ACH_SCORE + "', '" + LOG_STOP_DAY + "') AND " + KEY_ID + " > (SELECT " + KEY_ID + " FROM " + TABLE_LOGS + " WHERE " + KEY_ACTION + " = '" + LOG_START_DAY + "' ORDER BY " + KEY_ID + " DESC LIMIT 1) ORDER BY " + KEY_ID + " ASC";
         SQLiteDatabase db = getReadableDatabase();
         Cursor cursor = db.rawQuery(query, null);
         ArrayList<DBLog> result = null;
@@ -259,7 +265,7 @@ public class DatabaseHelper extends SQLiteOpenHelper{
         return result;
     }
 
-    private boolean isConnected() {
+    public boolean isConnected() {
         Log.i("isConnected", "checking");
         String query = "SELECT " + KEY_ACTION + " FROM " + TABLE_LOGS + " WHERE " + KEY_ACTION + " IN('" + LOG_CONNECT + "', '" + LOG_DISCONNECT + "') AND " + KEY_ID + " > (SELECT " + KEY_ID + " FROM " + TABLE_LOGS + " WHERE " + KEY_ACTION + " = '" + LOG_START_DAY + "' ORDER BY " + KEY_ID + " DESC LIMIT 1) ORDER BY " + KEY_ID + " DESC LIMIT 1";
         SQLiteDatabase db = getReadableDatabase();
@@ -300,6 +306,7 @@ public class DatabaseHelper extends SQLiteOpenHelper{
         addLog(LOG_ACH_SCORE, stopTime, achieved);
         addLog(LOG_ACH_SCORE_PERC, stopTime, percent);
         addLog(LOG_STOP_DAY, stopTime, connectionTime);
+        addLog(LOG_DISCONNECT, stopTime, -1);
     }
 
     public void addConnectionStatus(boolean connected) {
@@ -433,7 +440,7 @@ public class DatabaseHelper extends SQLiteOpenHelper{
 
     //--------------------------------------------------------SETTINGS--------------------------------------------------------------------------
 
-    public int getIntSetting(String name) {
+    private int getIntSetting(String name) {
         String query = "SELECT " + KEY_VALUE_INT + " FROM " + TABLE_SETTINGS + " WHERE " + KEY_SETTING + " = ?";
         SQLiteDatabase db = getReadableDatabase();
         Cursor cursor = db.rawQuery(query, new String[]{name});
@@ -446,7 +453,7 @@ public class DatabaseHelper extends SQLiteOpenHelper{
         return result;
     }
 
-    public String getStringSetting(String name) {
+    private String getStringSetting(String name) {
         String query = "SELECT " + KEY_VALUE_STRING + " FROM " + TABLE_SETTINGS + " WHERE " + KEY_SETTING + " = ?";
         SQLiteDatabase db = getReadableDatabase();
         Cursor cursor = db.rawQuery(query, new String[]{name});
@@ -459,7 +466,7 @@ public class DatabaseHelper extends SQLiteOpenHelper{
         return result;
     }
 
-    public void setSetting(String name, int value) {
+    private void setIntSetting(String name, int value) {
         ContentValues input = new ContentValues(1);
         input.put(KEY_VALUE_INT, value);
         SQLiteDatabase db = getWritableDatabase();
@@ -467,12 +474,56 @@ public class DatabaseHelper extends SQLiteOpenHelper{
         db.close();
     }
 
-    public void setSetting(String name, String value) {
+    private void setStringSetting(String name, String value) {
         ContentValues input = new ContentValues(1);
         input.put(KEY_VALUE_STRING, value);
         SQLiteDatabase db = getWritableDatabase();
         db.update(TABLE_SETTINGS, input, KEY_SETTING + " = ?", new String[]{name});
         db.close();
+    }
+
+    public int getOwnerId() {
+        return getIntSetting(OWNER);
+    }
+
+    public void setOwnerId(int newOwnerId) {
+        setIntSetting(OWNER, newOwnerId);
+    }
+
+    public Profile getOwner() {
+        return getProfile(getOwnerId());
+    }
+
+    public boolean getNotification() {
+        return getIntSetting(NOTIF) == 1;
+    }
+
+    public void setNotification(boolean notification) {
+        setIntSetting(NOTIF, notification ? 1 : 0);
+    }
+
+    public String getToken() {
+        return getStringSetting(TOKEN);
+    }
+
+    public void setToken(String newToken) {
+        setStringSetting(TOKEN, newToken);
+    }
+
+    public String getLastEnteredUsername() {
+        return getStringSetting(LAST_ENTERED_USERNAME);
+    }
+
+    public void setLastEnteredUsername(String newUsername) {
+        setStringSetting(LAST_ENTERED_USERNAME, newUsername);
+    }
+
+    public boolean uploadOn3G() {
+        return getIntSetting(UPLOAD3G) == 0;
+    }
+
+    public void setUploadOn3G(boolean uploadOn3G) {
+        setIntSetting(NOTIF, uploadOn3G ? 1 : 0);
     }
 
     //--------------------------------------------------------SENSORS---------------------------------------------------------------------------

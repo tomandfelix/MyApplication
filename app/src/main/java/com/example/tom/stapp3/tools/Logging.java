@@ -208,7 +208,6 @@ public class Logging {
     }
 
     public void logData(ObjectCluster objectCluster) {
-
         try {
             if (mFirstWrite) {
                 // First retrieve all the unique keys from the objectClusterLog

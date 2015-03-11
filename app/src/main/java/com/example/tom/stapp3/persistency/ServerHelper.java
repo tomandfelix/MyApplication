@@ -130,15 +130,15 @@ public class ServerHelper {
                 if(!response.has("error")) {
                     Profile result = null;
                     try {
-                        DatabaseHelper.getInstance(context).setSetting(DatabaseHelper.TOKEN, response.getString("token"));
+                        DatabaseHelper.getInstance(context).setToken(response.getString("token"));
                         result = new Profile(response.getInt("id"), firstName, lastName, username, email, 0, 0, avatar, response.getInt("rank"), new Date());
                     } catch(JSONException e) {
                         e.printStackTrace();
                     }
                     if(result != null) {
                         DatabaseHelper.getInstance(context).storeProfile(result);
-                        DatabaseHelper.getInstance(context).setSetting(DatabaseHelper.OWNER, result.getId());
-                        DatabaseHelper.getInstance(context).setSetting(DatabaseHelper.LAST_ENTERED_USERNAME, result.getUsername());
+                        DatabaseHelper.getInstance(context).setOwnerId(result.getId());
+                        DatabaseHelper.getInstance(context).setLastEnteredUsername(result.getUsername());
                         responseListener.onResponse(result);
                     }
                 } else {
@@ -178,7 +178,7 @@ public class ServerHelper {
                 if(!response.has("error")) {
                     Profile result = null;
                     try {
-                        DatabaseHelper.getInstance(context).setSetting(DatabaseHelper.TOKEN, response.getString("token"));
+                        DatabaseHelper.getInstance(context).setToken(response.getString("token"));
                         result = extractProfile(response);
                         result.setUsername(username);
                     } catch(JSONException e) {
@@ -186,7 +186,7 @@ public class ServerHelper {
                     }
                     if(result != null) {
                         DatabaseHelper.getInstance(context).storeProfile(result);
-                        DatabaseHelper.getInstance(context).setSetting(DatabaseHelper.OWNER, result.getId());
+                        DatabaseHelper.getInstance(context).setOwnerId(result.getId());
                         responseListener.onResponse(result);
                     }
                 } else {
@@ -212,18 +212,18 @@ public class ServerHelper {
      * @param forceUpdate if true, a request will be sent to the server, if false, will only send a request if the local data is more then 10 minutes old
      */
     public void getProfile(final ResponseFunc<Profile> responseListener, final Response.ErrorListener errorListener, boolean forceUpdate) {
-        if(DatabaseHelper.getInstance(context).getIntSetting(DatabaseHelper.OWNER) <= 0) {
+        if(DatabaseHelper.getInstance(context).getOwnerId() <= 0) {
             errorListener.onErrorResponse(new VolleyError("owner"));
             return;
         }
-        Profile stored = DatabaseHelper.getInstance(context).getProfile(DatabaseHelper.getInstance(context).getIntSetting(DatabaseHelper.OWNER));
+        Profile stored = DatabaseHelper.getInstance(context).getProfile(DatabaseHelper.getInstance(context).getOwnerId());
         if(!forceUpdate && minutesAgo(stored.getLastUpdate()) < 10) {
             responseListener.onResponse(stored);
         } else {
             JSONObject request = new JSONObject();
             try {
                 request.put("id", stored.getId());
-                request.put("token", DatabaseHelper.getInstance(context).getStringSetting(DatabaseHelper.TOKEN));
+                request.put("token", DatabaseHelper.getInstance(context).getToken());
             } catch (JSONException e) {
                 e.printStackTrace();
             }
@@ -416,7 +416,7 @@ public class ServerHelper {
     public void deleteProfile(String password, final Response.ErrorListener errorListener) {
         JSONObject request = new JSONObject();
         try {
-            request.put("id", DatabaseHelper.getInstance(context).getIntSetting(DatabaseHelper.OWNER));
+            request.put("id", DatabaseHelper.getInstance(context).getOwnerId());
             request.put("password", password);
         } catch (JSONException e) {
             e.printStackTrace();
@@ -448,10 +448,10 @@ public class ServerHelper {
     public void updateMoneyAndExperience(final int money, final int experience, final Response.ErrorListener errorListener) {
         JSONObject request = new JSONObject();
         try {
-            request.put("id", DatabaseHelper.getInstance(context).getIntSetting(DatabaseHelper.OWNER));
+            request.put("id", DatabaseHelper.getInstance(context).getOwnerId());
             request.put("money", money);
             request.put("experience", experience);
-            request.put("token", DatabaseHelper.getInstance(context).getStringSetting(DatabaseHelper.TOKEN));
+            request.put("token", DatabaseHelper.getInstance(context).getToken());
         } catch (JSONException e) {
             e.printStackTrace();
         }
@@ -461,7 +461,7 @@ public class ServerHelper {
                 if(!response.has("error")) {
                     Profile result = null;
                     try {
-                        result = new Profile(DatabaseHelper.getInstance(context).getIntSetting(DatabaseHelper.OWNER), null, null, null, null, money, experience, null, response.getInt("rank"), new Date());
+                        result = new Profile(DatabaseHelper.getInstance(context).getOwnerId(), null, null, null, null, money, experience, null, response.getInt("rank"), new Date());
                     } catch(JSONException e) {
                         e.printStackTrace();
                     }
@@ -499,7 +499,7 @@ public class ServerHelper {
     public void updateProfileSettings(final String firstname, final String lastname, final String username, final String email, final String avatar, String password, String new_password, final Response.ErrorListener errorListener) {
         JSONObject request = new JSONObject();
         try {
-            request.put("id", DatabaseHelper.getInstance(context).getIntSetting(DatabaseHelper.OWNER));
+            request.put("id", DatabaseHelper.getInstance(context).getOwnerId());
             request.put("firstname", firstname);
             request.put("lastname", lastname);
             request.put("username", username);
@@ -516,7 +516,7 @@ public class ServerHelper {
                 if(response.has("error")) {
                     try {
                         if(response.getString("error").equals("none")) {
-                            DatabaseHelper.getInstance(context).updateProfile(new Profile(DatabaseHelper.getInstance(context).getIntSetting(DatabaseHelper.OWNER), firstname, lastname, username, email, -1, -1, avatar, -1, null));
+                            DatabaseHelper.getInstance(context).updateProfile(new Profile(DatabaseHelper.getInstance(context).getOwnerId(), firstname, lastname, username, email, -1, -1, avatar, -1, null));
                         }
                         errorListener.onErrorResponse(new VolleyError(response.getString("error")));
                     } catch(JSONException e) {
@@ -544,13 +544,13 @@ public class ServerHelper {
     public void updateProfileSettings(final String firstname, final String lastname, final String username, final String email, final String avatar, final Response.ErrorListener errorListener) {
         JSONObject request = new JSONObject();
         try {
-            request.put("id", DatabaseHelper.getInstance(context).getIntSetting(DatabaseHelper.OWNER));
+            request.put("id", DatabaseHelper.getInstance(context).getOwnerId());
             request.put("firstname", firstname);
             request.put("lastname", lastname);
             request.put("username", username);
             request.put("email", email);
             request.put("avatar", avatar);
-            request.put("token", DatabaseHelper.getInstance(context).getStringSetting(DatabaseHelper.TOKEN));
+            request.put("token", DatabaseHelper.getInstance(context).getToken());
         } catch (JSONException e) {
             e.printStackTrace();
         }
@@ -560,7 +560,7 @@ public class ServerHelper {
                 if(response.has("error")) {
                     try {
                         if(response.getString("error").equals("none")) {
-                            DatabaseHelper.getInstance(context).updateProfile(new Profile(DatabaseHelper.getInstance(context).getIntSetting(DatabaseHelper.OWNER), firstname, lastname, username, email, -1, -1, avatar, -1, null));
+                            DatabaseHelper.getInstance(context).updateProfile(new Profile(DatabaseHelper.getInstance(context).getOwnerId(), firstname, lastname, username, email, -1, -1, avatar, -1, null));
                         }
                         errorListener.onErrorResponse(new VolleyError(response.getString("error")));
                     } catch(JSONException e) {

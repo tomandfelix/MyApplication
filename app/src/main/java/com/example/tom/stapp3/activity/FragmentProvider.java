@@ -58,7 +58,7 @@ public class FragmentProvider extends Fragment {
         switch(position) {
             case 0:
                 layoutView = inflater.inflate(R.layout.fragment_login, container, false);
-                ((EditText) layoutView.findViewById(R.id.login_username)).setText(DatabaseHelper.getInstance(getActivity().getApplicationContext()).getStringSetting(DatabaseHelper.LAST_ENTERED_USERNAME));
+                ((EditText) layoutView.findViewById(R.id.login_username)).setText(DatabaseHelper.getInstance(getActivity().getApplicationContext()).getLastEnteredUsername());
                 break;
             case 2:
                 layoutView = inflater.inflate(R.layout.fragment_register, container, false);

@@ -54,8 +54,8 @@
         </activity>
         <activity
             android:name=".activity.Graph"
-            android:screenOrientation="landscape"
-            android:label="@string/title_activity_graph" >
+            android:configChanges="orientation|screenSize"
+            android:label="@string/title_activity_graph">
         </activity>
         <activity
             android:name=".activity.Internet_Connection"

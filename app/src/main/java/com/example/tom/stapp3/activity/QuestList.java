@@ -30,9 +30,8 @@ public class QuestList extends DrawerActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_quest_list);
-        int position = getIntent().getExtras().getInt("Position");
         ListView questList = (ListView) findViewById(R.id.quest_list);
-        switch(position) {
+        switch(index) {
             case SOLO_QUEST:
                 list = new ArrayList<>();
                 list.add(new Solo(1, "testQuest1", "Stand for more than 10 seconds within 30 seconds", 1, 10, 30, Solo.EASY, new Runnable() {

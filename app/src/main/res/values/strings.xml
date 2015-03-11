@@ -3,23 +3,25 @@
 
     <string name="app_name">StApp3</string>
     <string name="action_settings">Settings</string>
-    <string name="title_login_fragment">Login</string>
-    <string name="title_register_fragment">Register</string>
     <string name="title_activity_profile_view">Profile</string>
     <string name="title_activity_leaderboard_view">Leaderboard</string>
-    <string name="title_activity_connection_view">Connection</string>
+    <string name="title_activity_connection_view">Sensor Connection</string>
+    <string name="title_activity_quest_view">QuestView</string>
+    <string name="title_activity_graph">Graph</string>
+    <string name="title_activity_internet__connection">Internet Connection</string>
+    <string name="title_activity_quest_description">Description</string>
 
     <string-array name="sideMenu">
         <item>Profile</item>
-        <item>Connection</item>
         <item>Leaderboard</item>
         <item>Graphs</item>
         <item>Solo Quest</item>
         <item>Challenge</item>
         <item>Co-operative</item>
+        <item>Sensor Connection</item>
+        <item>Internet connection</item>
         <item>Settings</item>
         <item>Logout</item>
-        <item>Internet connection</item>
     </string-array>
     <string-array name="avatar_names">
         <item>admin</item>
@@ -59,13 +61,4 @@
         <item>uncle_sam</item>
         <item>wizard</item>
     </string-array>
-
-    <string name="title_activity_quest_view">QuestView</string>
-    <string name="hello_world">Hello world!</string>
-    <string name="title_activity_solo_list">SoloList</string>
-    <string name="title_activity_challenge_list">ChallengeList</string>
-    <string name="title_activity_quest_description">QuestDescription</string>
-    <string name="title_activity_graph">Graph</string>
-    <string name="title_activity_internet__connection">Internet_Connection</string>
-
 </resources>

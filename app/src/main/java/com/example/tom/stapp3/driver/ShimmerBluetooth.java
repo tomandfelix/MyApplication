@@ -1954,6 +1954,7 @@ public abstract class ShimmerBluetooth extends ShimmerObject {
                 }
                 else {
                     printLogDataForDebugging("Command " + Integer.toString(mCurrentCommand) +" failed; Killing Connection  ");
+                    sendStatusMSGtoUI("Killing Connection");
                     if (mWaitForResponse){
                         printLogDataForDebugging("Response not received");
                         sendStatusMSGtoUI("Response not received, please reset Shimmer Device." + mMyBluetoothAddress);

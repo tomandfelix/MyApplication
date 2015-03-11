@@ -57,6 +57,7 @@ import android.content.Intent;
 import android.os.Binder;
 import android.os.Handler;
 import android.os.IBinder;
+import android.os.Looper;
 import android.os.Message;
 import android.util.Log;
 
@@ -70,6 +71,31 @@ public class ShimmerService extends Service {
     public static final int SENSOR_CONNECTED = 0;
     public static final int SENSOR_STREAMING = 1;
     public static final int SENSOR_DISCONNECTED = 2;
+    private int retryAmount = 0;
+
+    public void sendToSecondaryHandler(int msg) {
+        if (secondaryHandler != null) {
+            secondaryHandler.obtainMessage(msg).sendToTarget();
+        }
+    }
+
+    public void tryReconnect() {
+        Log.e("RETRY", Integer.toString(retryAmount));
+        if (!address.equals("") && retryAmount <= 5) {
+            retryAmount++;
+            connectShimmer(address, "Device");
+        } else if(retryAmount > 5) {
+            Log.e("RETRY", "waiting 30 seconds");
+            Handler handler = new Handler(Looper.getMainLooper());
+            final Runnable r = new Runnable() {
+                public void run() {
+                    retryAmount = 0;
+                    tryReconnect();
+                }
+            };
+            handler.postDelayed(r, 30000);
+        }
+    }
 
     public String getAddress() {
         return address;
@@ -87,9 +113,11 @@ public class ShimmerService extends Service {
 
     @Override
     public void onCreate() {
+        DatabaseHelper.getInstance(this);
+        Logging.getInstance(this);
 //        Toast.makeText(this, "My Service Created", Toast.LENGTH_LONG).show();
         Log.d(TAG, "onCreate");
-        if(DatabaseHelper.getInstance(getApplicationContext()).dayStarted() == null) {
+        if(DatabaseHelper.getInstance(this).dayStarted() == null) {
             address = "";
         }
     }
@@ -126,7 +154,7 @@ public class ShimmerService extends Service {
         Log.d("LocalService", "Received start id " + startId + ": " + intent);
         // We want this service to continue running until it is explicitly
         // stopped, so return sticky.
-        if(DatabaseHelper.getInstance(getApplicationContext()).dayStarted() != null) {
+        if(DatabaseHelper.getInstance(this).dayStarted() != null) {
             if(!address.equals("")) {
                 if(!DevicesConnected(address)) {
                     connectShimmer(address, "Device");
@@ -185,39 +213,26 @@ public class ShimmerService extends Service {
                         if ((msg.obj instanceof ObjectCluster)) {    // within each msg an object can be include, objectclusters are used to represent the data structure of the shimmer device
                             ObjectCluster objectCluster = (ObjectCluster) msg.obj;
                             if (mEnableLogging) {
-                                Logging.getInstance(mShimmerService.get().getApplicationContext()).logData(objectCluster);
+                                Logging.getInstance(mShimmerService.get()).logData(objectCluster);
                             }
                         }
                         break;
                     case Shimmer.MESSAGE_TOAST:
                         Log.d("toast", msg.getData().getString(Shimmer.TOAST));
-//                        Toast.makeText(getApplicationContext(), msg.getData().getString(Shimmer.TOAST), Toast.LENGTH_SHORT).show();
-                        if (msg.getData().getString(Shimmer.TOAST).equals("Device connection was lost")) {
-                            DatabaseHelper.getInstance(mShimmerService.get().getApplicationContext()).addConnectionStatus(false);
-                            if (secondaryHandler != null) {
-                                secondaryHandler.obtainMessage(SENSOR_DISCONNECTED).sendToTarget();
-                            }
-                            if (!address.equals("")) {
-                                mShimmerService.get().connectShimmer(address, "Device");
-                            }
+                        if (msg.getData().getString(Shimmer.TOAST).equals("Device connection was lost") ||
+                                msg.getData().getString(Shimmer.TOAST).contains("stopped streaming") ||
+                                msg.getData().getString(Shimmer.TOAST).contains("Killing Connection")) {
+                            DatabaseHelper.getInstance(mShimmerService.get()).addConnectionStatus(false);
+                            mShimmerService.get().sendToSecondaryHandler(SENSOR_DISCONNECTED);
+                            mShimmerService.get().tryReconnect();
                         } else if (msg.getData().getString(Shimmer.TOAST).contains("is now Streaming")) {
-                            DatabaseHelper.getInstance(mShimmerService.get().getApplicationContext()).addConnectionStatus(true);
-                            if (secondaryHandler != null) {
-                                secondaryHandler.obtainMessage(SENSOR_STREAMING).sendToTarget();
-                            }
+                            DatabaseHelper.getInstance(mShimmerService.get()).addConnectionStatus(true);
+                            mShimmerService.get().sendToSecondaryHandler(SENSOR_STREAMING);
                         } else if (msg.getData().getString(Shimmer.TOAST).contains("is ready for Streaming")) {
                             mShimmerService.get().startStreamingAllDevices();
-                            if (secondaryHandler != null) {
-                                secondaryHandler.obtainMessage(SENSOR_CONNECTED).sendToTarget();
-                            }
-                        } else if (msg.getData().getString(Shimmer.TOAST).contains("stopped streaming")) {
-                            if (address.equals("")) {
-                                mShimmerService.get().disconnectAllDevices();
-                            }
+                            mShimmerService.get().sendToSecondaryHandler(SENSOR_CONNECTED);
                         } else if (msg.getData().getString(Shimmer.TOAST).equals("Unable to connect device")) {
-                            if(!address.equals("")) {
-                                mShimmerService.get().connectShimmer(address, "Device");
-                            }
+                            mShimmerService.get().tryReconnect();
                         }
                         break;
                     case Shimmer.MESSAGE_STATE_CHANGE:

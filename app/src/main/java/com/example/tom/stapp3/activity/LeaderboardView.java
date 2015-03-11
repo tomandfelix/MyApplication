@@ -44,7 +44,7 @@ public class LeaderboardView extends DrawerActivity {
         setContentView(R.layout.activity_leaderboard);
         leaderboardList = (ListView) findViewById(R.id.leaderboard_list);
         context = this;
-        ServerHelper.getInstance(this).getLeaderboardById(DatabaseHelper.getInstance(this).getIntSetting(DatabaseHelper.OWNER),
+        ServerHelper.getInstance(this).getLeaderboardById(DatabaseHelper.getInstance(this).getOwnerId(),
                 new ServerHelper.ResponseFunc<ArrayList<Profile>>() {
                     @Override
                     public void onResponse(ArrayList<Profile> response) {
@@ -84,15 +84,14 @@ public class LeaderboardView extends DrawerActivity {
                                             }, null, false);
                                 } else  if(position > 0 && position <= list.size()) {
                                     int destId = list.get(position - 1).getId();
-                                    Intent intent;
-                                    if(destId == DatabaseHelper.getInstance(getApplicationContext()).getIntSetting(DatabaseHelper.OWNER)) {
-                                        intent = new Intent(LeaderboardView.this, ProfileView.class);
+                                    if(destId == DatabaseHelper.getInstance(getApplicationContext()).getOwnerId()) {
+                                        drawer.setSelection(PROFILE);
                                     } else {
-                                        intent = new Intent(LeaderboardView.this, StrangerView.class);
+                                        Intent intent = new Intent(LeaderboardView.this, StrangerView.class);
                                         intent.putExtra("strangerId", destId);
+                                        startActivity(intent);
+                                        overridePendingTransition(R.anim.enter_right, R.anim.leave_left);
                                     }
-                                    startActivity(intent);
-                                    overridePendingTransition(R.anim.enter_right, R.anim.leave_left);
                                 }
                             }
                         });

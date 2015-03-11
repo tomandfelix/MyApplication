@@ -21,6 +21,7 @@ import android.widget.TextView;
 
 import com.android.volley.Response;
 import com.android.volley.VolleyError;
+import com.example.tom.stapp3.persistency.DBLog;
 import com.example.tom.stapp3.persistency.DatabaseHelper;
 import com.example.tom.stapp3.persistency.Profile;
 import com.example.tom.stapp3.R;
@@ -48,7 +49,7 @@ public class ProfileView extends DrawerActivity {
             mProfile = profile;
             updateVisual();
         } else {
-            mProfile = DatabaseHelper.getInstance(this).getProfile(DatabaseHelper.getInstance(this).getIntSetting(DatabaseHelper.OWNER));
+            mProfile = DatabaseHelper.getInstance(this).getOwner();
             updateVisual();
             ServerHelper.getInstance(this).getProfile(new ServerHelper.ResponseFunc<Profile>() {
                 @Override
@@ -70,14 +71,22 @@ public class ProfileView extends DrawerActivity {
         }
 
         statusIcon = (ImageView) findViewById(R.id.profile_status_icon);
-        //String lastAction = DatabaseHelper.getInstance(this).getLastLog().getAction();
-        int result = Logging.STATUS_SIT;
-        /*if(lastAction.equals(DatabaseHelper.LOG_STAND)) {
-            result = Logging.STATUS_STAND;
-        } else if(lastAction.equals(DatabaseHelper.LOG_OVERTIME)) {
-            result = Logging.STATUS_OVERTIME;
-        }*/
-        loggingMessageHandler.obtainMessage(result).sendToTarget();
+        if(DatabaseHelper.getInstance(this).dayStarted() == null) {
+            statusIcon.setImageResource(R.drawable.icon_no_day_started);
+        } else if(!DatabaseHelper.getInstance(this).isConnected()) {
+            statusIcon.setImageResource(R.drawable.icon_disconnected);
+        } else {
+            DBLog status = DatabaseHelper.getInstance(this).getLastLog();
+            if(status.getAction().equals(DatabaseHelper.LOG_SIT)) {
+                statusIcon.setImageResource(R.drawable.icon_sit_green);
+            } else if(status.getAction().equals(DatabaseHelper.LOG_STAND)) {
+                statusIcon.setImageResource(R.drawable.icon_stand);
+            } else if(status.getAction().equals(DatabaseHelper.LOG_OVERTIME)) {
+                statusIcon.setImageResource(R.drawable.icon_sit_red);
+            } else {
+                statusIcon.setImageResource(R.drawable.icon_sit_green);
+            }
+        }
 
         avatarChanged = false;
         TypedArray avatars = getResources().obtainTypedArray(R.array.avatars);
@@ -140,6 +149,22 @@ public class ProfileView extends DrawerActivity {
         if(Logging.getHandler() != loggingMessageHandler) {
             Logging.setHandler(loggingMessageHandler);
         }
+        if(DatabaseHelper.getInstance(this).dayStarted() == null) {
+            statusIcon.setImageResource(R.drawable.icon_no_day_started);
+        } else if(!DatabaseHelper.getInstance(this).isConnected()) {
+            statusIcon.setImageResource(R.drawable.icon_disconnected);
+        } else {
+            DBLog status = DatabaseHelper.getInstance(this).getLastLog();
+            if(status.getAction().equals(DatabaseHelper.LOG_SIT)) {
+                statusIcon.setImageResource(R.drawable.icon_sit_green);
+            } else if(status.getAction().equals(DatabaseHelper.LOG_STAND)) {
+                statusIcon.setImageResource(R.drawable.icon_stand);
+            } else if(status.getAction().equals(DatabaseHelper.LOG_OVERTIME)) {
+                statusIcon.setImageResource(R.drawable.icon_sit_red);
+            } else {
+                statusIcon.setImageResource(R.drawable.icon_sit_green);
+            }
+        }
     }
 
     @Override
@@ -186,7 +211,7 @@ public class ProfileView extends DrawerActivity {
         final String newPassword = validateInput(((EditText) findViewById(R.id.edit_password)).getText().toString(), "");
         final String newAvatar = avatarChanged ? mProfile.getAvatar() : null;
         int avatarID = getResources().getIdentifier("avatar_" + mProfile.getAvatar() + "_512", "drawable", getPackageName());
-        result.updateIcon(getResources().getDrawable(avatarID),0);
+        drawer.updateIcon(getResources().getDrawable(avatarID),0);
 
 
         ((EditText) findViewById(R.id.edit_password)).setText("");
@@ -240,13 +265,13 @@ public class ProfileView extends DrawerActivity {
                 status = msg.what;
                 switch (msg.what) {
                     case Logging.STATUS_STAND:
-                        statusIcon.setImageResource(R.drawable.standing);
+                        statusIcon.setImageResource(R.drawable.icon_stand);
                         break;
                     case Logging.STATUS_SIT:
-                        statusIcon.setImageResource(R.drawable.sitting);
+                        statusIcon.setImageResource(R.drawable.icon_sit_green);
                         break;
                     case Logging.STATUS_OVERTIME:
-                        statusIcon.setImageResource(R.drawable.sitting);
+                        statusIcon.setImageResource(R.drawable.icon_sit_red);
                         break;
                 }
             }

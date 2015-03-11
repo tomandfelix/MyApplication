@@ -42,10 +42,14 @@ public class ConnectionView extends DrawerActivity {
     private final Handler serviceMessageHandler = new ConnectionHandler(this);
 
     @Override
+    protected void onServiceBound() {
+        mService.setSecondaryHandler(serviceMessageHandler);
+    }
+
+    @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_connection);
-        mService.setSecondaryHandler(serviceMessageHandler);
 
         //Create BT adapter and checks its existence
         mBluetoothAdapter = BluetoothAdapter.getDefaultAdapter();

@@ -5,6 +5,8 @@ import android.app.Fragment;
 import android.app.FragmentManager;
 import android.content.Context;
 import android.content.Intent;
+import android.hardware.Sensor;
+import android.hardware.SensorManager;
 import android.os.Bundle;
 import android.support.v13.app.FragmentPagerAdapter;
 import android.support.v4.app.FragmentActivity;
@@ -23,6 +25,7 @@ import com.example.tom.stapp3.persistency.DBLog;
 import com.example.tom.stapp3.persistency.DatabaseHelper;
 import com.example.tom.stapp3.persistency.Profile;
 import com.example.tom.stapp3.persistency.ServerHelper;
+import com.example.tom.stapp3.service.ShimmerService;
 
 import java.util.Date;
 
@@ -38,11 +41,15 @@ public class FragmentViewer extends FragmentActivity implements FragmentProvider
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-//        DatabaseHelper.getInstance(this).truncateLogs();
-        String token = DatabaseHelper.getInstance(getApplicationContext()).getStringSetting(DatabaseHelper.TOKEN);
+        if(!isMyServiceRunning()) {
+            Log.d("SERVICE", "Creating service");
+            Intent intent = new Intent(this, ShimmerService.class);
+            startService(intent);
+        }
+        String token = DatabaseHelper.getInstance(getApplicationContext()).getToken();
         if(token != null && !token.equals("")) {
             Log.d("start", "Token present");
-            ServerHelper.getInstance(getApplicationContext()).getProfile(new ServerHelper.ResponseFunc<Profile>() {
+            ServerHelper.getInstance(this).getProfile(new ServerHelper.ResponseFunc<Profile>() {
                 @Override
                 public void onResponse(Profile response) {
                     if(response != null) {
@@ -93,6 +100,16 @@ public class FragmentViewer extends FragmentActivity implements FragmentProvider
         Log.i("TIME_STOOD SINCE, UNTIL", Long.toString(result));*/
     }
 
+    protected boolean isMyServiceRunning() {
+        ActivityManager manager = (ActivityManager) getSystemService(Context.ACTIVITY_SERVICE);
+        for (ActivityManager.RunningServiceInfo service : manager.getRunningServices(Integer.MAX_VALUE)) {
+            if (service.service.getClassName().equals("com.example.tom.stapp3.service.ShimmerService")) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     private void loadStart() {
         setContentView(R.layout.activity_start);
         PagerAdapter mAdapter = new FragmentAdapter(getFragmentManager());
@@ -107,7 +124,7 @@ public class FragmentViewer extends FragmentActivity implements FragmentProvider
         final EditText username = (EditText) findViewById(R.id.login_username);
         final EditText password = (EditText) findViewById(R.id.login_password);
         final TextView txtView = (TextView) findViewById(R.id.succes);
-        DatabaseHelper.getInstance(getApplicationContext()).setSetting(DatabaseHelper.LAST_ENTERED_USERNAME, username.getText().toString());
+        DatabaseHelper.getInstance(getApplicationContext()).setLastEnteredUsername(username.getText().toString());
         ServerHelper.getInstance(this).login(username.getText().toString(), password.getText().toString(), new ServerHelper.ResponseFunc<Profile>() {
             @Override
             public void onResponse(Profile response) {

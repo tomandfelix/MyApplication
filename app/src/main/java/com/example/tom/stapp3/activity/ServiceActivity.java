@@ -32,6 +32,7 @@ public abstract class ServiceActivity extends ActionBarActivity {
             LocalBinder binder = (ShimmerService.LocalBinder) service;
             mService = binder.getService();
             mServiceBind = true;
+            onServiceBound();
         }
 
         public void onServiceDisconnected(ComponentName arg0) {
@@ -39,6 +40,8 @@ public abstract class ServiceActivity extends ActionBarActivity {
             mServiceBind = false;
         }
     };
+
+    protected void onServiceBound() {};
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {

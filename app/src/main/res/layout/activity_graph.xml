@@ -1,4 +1,49 @@
-<com.androidplot.xy.XYPlot xmlns:android="http://schemas.android.com/apk/res/android"
-    android:id="@+id/chart"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
-    android:layout_height="match_parent"/>
+    android:layout_height="match_parent"
+    android:orientation="vertical">
+
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="0dip"
+        android:layout_weight="0.5">
+
+        <com.androidplot.xy.XYPlot
+            android:id="@+id/chart"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"/>
+    </RelativeLayout>
+
+    <GridLayout
+        android:layout_width="match_parent"
+        android:layout_height="0dip"
+        android:layout_weight="0.5"
+        android:layout_margin="@dimen/activity_margin"
+        android:columnCount="2">
+
+        <TextView
+            android:text="Good behavior time: "
+            android:textSize="20sp"/>
+
+        <TextView
+            android:id="@+id/graph_good_time"
+            android:textSize="20sp"/>
+
+        <TextView
+            android:text="Bad behavior time: "
+            android:textSize="20sp"/>
+
+        <TextView
+            android:id="@+id/graph_bad_time"
+            android:textSize="20sp"/>
+
+        <TextView
+            android:text="Achieved score: "
+            android:textSize="20sp"/>
+
+        <TextView
+            android:id="@+id/graph_ach_score"
+            android:textSize="20sp"/>
+
+    </GridLayout>
+</LinearLayout>
