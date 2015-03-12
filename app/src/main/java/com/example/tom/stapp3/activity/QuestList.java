@@ -27,7 +27,7 @@ public class QuestList extends DrawerActivity {
     private ArrayList<Quest> list;
 
     @Override
-    protected void onCreate(Bundle savedInstanceState) {
+    public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_quest_list);
         ListView questList = (ListView) findViewById(R.id.quest_list);

@@ -4,6 +4,7 @@ import android.content.res.Configuration;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.View;
 import android.widget.TextView;
 
 import com.androidplot.util.PixelUtils;
@@ -38,21 +39,34 @@ public class Graph extends DrawerActivity {
 
 
     @Override
-    protected void onCreate(Bundle savedInstanceState) {
+    public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_graph);
         handleData();
-        fillPlot();
-        showExtraDataIfNeeded();
+        handleVisual();
     }
 
     @Override
     public void onConfigurationChanged(Configuration newConfig) {
         super.onConfigurationChanged(newConfig);
         setContentView(R.layout.activity_graph);
-        fillPlot();
-        showExtraDataIfNeeded();
+        handleVisual();
         makeDrawer();
+    }
+
+    private void handleVisual() {
+        if(dataSeries != null && maxSeries != null) {
+            fillPlot();
+            showExtraDataIfNeeded();
+        } else {
+            findViewById(R.id.chart).setVisibility(View.GONE);
+            findViewById(R.id.graph_error).setVisibility(View.VISIBLE);
+            if(getResources().getConfiguration().orientation == Configuration.ORIENTATION_PORTRAIT) {
+                ((TextView) findViewById(R.id.graph_good_time)).setText("00:00:00");
+                ((TextView) findViewById(R.id.graph_bad_time)).setText("00:00:00");
+                ((TextView) findViewById(R.id.graph_ach_score)).setText("N/A");
+            }
+        }
     }
 
     private Number getGraphTime(DBLog log) {
@@ -129,7 +143,7 @@ public class Graph extends DrawerActivity {
             maxLogs.add(1, logs.get(1));
 
             SeriesData scoresData = getSeries(logs);
-            SeriesData maxData = getSeries(logs);
+            SeriesData maxData = getSeries(maxLogs);
 
             final double maxScore = maxData.scores[maxData.scores.length - 1].doubleValue();
 
@@ -243,8 +257,8 @@ public class Graph extends DrawerActivity {
             long minBad = Math.round(Math.floor((totalBad % 3600) / 60));
             long secBad = Math.round(Math.floor(totalBad % 60));
 
-            ((TextView) findViewById(R.id.graph_good_time)).setText(hGood + ":" + minGood + ":" + secGood);
-            ((TextView) findViewById(R.id.graph_bad_time)).setText(hBad + ":" + minBad + ":" + secBad);
+            ((TextView) findViewById(R.id.graph_good_time)).setText(String.format("%02d", hGood) + ":" + String.format("%02d", minGood) + ":" + String.format("%02d", secGood));
+            ((TextView) findViewById(R.id.graph_bad_time)).setText(String.format("%02d", hBad) + ":" + String.format("%02d", minBad) + ":" + String.format("%02d", secBad));
             TextView score = (TextView) findViewById(R.id.graph_ach_score);
             score.setText(String.format("%.1f", totalScore) + " %");
             if(totalScore > 80) {score.setTextColor(getResources().getColor(R.color.green));}

@@ -1,7 +1,9 @@
 package com.example.tom.stapp3.activity;
 
 import android.app.AlertDialog;
+import android.content.Context;
 import android.content.DialogInterface;
+import android.content.Intent;
 import android.content.res.TypedArray;
 import android.os.Bundle;
 import android.os.Handler;
@@ -26,6 +28,7 @@ import com.example.tom.stapp3.persistency.DatabaseHelper;
 import com.example.tom.stapp3.persistency.Profile;
 import com.example.tom.stapp3.R;
 import com.example.tom.stapp3.persistency.ServerHelper;
+import com.example.tom.stapp3.service.ShimmerService;
 import com.example.tom.stapp3.tools.Logging;
 
 import java.lang.ref.WeakReference;
@@ -71,22 +74,7 @@ public class ProfileView extends DrawerActivity {
         }
 
         statusIcon = (ImageView) findViewById(R.id.profile_status_icon);
-        if(DatabaseHelper.getInstance(this).dayStarted() == null) {
-            statusIcon.setImageResource(R.drawable.icon_no_day_started);
-        } else if(!DatabaseHelper.getInstance(this).isConnected()) {
-            statusIcon.setImageResource(R.drawable.icon_disconnected);
-        } else {
-            DBLog status = DatabaseHelper.getInstance(this).getLastLog();
-            if(status.getAction().equals(DatabaseHelper.LOG_SIT)) {
-                statusIcon.setImageResource(R.drawable.icon_sit_green);
-            } else if(status.getAction().equals(DatabaseHelper.LOG_STAND)) {
-                statusIcon.setImageResource(R.drawable.icon_stand);
-            } else if(status.getAction().equals(DatabaseHelper.LOG_OVERTIME)) {
-                statusIcon.setImageResource(R.drawable.icon_sit_red);
-            } else {
-                statusIcon.setImageResource(R.drawable.icon_sit_green);
-            }
-        }
+        updateState(Logging.getInstance(this).getState());
 
         avatarChanged = false;
         TypedArray avatars = getResources().obtainTypedArray(R.array.avatars);
@@ -149,22 +137,7 @@ public class ProfileView extends DrawerActivity {
         if(Logging.getHandler() != loggingMessageHandler) {
             Logging.setHandler(loggingMessageHandler);
         }
-        if(DatabaseHelper.getInstance(this).dayStarted() == null) {
-            statusIcon.setImageResource(R.drawable.icon_no_day_started);
-        } else if(!DatabaseHelper.getInstance(this).isConnected()) {
-            statusIcon.setImageResource(R.drawable.icon_disconnected);
-        } else {
-            DBLog status = DatabaseHelper.getInstance(this).getLastLog();
-            if(status.getAction().equals(DatabaseHelper.LOG_SIT)) {
-                statusIcon.setImageResource(R.drawable.icon_sit_green);
-            } else if(status.getAction().equals(DatabaseHelper.LOG_STAND)) {
-                statusIcon.setImageResource(R.drawable.icon_stand);
-            } else if(status.getAction().equals(DatabaseHelper.LOG_OVERTIME)) {
-                statusIcon.setImageResource(R.drawable.icon_sit_red);
-            } else {
-                statusIcon.setImageResource(R.drawable.icon_sit_green);
-            }
-        }
+        updateState(Logging.getInstance(this).getState());
     }
 
     @Override
@@ -252,6 +225,31 @@ public class ProfileView extends DrawerActivity {
         }
     }
 
+    private void updateState(int state) {
+        switch(state) {
+            case Logging.STATE_DAY_STARTED:
+            case Logging.STATE_CONNECTING:
+            case Logging.STATE_DISCONNECTED:
+                statusIcon.setImageResource(R.drawable.icon_disconnected);
+                break;
+            case Logging.STATE_DAY_STOPPED:
+                statusIcon.setImageResource(R.drawable.icon_no_day_started);
+                break;
+            case Logging.STATE_CONNECTED:
+                statusIcon.setImageResource(R.drawable.icon_sit_green);
+                break;
+            case Logging.STATE_SIT:
+                statusIcon.setImageResource(R.drawable.icon_sit_green);
+                break;
+            case Logging.STATE_STAND:
+                statusIcon.setImageResource(R.drawable.icon_stand);
+                break;
+            case Logging.STATE_OVERTIME:
+                statusIcon.setImageResource(R.drawable.icon_sit_red);
+                break;
+        }
+    }
+
     private static class ProfileHandler extends Handler {
         private final WeakReference<ProfileView> mProfileView;
 
@@ -262,18 +260,7 @@ public class ProfileView extends DrawerActivity {
         @Override
         public void handleMessage(Message msg) {
             if(mProfileView.get() != null) {
-                status = msg.what;
-                switch (msg.what) {
-                    case Logging.STATUS_STAND:
-                        statusIcon.setImageResource(R.drawable.icon_stand);
-                        break;
-                    case Logging.STATUS_SIT:
-                        statusIcon.setImageResource(R.drawable.icon_sit_green);
-                        break;
-                    case Logging.STATUS_OVERTIME:
-                        statusIcon.setImageResource(R.drawable.icon_sit_red);
-                        break;
-                }
+                mProfileView.get().updateState(msg.what);
             }
         }
     }

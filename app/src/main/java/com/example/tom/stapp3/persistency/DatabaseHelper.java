@@ -27,6 +27,7 @@ public class DatabaseHelper extends SQLiteOpenHelper{
     private static DatabaseHelper uniqueInstance = null;
     private static final int DATABASE_VERSION = 1;
     public static final DateFormat df = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss.SSS");
+    private static int lastPendingUploadIndex = 0;
     private static final String DATABASE_NAME = "data.db";
     private static final String TABLE_LOGS = "logs";
     private static final String TABLE_PROFILES = "profiles";
@@ -53,8 +54,10 @@ public class DatabaseHelper extends SQLiteOpenHelper{
     public static final String OWNER = "owner";
     public static final String NOTIF = "notification";
     public static final String TOKEN = "token";
-    public static final String LAST_ENTERED_USERNAME  = "LEU";
+    public static final String LAST_ENTERED_USERNAME  = "last_entered_username";
     public static final String UPLOAD3G = "upload_if_3g";
+    public static final String LAST_UPLOADED_INDEX = "last_uploaded_index";
+    public static final String UPLOAD_FREQUENCY = "upload_frequency";
     public static final String LOG_SIT = "sit";
     public static final String LOG_OVERTIME = "sit_overtime";
     public static final String LOG_STAND = "stand";
@@ -102,6 +105,14 @@ public class DatabaseHelper extends SQLiteOpenHelper{
         values.put(KEY_SETTING, UPLOAD3G);
         values.put(KEY_VALUE_INT, 0);
         db.insert(TABLE_SETTINGS, null, values);
+        values.clear();
+        values.put(KEY_SETTING, LAST_UPLOADED_INDEX);
+        values.put(KEY_VALUE_INT, 0);
+        db.insert(TABLE_SETTINGS, null, values);
+        values.clear();
+        values.put(KEY_SETTING, UPLOAD_FREQUENCY);
+        values.put(KEY_VALUE_INT, 60000);
+        db.insert(TABLE_SETTINGS, null, values);
     }
 
     @Override
@@ -138,11 +149,38 @@ public class DatabaseHelper extends SQLiteOpenHelper{
 
     //--------------------------------------------------------LOGS------------------------------------------------------------------------------
 
-    public void addLog(String action, Date datetime, double achievedScore) {
+    public ArrayList<IdLog> getLogsToUpload() {
+        Log.i("getLogsToUpload", "getting logs to upload");
+        String query = "SELECT " + KEY_ID + ", " + KEY_ACTION + ", " + KEY_DATETIME + ", " + KEY_DATA +  " FROM " + TABLE_LOGS + " WHERE " + KEY_ID + " > " + getIntSetting(LAST_UPLOADED_INDEX) + " ORDER BY " + KEY_ID + " ASC";
+        SQLiteDatabase db = getReadableDatabase();
+        Cursor cursor = db.rawQuery(query, null);
+        ArrayList<IdLog> result = null;
+        if(cursor != null && cursor.getCount() > 0) {
+            result = new ArrayList<>();
+            while(cursor.moveToNext()) {
+                result.add(new IdLog(cursor.getInt(0), cursor.getString(1), stringToDate(cursor.getString(2)), cursor.getDouble(3)));
+            }
+        }
+        db.close();
+        if(result != null) {
+            lastPendingUploadIndex = result.get(result.size() - 1).getId();
+        }
+        return result;
+    }
+
+    public void confirmUpload(int lastIndex) {
+        if(lastPendingUploadIndex == lastIndex) {
+            setIntSetting(LAST_UPLOADED_INDEX, lastIndex);
+        }
+        lastPendingUploadIndex = 0;
+    }
+
+    public void addLog(DBLog log) {
+        Log.i("addLog", log.toString());
         ContentValues input = new ContentValues(2);
-        input.put(KEY_ACTION, action);
-        input.put(KEY_DATETIME, dateToString(datetime));
-        input.put(KEY_DATA, achievedScore == -1 ? null : achievedScore);
+        input.put(KEY_ACTION, log.getAction());
+        input.put(KEY_DATETIME, dateToString(log.getDatetime()));
+        input.put(KEY_DATA, log.getData() == -1 ? null : log.getData());
         SQLiteDatabase db = getWritableDatabase();
         db.insert(TABLE_LOGS, null, input);
         db.close();
@@ -273,10 +311,7 @@ public class DatabaseHelper extends SQLiteOpenHelper{
         boolean result = false;
         if(cursor != null && cursor.getCount() > 0) {
             cursor.moveToFirst();
-            if(cursor.getString(0).equals(LOG_DISCONNECT))
-                result = false;
-            else
-                result = true;
+            result = cursor.getString(0).equals(LOG_CONNECT);
         }
         db.close();
         return result;
@@ -296,36 +331,38 @@ public class DatabaseHelper extends SQLiteOpenHelper{
         return result;
     }
 
-    public void startDay() {
-        Log.i("startDay", "starting day");
-        addLog(LOG_START_DAY, new Date(), -1);
-    }
+//    public void startDay() {
+//        Log.i("startDay", "starting day");
+//        addLog(LOG_START_DAY, new Date(), -1);
+//    }
+//
+//    public void endDay(Date stopTime, double achieved, double percent, double connectionTime) {
+//        Log.i("endDay", "ending day");
+//        addLog(LOG_ACH_SCORE, stopTime, achieved);
+//        addLog(LOG_ACH_SCORE_PERC, stopTime, percent);
+//        addLog(LOG_STOP_DAY, stopTime, connectionTime);
+//        if(isConnected()) {
+//            addLog(LOG_DISCONNECT, stopTime, -1);
+//        }
+//    }
 
-    public void endDay(Date stopTime, double achieved, double percent, double connectionTime) {
-        Log.i("endDay", "ending day");
-        addLog(LOG_ACH_SCORE, stopTime, achieved);
-        addLog(LOG_ACH_SCORE_PERC, stopTime, percent);
-        addLog(LOG_STOP_DAY, stopTime, connectionTime);
-        addLog(LOG_DISCONNECT, stopTime, -1);
-    }
-
-    public void addConnectionStatus(boolean connected) {
-        Log.i("addConnectionStatus", connected ? "connected" : "disconnected");
-        Date time = new Date();
-        if(!connected == isConnected()) {
-            addLog(connected ? LOG_CONNECT : LOG_DISCONNECT, time, -1);
-        }
-    }
-
-    public void addSitStand(Date datetime, boolean standing, double data) {
-        Log.i("addSitStand", standing ? "stand" : "sit");
-        addLog(standing ? LOG_STAND : LOG_SIT, datetime, data);
-    }
-
-    public void addSitOvertime(Date datetime, double data) {
-        Log.i("addSitOvertime", Double.toString(data));
-        addLog(LOG_OVERTIME, datetime, data);
-    }
+//    public void addConnectionStatus(Date dateTime, boolean connected) {
+//        Log.i("addConnectionStatus", connected ? "connected" : "disconnected");
+//        Date time = new Date();
+//        if(!connected == isConnected()) {
+//            addLog(connected ? LOG_CONNECT : LOG_DISCONNECT, time, -1);
+//        }
+//    }
+//
+//    public void addSitStand(Date datetime, boolean standing, double data) {
+//        Log.i("addSitStand", standing ? "stand" : "sit");
+//        addLog(standing ? LOG_STAND : LOG_SIT, datetime, data);
+//    }
+//
+//    public void addSitOvertime(Date datetime, double data) {
+//        Log.i("addSitOvertime", Double.toString(data));
+//        addLog(LOG_OVERTIME, datetime, data);
+//    }
 
     //--------------------------------------------------------PROFILES--------------------------------------------------------------------------
 
@@ -524,6 +561,14 @@ public class DatabaseHelper extends SQLiteOpenHelper{
 
     public void setUploadOn3G(boolean uploadOn3G) {
         setIntSetting(NOTIF, uploadOn3G ? 1 : 0);
+    }
+
+    public int getUploadFrequency() {
+        return getIntSetting(UPLOAD_FREQUENCY);
+    }
+
+    public void setUploadFrequency(int uploadFrequency) {
+        setIntSetting(UPLOAD_FREQUENCY, uploadFrequency);
     }
 
     //--------------------------------------------------------SENSORS---------------------------------------------------------------------------

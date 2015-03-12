@@ -9,9 +9,9 @@ import java.util.Date;
  * The class that corresponds to the logs in the database
  */
 public class DBLog {
-    private String action;
-    private Date datetime;
-    private double data;
+    protected String action;
+    protected Date datetime;
+    protected double data;
 
     public DBLog(String action, Date datetime, double data) {
         this.action = action;

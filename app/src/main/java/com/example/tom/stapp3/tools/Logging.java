@@ -57,8 +57,8 @@ import com.example.tom.stapp3.driver.ObjectCluster;
 
 public class Logging {
     private static Logging uniqueInstance;
-    private static final long _30mn_to_ms = 30 * 60 * 1000;
-    private static final long _24h_to_ms = 24 * 60 * 60 * 1000;
+    private static final long _30mn_to_ms = 30 * 1000;
+    private static final long _24h_to_ms = 24 * 60 * 1000;
     private boolean mFirstWrite = true;
 
     private Context context;
@@ -87,14 +87,21 @@ public class Logging {
     private double gmeans[][] = { { 77.2, -113.9, -85.7, 823.4, 3917.8 },
             { -17.1, -382.8, 14.4, 4134.7, 5058.4 } };
     private static Handler handler = null;
-    public static final int STATUS_SIT = 0;
-    public static final int STATUS_STAND = 1;
-    public static final int STATUS_OVERTIME = 2;
-    private Date lastUpdate = new Date();
-    private DBLog last = null;
-    private DBLog secondLast = null;
-    private DBLog lastSitStandOverBeforeDiscon = null;
-    private long overTimeBoundary = -1;
+    public static final int STATE_DAY_STARTED = 0;
+    public static final int STATE_DAY_STOPPED = 1;
+    public static final int STATE_CONNECTING = 2;
+    public static final int STATE_CONNECTED = 3;
+    public static final int STATE_DISCONNECTED = 4;
+    public static final int STATE_SIT = 5;
+    public static final int STATE_STAND = 6;
+    public static final int STATE_OVERTIME = 7;
+    private DBLog currentActivity = null;   // always sit or stand after first assignment
+    private DBLog last = null;              // always the last log
+    private long connTimeSinceCurr = 0;
+    private boolean connected = false;
+    private boolean connecting = false;
+    private boolean dayStarted = false;
+    private boolean overtimeLogged = false;
 
     private Logging(Context context){
         this.context = context;
@@ -120,41 +127,42 @@ public class Logging {
         }
     }
 
-    private void sendToHandler(int msg) {
+    private void sendUpdate() {
         if(handler != null) {
-            handler.obtainMessage(msg).sendToTarget();
+            handler.obtainMessage(getState()).sendToTarget();
+        }
+    }
+
+    public int getState() {
+        if(!dayStarted) {
+            return STATE_DAY_STOPPED;
+        } else if(connecting) {
+            return STATE_CONNECTING;
+        } else if(last.getAction().equals(DatabaseHelper.LOG_START_DAY)) {
+            return STATE_DAY_STARTED;
+        } else if(!connected) {
+            return STATE_DISCONNECTED;
+        } else if(currentActivity == null) {
+            return STATE_CONNECTED;
+        } else if(overtimeLogged) {
+            return STATE_OVERTIME;
+        } else if(currentActivity.getAction().equals(DatabaseHelper.LOG_SIT)) {
+            return STATE_SIT;
+        } else if(currentActivity.getAction().equals(DatabaseHelper.LOG_STAND)) {
+            return STATE_STAND;
+        } else {
+            return -1;
         }
     }
 
     public static double getIncreasingScore(long delta_t, double scoreBefore) {
-        return scoreBefore + ppmax * delta_t / _30mn_to_ms;
+        return scoreBefore + ppmax * (double) delta_t / (double) _30mn_to_ms;
     }
 
     public static double getDecreasingScore(long millisecondsSitting, double scoreStartedSitting) {
-        return Math.pow((_24h_to_ms / millisecondsSitting) - 1, k) * (100 / Math.pow(47.0, k)) + scoreStartedSitting;
-    }
-
-    public long getConnectedTimeSinceSitStandOver(DBLog lastLog, Date now) {
-        ArrayList<DBLog> logs = new ArrayList<>();
-        long result = 0;
-        if(lastLog.getAction().equals(DatabaseHelper.LOG_CONNECT)) {
-            logs.add(lastLog);
-            while(logs.get(logs.size() - 1).getAction().equals(DatabaseHelper.LOG_DISCONNECT) || logs.get(logs.size() - 1).getAction().equals(DatabaseHelper.LOG_CONNECT)) {
-                logs.add(DatabaseHelper.getInstance(context).getLastLogBefore(logs.get(logs.size() - 1).getDatetime()));
-            }
-            result += now.getTime() - logs.get(0).getDatetime().getTime();
-            for(int i = 1; i < logs.size(); i += 2) {
-                result += logs.get(i).getDatetime().getTime() - logs.get(i + 1).getDatetime().getTime();
-            }
-        }
-        return result;
-    }
-
-    private void clearCache() {
-        last = null;
-        secondLast = null;
-        lastSitStandOverBeforeDiscon = null;
-        overTimeBoundary = -1;
+        double temp = Math.pow(((double) _24h_to_ms / (double) millisecondsSitting) - 1, k) * (100 / Math.pow(47.0, k)) + scoreStartedSitting;
+        Log.d("GetDecreasingMetadata", temp + "=Math.pow((" + _24h_to_ms + " / " + millisecondsSitting + ") - 1, " + k + ") * (100 / Math.pow(47.0, " + k + ")) + " + scoreStartedSitting);
+        return temp;
     }
 
     public static long getConnectionTime(DBLog firstRecordOfDay, ArrayList<DBLog> connectionLogs, Date stopTime) {
@@ -171,39 +179,74 @@ public class Logging {
         return connectionTime;
     }
 
+    public void logStartDay() {
+        if(DatabaseHelper.getInstance(context).dayStarted() == null) {
+            last = new DBLog(DatabaseHelper.LOG_START_DAY, new Date(), -1);
+            DatabaseHelper.getInstance(context).addLog(last);
+            connTimeSinceCurr = 0;
+            dayStarted = true;
+            sendUpdate();
+        }
+    }
+
+    public void logConnecting() {
+        if(!connecting) {
+            connecting = true;
+            sendUpdate();
+        }
+    }
+
+    public void logConnect() {
+        if(!DatabaseHelper.getInstance(context).isConnected()) {
+            last = new DBLog(DatabaseHelper.LOG_CONNECT, new Date(), -1);
+            DatabaseHelper.getInstance(context).addLog(last);
+            connecting = false;
+            connected = true;
+            sendUpdate();
+        }
+    }
+
+    public void logDisconnect() {
+        if(DatabaseHelper.getInstance(context).isConnected()) {
+            Date now = new Date();
+            connTimeSinceCurr += now.getTime() - last.getDatetime().getTime();
+            last = new DBLog(DatabaseHelper.LOG_DISCONNECT, now, -1);
+            DatabaseHelper.getInstance(context).addLog(last);
+            connected = false;
+            sendUpdate();
+        }
+    }
+
     public void logAchievedScore() {
-        Date now = new Date();
-        Date stopTime;
-        DBLog last = DatabaseHelper.getInstance(context).getLastLog();
-        DBLog absoluteLast = DatabaseHelper.getInstance(context).getLastLogBefore(now);
-        if(absoluteLast.getAction().equals(DatabaseHelper.LOG_DISCONNECT)) {
-            stopTime = absoluteLast.getDatetime();
-        } else if(absoluteLast.getAction().equals(DatabaseHelper.LOG_CONNECT)) {
-            DBLog discon = DatabaseHelper.getInstance(context).getLastLogBefore(absoluteLast.getDatetime());
-            stopTime = new Date(now.getTime() - absoluteLast.getDatetime().getTime() + discon.getDatetime().getTime());
-        } else {
-            stopTime = now;
-        }
-        double achievedScore = 0;
-        if(last != null) {
-            if(last.getAction().equals(DatabaseHelper.LOG_START_DAY)) {
-                achievedScore = 0;
-            } else if(last.getAction().equals(DatabaseHelper.LOG_OVERTIME)) {
-                DBLog lastSitStand = DatabaseHelper.getInstance(context).getLastSitStand();
-                if(lastSitStand != null) {
-                    achievedScore = getDecreasingScore(stopTime.getTime() - lastSitStand.getDatetime().getTime(), lastSitStand.getData());
-                }
-            } else {
-                achievedScore = getIncreasingScore(stopTime.getTime() - last.getDatetime().getTime(), last.getData());
+        if(dayStarted) {
+            Date now = new Date();
+            Date stopTime = connected ? now : last.getDatetime();
+            if (connected) {
+                connTimeSinceCurr += now.getTime() - last.getDatetime().getTime();
             }
-        }
-        double achievedScorePercentage;
-        DBLog first = DatabaseHelper.getInstance(context).getFirstRecordOfDay();
-        if(first != null) {
-            long connectionTime = getConnectionTime(first, DatabaseHelper.getInstance(context).getTodaysConnectionLogs(), stopTime);
-            double maxScoreToBeAchieved = getIncreasingScore(connectionTime, 0);
-            achievedScorePercentage = Math.round(achievedScore * 10000 / maxScoreToBeAchieved) / 100.0;
-            DatabaseHelper.getInstance(context).endDay(now, achievedScore, achievedScorePercentage, connectionTime);
+            double achievedScore;
+            if (last.getAction().equals(DatabaseHelper.LOG_START_DAY)) {
+                achievedScore = 0;
+            } else if (overtimeLogged) {
+                achievedScore = getDecreasingScore(connTimeSinceCurr, currentActivity.getData());
+            } else {
+                achievedScore = getIncreasingScore(connTimeSinceCurr, currentActivity.getData());
+            }
+
+            double achievedScorePercentage;
+            DBLog first = DatabaseHelper.getInstance(context).getFirstRecordOfDay();
+            if (first != null) {
+                long connectionTime = getConnectionTime(first, DatabaseHelper.getInstance(context).getTodaysConnectionLogs(), stopTime);
+                double maxScoreToBeAchieved = getIncreasingScore(connectionTime, 0);
+                achievedScorePercentage = Math.round(achievedScore * 10000 / maxScoreToBeAchieved) / 100.0;
+                DatabaseHelper.getInstance(context).addLog(new DBLog(DatabaseHelper.LOG_ACH_SCORE, now, achievedScore));
+                DatabaseHelper.getInstance(context).addLog(new DBLog(DatabaseHelper.LOG_ACH_SCORE_PERC, now, achievedScorePercentage));
+                last = new DBLog(DatabaseHelper.LOG_STOP_DAY, now, connectionTime);
+                DatabaseHelper.getInstance(context).addLog(last);
+                currentActivity = null;
+            }
+            dayStarted = false;
+            sendUpdate();
         }
     }
 
@@ -329,123 +372,52 @@ public class Logging {
                 Log.d("LOGDATA", isStanding ? "STAND" : "SIT");*/
                 boolean isStanding = Math.abs(meanY - 41500) > 4500;
 
-                Date now = new Date();
-                if(last == null || now.getTime() - lastUpdate.getTime() > 500) {
+                if(last == null) {
                     last = DatabaseHelper.getInstance(context).getLastLog();
                 }
-                lastUpdate = now;
-                if(last.getAction().equals(DatabaseHelper.LOG_SIT)) {
-                    if(isStanding) {
-                        DatabaseHelper.getInstance(context).addSitStand(now, true, getIncreasingScore(now.getTime() - last.getDatetime().getTime(), last.getData()));
-                        sendToHandler(STATUS_STAND);
-                        clearCache();
-                    } else if(now.getTime() - last.getDatetime().getTime() >= _30mn_to_ms) {
-                        DatabaseHelper.getInstance(context).addSitOvertime(now, getIncreasingScore(now.getTime() - last.getDatetime().getTime(), last.getData()));
-                        sendToHandler(STATUS_OVERTIME);
-                        clearCache();
-                    }
-                } else if(last.getAction().equals(DatabaseHelper.LOG_STAND)) {
-                    if(!isStanding) {
-                        DatabaseHelper.getInstance(context).addSitStand(now, false, getIncreasingScore(now.getTime() - last.getDatetime().getTime(), last.getData()));
-                        sendToHandler(STATUS_SIT);
-                        clearCache();
-                    }
-                } else if(last.getAction().equals(DatabaseHelper.LOG_OVERTIME)) {
-                    if(isStanding) {
-                        DBLog startedSitting = DatabaseHelper.getInstance(context).getLastSitStand();
-                        DatabaseHelper.getInstance(context).addSitStand(now, true, getDecreasingScore(now.getTime() - startedSitting.getDatetime().getTime(), startedSitting.getData()));
-                        sendToHandler(STATUS_STAND);
-                        clearCache();
-                    }
-                } else if(last.getAction().equals(DatabaseHelper.LOG_CONNECT)) {
-                    if(secondLast == null) {
-                        secondLast = DatabaseHelper.getInstance(context).getLastLogBefore(last.getDatetime());
-                    }
-                    if(secondLast.getAction().equals(DatabaseHelper.LOG_START_DAY)) {
-                        DatabaseHelper.getInstance(context).addSitStand(now, isStanding, 0);
-                        sendToHandler(isStanding ? STATUS_STAND : STATUS_SIT);
-                        clearCache();
-                    } else {
-                        if(lastSitStandOverBeforeDiscon == null) {
-                            lastSitStandOverBeforeDiscon = DatabaseHelper.getInstance(context).getLastSitStandOver();
-                        }
-                        if (lastSitStandOverBeforeDiscon.getAction().equals(DatabaseHelper.LOG_OVERTIME)) {
-                            if (isStanding) {
-                                DBLog lastSit = DatabaseHelper.getInstance(context).getLastSitStand();
-                                long sittingDuration = getConnectedTimeSinceSitStandOver(last, now) + lastSitStandOverBeforeDiscon.getDatetime().getTime() - lastSit.getDatetime().getTime();
-                                DatabaseHelper.getInstance(context).addSitStand(now, true, getDecreasingScore(sittingDuration, lastSit.getData()));
-                                sendToHandler(STATUS_STAND);
-                                clearCache();
-                            }
-                        } else if (lastSitStandOverBeforeDiscon.getAction().equals(DatabaseHelper.LOG_SIT)) {
-                            if (isStanding) {
-                                long sittingTime = getConnectedTimeSinceSitStandOver(last, now);
-                                DatabaseHelper.getInstance(context).addSitStand(now, true, getIncreasingScore(sittingTime, lastSitStandOverBeforeDiscon.getData()));
-                                sendToHandler(STATUS_STAND);
-                                clearCache();
+                if(dayStarted && connected) {
+                    Date now = new Date();
+                    if (currentActivity == null) { //first record of the day
+                        last = new DBLog(isStanding ? DatabaseHelper.LOG_STAND : DatabaseHelper.LOG_SIT, now, 0);
+                        currentActivity = last;
+                        DatabaseHelper.getInstance(context).addLog(last);
+                        connTimeSinceCurr = 0;
+                        sendUpdate();
+                    } else if (currentActivity.getAction().equals(DatabaseHelper.LOG_SIT)) {
+                        if (isStanding) {
+                            if (overtimeLogged) {
+                                connTimeSinceCurr += now.getTime() - last.getDatetime().getTime();
+                                last = new DBLog(DatabaseHelper.LOG_STAND, now, getDecreasingScore(connTimeSinceCurr, currentActivity.getData()));
+                                currentActivity = last;
+                                DatabaseHelper.getInstance(context).addLog(last);
+                                connTimeSinceCurr = 0;
+                                overtimeLogged = false;
+                                sendUpdate();
                             } else {
-                                if(overTimeBoundary == -1) {
-                                    long sittingTime = getConnectedTimeSinceSitStandOver(last, now);
-                                    overTimeBoundary = now.getTime() - sittingTime + _30mn_to_ms;
-                                }
-                                if(now.getTime() > overTimeBoundary) { // Only means sit_overtime if no discon-con happened in between
-                                    long sittingTime = getConnectedTimeSinceSitStandOver(last, now);
-                                    if (sittingTime >= _30mn_to_ms) {
-                                        DatabaseHelper.getInstance(context).addSitOvertime(now, getIncreasingScore(sittingTime, lastSitStandOverBeforeDiscon.getData()));
-                                        sendToHandler(STATUS_OVERTIME);
-                                        clearCache();
-                                    } else {
-                                        overTimeBoundary = now.getTime() - sittingTime + _30mn_to_ms;
-                                    }
-                                }
+                                connTimeSinceCurr += now.getTime() - last.getDatetime().getTime();
+                                last = new DBLog(DatabaseHelper.LOG_STAND, now, getIncreasingScore(connTimeSinceCurr, currentActivity.getData()));
+                                currentActivity = last;
+                                DatabaseHelper.getInstance(context).addLog(last);
+                                connTimeSinceCurr = 0;
+                                sendUpdate();
                             }
-                        } else if (lastSitStandOverBeforeDiscon.getAction().equals(DatabaseHelper.LOG_STAND)) {
-                            if (!isStanding) {
-                                long standingTime = getConnectedTimeSinceSitStandOver(last, now);
-                                DatabaseHelper.getInstance(context).addSitStand(now, false, getIncreasingScore(standingTime, lastSitStandOverBeforeDiscon.getData()));
-                                sendToHandler(STATUS_SIT);
-                                clearCache();
-                            }
+                        } else if (!overtimeLogged && (now.getTime() - last.getDatetime().getTime() + connTimeSinceCurr) >= _30mn_to_ms) {
+                            connTimeSinceCurr += now.getTime() - last.getDatetime().getTime();
+                            last = new DBLog(DatabaseHelper.LOG_OVERTIME, now, getIncreasingScore(connTimeSinceCurr, currentActivity.getData()));
+                            DatabaseHelper.getInstance(context).addLog(last);
+                            overtimeLogged = true;
+                            sendUpdate();
+                        }
+                    } else if (currentActivity.getAction().equals(DatabaseHelper.LOG_STAND)) {
+                        if (!isStanding) {
+                            connTimeSinceCurr += now.getTime() - last.getDatetime().getTime();
+                            last = new DBLog(DatabaseHelper.LOG_SIT, now, getIncreasingScore(connTimeSinceCurr, currentActivity.getData()));
+                            currentActivity = last;
+                            DatabaseHelper.getInstance(context).addLog(last);
+                            connTimeSinceCurr = 0;
+                            sendUpdate();
                         }
                     }
-
-                    /*DBLog secondLast = DatabaseHelper.getInstance(context).getLastLogBefore(last.getDatetime());
-                    if(secondLast.getAction().equals(DatabaseHelper.LOG_START_DAY)) {
-                        DatabaseHelper.getInstance(context).addSitStand(now, isStanding, 0);
-                        sendToHandler(isStanding ? STATUS_STAND : STATUS_SIT);
-                        last = null;
-                    } else if(secondLast.getAction().equals(DatabaseHelper.LOG_DISCONNECT)) {
-                        DBLog thirdLast = DatabaseHelper.getInstance(context).getLastLogBefore(secondLast.getDatetime());
-                        long disconnectedDuration = last.getDatetime().getTime() - secondLast.getDatetime().getTime();
-                        if(thirdLast.getAction().equals(DatabaseHelper.LOG_OVERTIME)) {
-                            if(isStanding) {
-                                DBLog startedSitting = DatabaseHelper.getInstance(context).getLastSitStand();
-                                long sittingDuration = now.getTime() - startedSitting.getDatetime().getTime() - disconnectedDuration;
-                                DatabaseHelper.getInstance(context).addSitStand(now, true, getDecreasingScore(sittingDuration, startedSitting.getData()));
-                                sendToHandler(STATUS_STAND);
-                                last = null;
-
-                            }
-                        } else if(thirdLast.getAction().equals(DatabaseHelper.LOG_SIT)) {
-                            long sittingTime = now.getTime() - thirdLast.getDatetime().getTime() - disconnectedDuration;
-                            if(isStanding) {
-                                DatabaseHelper.getInstance(context).addSitStand(now, true, getIncreasingScore(sittingTime, thirdLast.getData()));
-                                sendToHandler(STATUS_STAND);
-                                last = null;
-                            } else if(sittingTime >= _30mn_to_ms) {
-                                DatabaseHelper.getInstance(context).addSitOvertime(now, getIncreasingScore(sittingTime, thirdLast.getData()));
-                                sendToHandler(STATUS_OVERTIME);
-                                last = null;
-                            }
-                        } else if(thirdLast.getAction().equals(DatabaseHelper.LOG_STAND)) {
-                            if(!isStanding) {
-                                long standingTime = now.getTime() - thirdLast.getDatetime().getTime() - disconnectedDuration;
-                                DatabaseHelper.getInstance(context).addSitStand(now, false, getIncreasingScore(standingTime, thirdLast.getData()));
-                                sendToHandler(STATUS_SIT);
-                                last = null;
-                            }
-                        }
-                    }*/
                 }
             }
         } catch (Exception e) {

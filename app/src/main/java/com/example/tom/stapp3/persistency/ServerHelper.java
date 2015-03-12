@@ -571,4 +571,15 @@ public class ServerHelper {
         }, errorListener);
         VolleyQueue.getInstance(context).addToRequestQueue(updateProf);
     }
+
+//    public void uploadLogs(ArrayList<DBLog> logs, final Response.ErrorListener errorListener) {
+//        JSONObject request = new JSONObject();
+//        try {
+//            request.put("id", DatabaseHelper.getInstance(context).getOwnerId());
+//            request.put("token", DatabaseHelper.getInstance(context).getToken());
+//            request.put("logs", )
+//        } catch (JSONException e) {
+//            e.printStackTrace();
+//        }
+//    }
 }

@@ -41,11 +41,6 @@ public class FragmentViewer extends FragmentActivity implements FragmentProvider
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        if(!isMyServiceRunning()) {
-            Log.d("SERVICE", "Creating service");
-            Intent intent = new Intent(this, ShimmerService.class);
-            startService(intent);
-        }
         String token = DatabaseHelper.getInstance(getApplicationContext()).getToken();
         if(token != null && !token.equals("")) {
             Log.d("start", "Token present");
@@ -98,16 +93,6 @@ public class FragmentViewer extends FragmentActivity implements FragmentProvider
             result += end.getTime() - logs.get(logs.size() - 1).getDatetime().getTime();
         }
         Log.i("TIME_STOOD SINCE, UNTIL", Long.toString(result));*/
-    }
-
-    protected boolean isMyServiceRunning() {
-        ActivityManager manager = (ActivityManager) getSystemService(Context.ACTIVITY_SERVICE);
-        for (ActivityManager.RunningServiceInfo service : manager.getRunningServices(Integer.MAX_VALUE)) {
-            if (service.service.getClassName().equals("com.example.tom.stapp3.service.ShimmerService")) {
-                return true;
-            }
-        }
-        return false;
     }
 
     private void loadStart() {

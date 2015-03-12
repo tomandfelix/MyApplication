@@ -42,49 +42,52 @@ package com.example.tom.stapp3.service;
 
 
 import java.lang.ref.WeakReference;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
 
 import com.example.tom.stapp3.driver.Shimmer;
 import com.example.tom.stapp3.driver.*;
 import com.example.tom.stapp3.persistency.DatabaseHelper;
+import com.example.tom.stapp3.persistency.IdLog;
 import com.example.tom.stapp3.tools.Logging;
 
 import android.app.Service;
+import android.content.Context;
 import android.content.Intent;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 import android.os.Binder;
 import android.os.Handler;
 import android.os.IBinder;
 import android.os.Looper;
 import android.os.Message;
 import android.util.Log;
+import android.widget.Toast;
 
 public class ShimmerService extends Service {
     private static final String TAG = "MyService";
     private static final boolean mEnableLogging=true;
     private final IBinder mBinder = new LocalBinder();
     public HashMap<String, Object> mMultiShimmer = new HashMap<>(7);
-    private static Handler secondaryHandler =null;
     private static String address = "";
     public static final int SENSOR_CONNECTED = 0;
     public static final int SENSOR_STREAMING = 1;
     public static final int SENSOR_DISCONNECTED = 2;
     private int retryAmount = 0;
-
-    public void sendToSecondaryHandler(int msg) {
-        if (secondaryHandler != null) {
-            secondaryHandler.obtainMessage(msg).sendToTarget();
-        }
-    }
+    private Handler uploadHandler;
+    private Runnable uploadCheck;
+    private int uploadFrequency;
 
     public void tryReconnect() {
-        Log.e("RETRY", Integer.toString(retryAmount));
-        if (!address.equals("") && retryAmount <= 5) {
+        if(address.equals("")) {
+            disconnectAllDevices();
+        } else if (retryAmount < 5) {
+            Log.e("RETRY", Integer.toString(retryAmount));
             retryAmount++;
             connectShimmer(address, "Device");
-        } else if(retryAmount > 5) {
+        } else {
             Log.e("RETRY", "waiting 30 seconds");
             Handler handler = new Handler(Looper.getMainLooper());
             final Runnable r = new Runnable() {
@@ -113,13 +116,38 @@ public class ShimmerService extends Service {
 
     @Override
     public void onCreate() {
-        DatabaseHelper.getInstance(this);
-        Logging.getInstance(this);
-//        Toast.makeText(this, "My Service Created", Toast.LENGTH_LONG).show();
+        uploadFrequency = DatabaseHelper.getInstance(this).getUploadFrequency();
+        uploadHandler = new Handler();
+        uploadCheck = new Runnable() {
+            @Override
+            public void run() {
+                uploadData();
+                uploadHandler.postDelayed(uploadCheck, uploadFrequency);
+            }
+        };
         Log.d(TAG, "onCreate");
         if(DatabaseHelper.getInstance(this).dayStarted() == null) {
             address = "";
         }
+    }
+
+    public void uploadData() {
+        NetworkInfo wifi = ((ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE)).getNetworkInfo(ConnectivityManager.TYPE_WIFI);
+        if (wifi.isConnected() || DatabaseHelper.getInstance(ShimmerService.this).uploadOn3G()) {
+            ArrayList<IdLog> logs = DatabaseHelper.getInstance(ShimmerService.this).getLogsToUpload();
+            if(logs != null) {
+                for (IdLog log : logs) Log.e("UP", log.toString());
+                DatabaseHelper.getInstance(ShimmerService.this).confirmUpload(logs.get(logs.size() - 1).getId());
+            }
+        }
+    }
+
+    private void startUploadTask() {
+        uploadCheck.run();
+    }
+
+    private void stopUploadTask() {
+        uploadHandler.removeCallbacks(uploadCheck);
     }
 
     public class LocalBinder extends Binder {
@@ -177,6 +205,7 @@ public class ShimmerService extends Service {
 
     public void connectShimmer(String bluetoothAddress,String selectedDevice){
         Log.d("Shimmer","net Connection");
+        Logging.getInstance(this).logConnecting();
         address = bluetoothAddress;
         Shimmer shimmerDevice=new Shimmer(this, mHandler,selectedDevice,false);
         mMultiShimmer.remove(bluetoothAddress);
@@ -222,16 +251,17 @@ public class ShimmerService extends Service {
                         if (msg.getData().getString(Shimmer.TOAST).equals("Device connection was lost") ||
                                 msg.getData().getString(Shimmer.TOAST).contains("stopped streaming") ||
                                 msg.getData().getString(Shimmer.TOAST).contains("Killing Connection")) {
-                            DatabaseHelper.getInstance(mShimmerService.get()).addConnectionStatus(false);
-                            mShimmerService.get().sendToSecondaryHandler(SENSOR_DISCONNECTED);
+                            mShimmerService.get().stopUploadTask();
+                            Logging.getInstance(mShimmerService.get()).logDisconnect();
                             mShimmerService.get().tryReconnect();
                         } else if (msg.getData().getString(Shimmer.TOAST).contains("is now Streaming")) {
-                            DatabaseHelper.getInstance(mShimmerService.get()).addConnectionStatus(true);
-                            mShimmerService.get().sendToSecondaryHandler(SENSOR_STREAMING);
+                            mShimmerService.get().startUploadTask();
+                            Logging.getInstance(mShimmerService.get()).logConnect();
+                            mShimmerService.get().retryAmount = 0;
                         } else if (msg.getData().getString(Shimmer.TOAST).contains("is ready for Streaming")) {
                             mShimmerService.get().startStreamingAllDevices();
-                            mShimmerService.get().sendToSecondaryHandler(SENSOR_CONNECTED);
                         } else if (msg.getData().getString(Shimmer.TOAST).equals("Unable to connect device")) {
+                            mShimmerService.get().stopUploadTask();
                             mShimmerService.get().tryReconnect();
                         }
                         break;
@@ -682,11 +712,6 @@ public class ShimmerService extends Service {
             }
         }
         mMultiShimmer.remove(bluetoothAddress);
-
-    }
-
-    public void setSecondaryHandler(Handler secondaryHandlerhandler){
-        secondaryHandler = secondaryHandlerhandler;
 
     }
 

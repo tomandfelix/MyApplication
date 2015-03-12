@@ -39,12 +39,12 @@ public abstract class DrawerActivity extends ServiceActivity {
     protected static int index = PROFILE;
 
     @Override
-    protected void onCreate(Bundle savedInstanceState) {
+    public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
     }
 
     @Override
-    protected void onPostCreate(Bundle savedInstanceState) {
+    public void onPostCreate(Bundle savedInstanceState) {
         super.onPostCreate(savedInstanceState);
         menuItems = getResources().getStringArray(R.array.sideMenu);
         mProfile = DatabaseHelper.getInstance(this).getOwner();

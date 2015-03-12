@@ -15,7 +15,7 @@ import com.example.tom.stapp3.persistency.ServerHelper;
 public class StrangerView extends ServiceActivity {
 
     @Override
-    protected void onCreate(Bundle savedInstanceState) {
+    public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_stranger_profile);
         if(getActionBar() != null) {
