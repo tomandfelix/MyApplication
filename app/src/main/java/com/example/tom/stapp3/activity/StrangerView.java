@@ -44,16 +44,14 @@ public class StrangerView extends ServiceActivity {
     private void updateVisual(Profile profile) {
         TextView rank = (TextView) findViewById(R.id.stranger_rank);
         TextView username = (TextView) findViewById(R.id.stranger_username);
-        TextView money = (TextView) findViewById(R.id.stranger_money);
-        TextView experience = (TextView) findViewById(R.id.stranger_experience);
+        TextView experience = (TextView) findViewById(R.id.stranger_experience_text);
         ImageView avatar = (ImageView) findViewById(R.id.stranger_avatar);
 
         int avatarID = getResources().getIdentifier("avatar_" + profile.getAvatar() + "_512", "drawable", getPackageName());
 
-        rank.setText("Rank: " + profile.getRank());
+        rank.setText( profile.getRank() + "");
         username.setText(profile.getUsername());
-        money.setText("Money: " + profile.getMoney());
-        experience.setText("Experience: " + profile.getExperience());
+        experience.setText("" + profile.getExperience());
         avatar.setImageResource(avatarID);
     }
 }

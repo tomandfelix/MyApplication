@@ -4,7 +4,10 @@ import android.app.AlertDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
+import android.support.v4.widget.DrawerLayout;
+import android.support.v7.app.ActionBarDrawerToggle;
 import android.util.Log;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.AdapterView;
 
@@ -22,6 +25,8 @@ import com.mikepenz.materialdrawer.model.interfaces.IDrawerItem;
  * Base class for every activity that needs a side menu, this class takes care of this menu and the event handling for it
  */
 public abstract class DrawerActivity extends ServiceActivity {
+    protected ActionBarDrawerToggle mDrawerToggle;
+    protected DrawerLayout mDrawerLayout;
     protected Drawer drawerBuilder;
     protected Drawer.Result drawer;
     protected Profile mProfile;
@@ -41,6 +46,7 @@ public abstract class DrawerActivity extends ServiceActivity {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
     }
 
     @Override
@@ -51,9 +57,24 @@ public abstract class DrawerActivity extends ServiceActivity {
         makeDrawer();
     }
 
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        switch (item.getItemId()) {
+            case android.R.id.home:
+                if(drawer.isDrawerOpen()) {
+                    drawer.closeDrawer();
+                }else{
+                    drawer.openDrawer();
+                }
+            default:
+                return super.onOptionsItemSelected(item);
+        }
+    }
+
     public void makeDrawer() {
         int avatar_id = getResources().getIdentifier("avatar_" + mProfile.getAvatar() + "_128", "drawable", getPackageName());
         final int oldIndex = index;
+        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         drawerBuilder = new Drawer();
         drawerBuilder.withActivity(this);
         drawerBuilder.addDrawerItems(
@@ -138,4 +159,8 @@ public abstract class DrawerActivity extends ServiceActivity {
         startActivity(intent);
         finish();
     }
+
+
+
+
 }

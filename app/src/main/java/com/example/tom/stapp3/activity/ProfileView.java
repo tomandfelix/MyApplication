@@ -1,9 +1,7 @@
 package com.example.tom.stapp3.activity;
 
 import android.app.AlertDialog;
-import android.content.Context;
 import android.content.DialogInterface;
-import android.content.Intent;
 import android.content.res.TypedArray;
 import android.os.Bundle;
 import android.os.Handler;
@@ -23,12 +21,10 @@ import android.widget.TextView;
 
 import com.android.volley.Response;
 import com.android.volley.VolleyError;
-import com.example.tom.stapp3.persistency.DBLog;
 import com.example.tom.stapp3.persistency.DatabaseHelper;
 import com.example.tom.stapp3.persistency.Profile;
 import com.example.tom.stapp3.R;
 import com.example.tom.stapp3.persistency.ServerHelper;
-import com.example.tom.stapp3.service.ShimmerService;
 import com.example.tom.stapp3.tools.Logging;
 
 import java.lang.ref.WeakReference;
