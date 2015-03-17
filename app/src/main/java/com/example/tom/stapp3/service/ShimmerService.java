@@ -47,10 +47,13 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 
+import com.android.volley.Response;
+import com.android.volley.VolleyError;
 import com.example.tom.stapp3.driver.Shimmer;
 import com.example.tom.stapp3.driver.*;
 import com.example.tom.stapp3.persistency.DatabaseHelper;
 import com.example.tom.stapp3.persistency.IdLog;
+import com.example.tom.stapp3.persistency.ServerHelper;
 import com.example.tom.stapp3.tools.Logging;
 
 import android.app.Service;
@@ -72,9 +75,6 @@ public class ShimmerService extends Service {
     private final IBinder mBinder = new LocalBinder();
     public HashMap<String, Object> mMultiShimmer = new HashMap<>(7);
     private static String address = "";
-    public static final int SENSOR_CONNECTED = 0;
-    public static final int SENSOR_STREAMING = 1;
-    public static final int SENSOR_DISCONNECTED = 2;
     private int retryAmount = 0;
     private Handler uploadHandler;
     private Runnable uploadCheck;
@@ -121,8 +121,8 @@ public class ShimmerService extends Service {
         uploadCheck = new Runnable() {
             @Override
             public void run() {
-                uploadData();
                 uploadHandler.postDelayed(uploadCheck, uploadFrequency);
+                uploadData();
             }
         };
         Log.d(TAG, "onCreate");
@@ -133,20 +133,59 @@ public class ShimmerService extends Service {
 
     public void uploadData() {
         NetworkInfo wifi = ((ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE)).getNetworkInfo(ConnectivityManager.TYPE_WIFI);
-        if (wifi.isConnected() || DatabaseHelper.getInstance(ShimmerService.this).uploadOn3G()) {
-            ArrayList<IdLog> logs = DatabaseHelper.getInstance(ShimmerService.this).getLogsToUpload();
+        if (wifi.isConnected() || DatabaseHelper.getInstance(this).uploadOn3G()) {
+            ArrayList<IdLog> logs = DatabaseHelper.getInstance(this).getLogsToUpload();
             if(logs != null) {
-                for (IdLog log : logs) Log.e("UP", log.toString());
-                DatabaseHelper.getInstance(ShimmerService.this).confirmUpload(logs.get(logs.size() - 1).getId());
+                Log.d("uploadData", "uploading records " + logs.get(0).getId() + "->" + logs.get(logs.size() - 1).getId());
+//                for (IdLog log : logs) Log.d("uploadData", log.toString());
+                final boolean more = logs.size() == 1000;
+                ServerHelper.getInstance(this).uploadLogs(logs, new ServerHelper.ResponseFunc<Integer>() {
+                    @Override
+                    public void onResponse(Integer response) {
+                        DatabaseHelper.getInstance(ShimmerService.this).confirmUpload(response);
+                        if(more) {
+                            uploadData();
+                        }
+                    }
+                }, new Response.ErrorListener() {
+                    @Override
+                    public void onErrorResponse(VolleyError volleyError) {
+                        if(volleyError.getMessage().equals("token")) {
+                            // TODO password prompt
+                        } else {
+                            Log.e("uploadData", volleyError.getMessage());
+                        }
+                    }
+                });
+            } else {
+                int state = Logging.getInstance(this).getState();
+                if(state == Logging.STATE_CONNECTING || state == Logging.STATE_DISCONNECTED || state == Logging.STATE_DAY_STOPPED) {
+                    stopUploadTask();
+                }
             }
         }
     }
 
+    public void downloadData() {
+        IdLog last = DatabaseHelper.getInstance(this).getLastLog();
+        ServerHelper.getInstance(this).downloadLogs(last == null ? 0 : last.getId(), new Response.ErrorListener() {
+            @Override
+            public void onErrorResponse(VolleyError volleyError) {
+                if(!volleyError.getMessage().equals("none")) {
+                    Log.e("uploadData", volleyError.getMessage());
+                }
+            }
+        });
+    }
+
     private void startUploadTask() {
+        Log.d("uploadTask", "START");
+        uploadHandler.removeCallbacks(uploadCheck);
         uploadCheck.run();
     }
 
     private void stopUploadTask() {
+        Log.d("uploadTask", "STOP");
         uploadHandler.removeCallbacks(uploadCheck);
     }
 
@@ -251,17 +290,15 @@ public class ShimmerService extends Service {
                         if (msg.getData().getString(Shimmer.TOAST).equals("Device connection was lost") ||
                                 msg.getData().getString(Shimmer.TOAST).contains("stopped streaming") ||
                                 msg.getData().getString(Shimmer.TOAST).contains("Killing Connection")) {
-                            mShimmerService.get().stopUploadTask();
                             Logging.getInstance(mShimmerService.get()).logDisconnect();
                             mShimmerService.get().tryReconnect();
                         } else if (msg.getData().getString(Shimmer.TOAST).contains("is now Streaming")) {
-                            mShimmerService.get().startUploadTask();
                             Logging.getInstance(mShimmerService.get()).logConnect();
+                            mShimmerService.get().startUploadTask();
                             mShimmerService.get().retryAmount = 0;
                         } else if (msg.getData().getString(Shimmer.TOAST).contains("is ready for Streaming")) {
                             mShimmerService.get().startStreamingAllDevices();
                         } else if (msg.getData().getString(Shimmer.TOAST).equals("Unable to connect device")) {
-                            mShimmerService.get().stopUploadTask();
                             mShimmerService.get().tryReconnect();
                         }
                         break;

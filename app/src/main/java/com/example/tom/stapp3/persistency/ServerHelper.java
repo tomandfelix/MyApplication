@@ -9,6 +9,7 @@ import com.android.volley.Response;
 import com.android.volley.VolleyError;
 import com.android.volley.toolbox.JsonArrayRequest;
 import com.android.volley.toolbox.JsonObjectRequest;
+import com.example.tom.stapp3.application.StApp;
 
 import org.apache.http.HttpResponse;
 import org.apache.http.client.ClientProtocolException;
@@ -22,6 +23,7 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.IOException;
+import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.concurrent.TimeUnit;
@@ -120,6 +122,7 @@ public class ServerHelper {
             request.put("email", email);
             request.put("avatar", avatar);
             request.put("password", password);
+            request.put("gcm_reg_id", ((StApp) context).getGcmRegistrationId());
         } catch (JSONException e) {
             e.printStackTrace();
         }
@@ -168,6 +171,7 @@ public class ServerHelper {
         try {
             request.put("username", username);
             request.put("password", password);
+            request.put("gcm_reg_id", ((StApp) context).getGcmRegistrationId());
         } catch (JSONException e) {
             e.printStackTrace();
         }
@@ -572,14 +576,99 @@ public class ServerHelper {
         VolleyQueue.getInstance(context).addToRequestQueue(updateProf);
     }
 
-//    public void uploadLogs(ArrayList<DBLog> logs, final Response.ErrorListener errorListener) {
-//        JSONObject request = new JSONObject();
-//        try {
-//            request.put("id", DatabaseHelper.getInstance(context).getOwnerId());
-//            request.put("token", DatabaseHelper.getInstance(context).getToken());
-//            request.put("logs", )
-//        } catch (JSONException e) {
-//            e.printStackTrace();
-//        }
-//    }
+    public void uploadLogs(ArrayList<IdLog> logs, final ResponseFunc<Integer> responseListener, final Response.ErrorListener errorListener) {
+        JSONObject request = new JSONObject();
+        JSONArray requestArray = new JSONArray();
+        try {
+            request.put("id", DatabaseHelper.getInstance(context).getOwnerId());
+            request.put("token", DatabaseHelper.getInstance(context).getToken());
+            for(IdLog l : logs) {
+                requestArray.put(l.toJSONObject());
+            }
+            request.put("logs", requestArray);
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+        JsonObjectRequest uploadLogs = new JsonObjectRequest(Request.Method.POST, "http://eng.studev.groept.be/thesis/a14_stapp2/uploadLogs.php", request, new Response.Listener<JSONObject>() {
+            @Override
+            public void onResponse(JSONObject response) {
+                try{
+                    if(response.has("lastId")) {
+                        responseListener.onResponse(response.getInt("lastId"));
+                    }else if(response.has("error")) {
+                        errorListener.onErrorResponse(new VolleyError(response.getString("error")));
+                    }
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                }
+            }
+        }, errorListener);
+        VolleyQueue.getInstance(context).addToRequestQueue(uploadLogs);
+    }
+
+    public void downloadLogs(int lastId, final Response.ErrorListener errorListener) {
+        JSONObject request = new JSONObject();
+        try {
+            request.put("id", DatabaseHelper.getInstance(context).getOwnerId());
+            request.put("token", DatabaseHelper.getInstance(context).getToken());
+            request.put("lastId", lastId);
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+        JsonArrayRequest downloadLogs = new JsonArrayRequest(Request.Method.POST, "http://eng.studev.groept.be/thesis/a14_stapp2/downloadLogs.php", request, new Response.Listener<JSONArray>() {
+            @Override
+            public void onResponse(JSONArray response) {
+                ArrayList<IdLog> result = null;
+                try{
+                    if(!response.getJSONObject(0).has("error")) {
+                        result = new ArrayList<>();
+                        for(int i = 0; i < response.length(); i++) {
+                            result.add(new IdLog(response.getJSONObject(i)));
+                        }
+                    }else {
+                        errorListener.onErrorResponse(new VolleyError(response.getJSONObject(0).getString("error")));
+                    }
+                } catch (JSONException | ParseException e) {
+                    e.printStackTrace();
+                }
+                if(result != null) {
+                    DatabaseHelper.getInstance(context).storeLogs(result);
+                    errorListener.onErrorResponse(new VolleyError("none"));
+                }
+
+            }
+        }, errorListener);
+        VolleyQueue.getInstance(context).addToRequestQueue(downloadLogs);
+    }
+
+    public void sendMessage(int[] ids, int challengeId, String message, final Response.ErrorListener errorListener) {
+        JSONObject request = new JSONObject();
+        JSONArray requestArray = new JSONArray();
+        try {
+            request.put("id", DatabaseHelper.getInstance(context).getOwnerId());
+            request.put("token", DatabaseHelper.getInstance(context).getToken());
+            for(int i : ids) {
+                requestArray.put(i);
+            }
+            request.put("receiver_ids", requestArray);
+            request.put("challenge_id", challengeId);
+            request.put("message", message);
+            Log.d("input", request.toString());
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+        JsonObjectRequest uploadLogs = new JsonObjectRequest(Request.Method.POST, "http://eng.studev.groept.be/thesis/a14_stapp2/sendGCMMessage.php", request, new Response.Listener<JSONObject>() {
+            @Override
+            public void onResponse(JSONObject response) {
+                try{
+                    if(response.has("error")) {
+                        errorListener.onErrorResponse(new VolleyError(response.getString("error")));
+                    }
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                }
+            }
+        }, errorListener);
+        VolleyQueue.getInstance(context).addToRequestQueue(uploadLogs);
+    }
 }

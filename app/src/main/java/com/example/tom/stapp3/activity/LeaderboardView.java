@@ -35,81 +35,83 @@ public class LeaderboardView extends DrawerActivity {
     private ListView leaderboardList;
     private LeaderboardListAdapter adapter;
     private ArrayList<Profile> list;
-    private Context context;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
-        Log.i("onCreate", "LeaderBoardView");
+        Log.d("onCreate", "LeaderBoardView");
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_leaderboard);
         leaderboardList = (ListView) findViewById(R.id.leaderboard_list);
-        context = this;
         ServerHelper.getInstance(this).getLeaderboardById(DatabaseHelper.getInstance(this).getOwnerId(),
-                new ServerHelper.ResponseFunc<ArrayList<Profile>>() {
-                    @Override
-                    public void onResponse(ArrayList<Profile> response) {
-                        list = response;
-                        adapter = new LeaderboardListAdapter(LeaderboardView.this, R.layout.list_item_leaderboard, list);
-                        View header = getLayoutInflater().inflate(R.layout.list_head_foot_leaderboard, leaderboardList, false);
-                        TextView head = (TextView) header.findViewById(R.id.head_foot_text);
-                        head.setText("Load 10 higher ranks");
-                        leaderboardList.addHeaderView(header);
-                        View footer = getLayoutInflater().inflate(R.layout.list_head_foot_leaderboard, leaderboardList, false);
-                        TextView foot = (TextView) footer.findViewById(R.id.head_foot_text);
-                        foot.setText("Load 10 lower ranks");
-                        leaderboardList.addFooterView(footer);
-                        leaderboardList.setAdapter(adapter);
-                        leaderboardList.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-                            @Override
-                            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                                int startRank;
-                                int endRank;
-                                if(position == 0 && (startRank = list.get(0).getRank()) != 1) {
-                                    ServerHelper.getInstance(getApplicationContext()).getLeaderboardByRank(startRank - 2,
-                                            new ServerHelper.ResponseFunc<ArrayList<Profile>>() {
-                                                @Override
-                                                public void onResponse(ArrayList<Profile> response) {
-                                                    list.addAll(0, response);
-                                                    ((ArrayAdapter) ((HeaderViewListAdapter) leaderboardList.getAdapter()).getWrappedAdapter()).notifyDataSetChanged();
-                                                }
-                                            }, null, false);
-                                } else if (position == list.size() + 1 && (endRank = list.get(list.size() - 1).getRank()) % 10 == 0) {
-                                    ServerHelper.getInstance(getApplicationContext()).getLeaderboardByRank(endRank + 1,
-                                            new ServerHelper.ResponseFunc<ArrayList<Profile>>() {
-                                                @Override
-                                                public void onResponse(ArrayList<Profile> response) {
-                                                    list.addAll(response);
-                                                    ((ArrayAdapter) ((HeaderViewListAdapter) leaderboardList.getAdapter()).getWrappedAdapter()).notifyDataSetChanged();
-                                                }
-                                            }, null, false);
-                                } else  if(position > 0 && position <= list.size()) {
-                                    int destId = list.get(position - 1).getId();
-                                    if(destId == DatabaseHelper.getInstance(getApplicationContext()).getOwnerId()) {
-                                        drawer.setSelection(PROFILE);
-                                    } else {
-                                        Intent intent = new Intent(LeaderboardView.this, StrangerView.class);
-                                        intent.putExtra("strangerId", destId);
-                                        startActivity(intent);
-                                        overridePendingTransition(R.anim.enter_right, R.anim.leave_left);
-                                    }
+            new ServerHelper.ResponseFunc<ArrayList<Profile>>() {
+                @Override
+                public void onResponse(ArrayList<Profile> response) {
+                    list = response;
+                    setupList();
+                }
+            }, new Response.ErrorListener() {
+                @Override
+                public void onErrorResponse(VolleyError volleyError) {
+                    final AlertDialog alertDialog = new AlertDialog.Builder(LeaderboardView.this).create();
+                    alertDialog.setMessage("It seems like an error occured, please logout and try again");
+                    alertDialog.setButton("Dismiss", new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialog, int which) {
+                            alertDialog.dismiss();
+                        }
+                    });
+                    alertDialog.show();
+                }
+            }, false);
+    }
+
+    private void setupList() {
+        adapter = new LeaderboardListAdapter(LeaderboardView.this, R.layout.list_item_leaderboard, list);
+        View header = getLayoutInflater().inflate(R.layout.list_head_foot_leaderboard, leaderboardList, false);
+        TextView head = (TextView) header.findViewById(R.id.head_foot_text);
+        head.setText("Load 10 higher ranks");
+        leaderboardList.addHeaderView(header);
+        View footer = getLayoutInflater().inflate(R.layout.list_head_foot_leaderboard, leaderboardList, false);
+        TextView foot = (TextView) footer.findViewById(R.id.head_foot_text);
+        foot.setText("Load 10 lower ranks");
+        leaderboardList.addFooterView(footer);
+        leaderboardList.setAdapter(adapter);
+        leaderboardList.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                int startRank;
+                int endRank;
+                if(position == 0 && (startRank = list.get(0).getRank()) != 1) {
+                    ServerHelper.getInstance(getApplicationContext()).getLeaderboardByRank(startRank - 2,
+                            new ServerHelper.ResponseFunc<ArrayList<Profile>>() {
+                                @Override
+                                public void onResponse(ArrayList<Profile> response) {
+                                    list.addAll(0, response);
+                                    ((ArrayAdapter) ((HeaderViewListAdapter) leaderboardList.getAdapter()).getWrappedAdapter()).notifyDataSetChanged();
                                 }
-                            }
-                        });
+                            }, null, false);
+                } else if (position == list.size() + 1 && (endRank = list.get(list.size() - 1).getRank()) % 10 == 0) {
+                    ServerHelper.getInstance(getApplicationContext()).getLeaderboardByRank(endRank + 1,
+                            new ServerHelper.ResponseFunc<ArrayList<Profile>>() {
+                                @Override
+                                public void onResponse(ArrayList<Profile> response) {
+                                    list.addAll(response);
+                                    ((ArrayAdapter) ((HeaderViewListAdapter) leaderboardList.getAdapter()).getWrappedAdapter()).notifyDataSetChanged();
+                                }
+                            }, null, false);
+                } else  if(position > 0 && position <= list.size()) {
+                    int destId = list.get(position - 1).getId();
+                    if(destId == DatabaseHelper.getInstance(getApplicationContext()).getOwnerId()) {
+                        drawer.setSelection(PROFILE);
+                    } else {
+                        Intent intent = new Intent(LeaderboardView.this, StrangerView.class);
+                        intent.putExtra("strangerId", destId);
+                        startActivity(intent);
+                        overridePendingTransition(R.anim.enter_right, R.anim.leave_left);
                     }
-                }, new Response.ErrorListener() {
-                    @Override
-                    public void onErrorResponse(VolleyError volleyError) {
-                        final AlertDialog alertDialog = new AlertDialog.Builder(context).create();
-                        alertDialog.setMessage("It seems like an error occured, please logout and try again");
-                        alertDialog.setButton("Dismiss", new DialogInterface.OnClickListener() {
-                            @Override
-                            public void onClick(DialogInterface dialog, int which) {
-                                alertDialog.dismiss();
-                            }
-                        });
-                        alertDialog.show();
-                    }
-                }, false);
+                }
+            }
+        });
     }
 
     private class LeaderboardListAdapter extends ArrayAdapter<Profile> {

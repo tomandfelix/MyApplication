@@ -1,26 +1,20 @@
-package com.example.tom.stapp3.activity;
+package com.example.tom.stapp3.graphtools;
 
 import android.graphics.Canvas;
 import android.graphics.Paint;
 import android.graphics.Path;
 import android.graphics.PointF;
 import android.graphics.RectF;
-import android.util.Log;
 import android.util.Pair;
 
 import com.androidplot.exception.PlotRenderException;
-import com.androidplot.ui.SeriesRenderer;
 import com.androidplot.util.ValPixConverter;
-import com.androidplot.xy.LineAndPointFormatter;
-import com.androidplot.xy.LineAndPointRenderer;
-import com.androidplot.xy.PointLabelFormatter;
-import com.androidplot.xy.PointLabeler;
 import com.androidplot.xy.RectRegion;
 import com.androidplot.xy.XYPlot;
 import com.androidplot.xy.XYRegionFormatter;
 import com.androidplot.xy.XYSeries;
-import com.androidplot.xy.XYSeriesFormatter;
 import com.androidplot.xy.XYSeriesRenderer;
+import com.example.tom.stapp3.graphtools.CustomXYFormatter;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -28,9 +22,9 @@ import java.util.List;
 /**
  * Created by Tom on 3/03/2015.
  */
-public class CustomRenderer extends XYSeriesRenderer<CustomFormatter> {
+public class CustomXYRenderer extends XYSeriesRenderer<CustomXYFormatter> {
 
-    public CustomRenderer(XYPlot plot) {
+    public CustomXYRenderer(XYPlot plot) {
         super(plot);
     }
 
@@ -47,7 +41,7 @@ public class CustomRenderer extends XYSeriesRenderer<CustomFormatter> {
     }
 
     @Override
-    public void doDrawLegendIcon(Canvas canvas, RectF rect, CustomFormatter formatter) {
+    public void doDrawLegendIcon(Canvas canvas, RectF rect, CustomXYFormatter formatter) {
         if(formatter.getIncreasePaint() != null) {
             canvas.drawLine(rect.left, rect.bottom, rect.right, rect.top, formatter.getIncreasePaint());
         }
@@ -58,7 +52,7 @@ public class CustomRenderer extends XYSeriesRenderer<CustomFormatter> {
         path.lineTo(thisPoint.x, thisPoint.y);
     }
 
-    protected void drawSeries(Canvas canvas, RectF plotArea, XYSeries series, CustomFormatter formatter) {
+    protected void drawSeries(Canvas canvas, RectF plotArea, XYSeries series, CustomXYFormatter formatter) {
         PointF thisPoint;
         PointF lastPoint = null;
         PointF firstPoint = null;
@@ -120,7 +114,7 @@ public class CustomRenderer extends XYSeriesRenderer<CustomFormatter> {
         }
     }
 
-    protected void renderPath(Canvas canvas, RectF plotArea, Path increasePath, Path levelPath, Path decreasePath, PointF firstPoint, PointF lastPoint, CustomFormatter formatter) {
+    protected void renderPath(Canvas canvas, RectF plotArea, Path increasePath, Path levelPath, Path decreasePath, PointF firstPoint, PointF lastPoint, CustomXYFormatter formatter) {
         Path outlinePath1 = new Path(increasePath);
         Path outlinePath2 = new Path(levelPath);
         Path outlinePath3 = new Path(decreasePath);

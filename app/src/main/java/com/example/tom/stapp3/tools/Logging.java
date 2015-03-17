@@ -57,8 +57,8 @@ import com.example.tom.stapp3.driver.ObjectCluster;
 
 public class Logging {
     private static Logging uniqueInstance;
-    private static final long _30mn_to_ms = 30 * 1000;
-    private static final long _24h_to_ms = 24 * 60 * 1000;
+    private static final long _30mn_to_ms = 30 * 60 * 1000;
+    private static final long _24h_to_ms = 24 * 60 * 60 * 1000;
     private boolean mFirstWrite = true;
 
     private Context context;
@@ -252,51 +252,81 @@ public class Logging {
 
     public void logData(ObjectCluster objectCluster) {
         try {
-            if (mFirstWrite) {
-                // First retrieve all the unique keys from the objectClusterLog
-                Multimap<String, FormatCluster> m = objectCluster.mPropertyCluster;
-
-                mSensorNames = new String[m.size()];
-                mSensorFormats = new String[m.size()];
-                mSensorUnits = new String[m.size()];
-                int i = 0;
-                int p = 0;
-                for (String key : m.keys()) {
-                    // first check that there are no repeat entries
-                    if (compareStringArray(mSensorNames, key)) {
-                        for (FormatCluster formatCluster : m.get(key)) {
-                            mSensorFormats[p] = formatCluster.mFormat;
-                            mSensorUnits[p] = formatCluster.mUnits;
-                            p++;
-                        }
-                    }
-                    mSensorNames[i] = key;
-                    i++;
-                }
-
-                Log.d("Shimmer", "Data Written");
-                mFirstWrite = false;
-            }
+//            if (mFirstWrite) {
+//                // First retrieve all the unique keys from the objectClusterLog
+//                Multimap<String, FormatCluster> m = objectCluster.mPropertyCluster;
+//
+//                mSensorNames = new String[m.size()];
+//                mSensorFormats = new String[m.size()];
+//                mSensorUnits = new String[m.size()];
+//                int i = 0;
+//                int p = 0;
+//                for (String key : m.keys()) {
+//                    Log.d("PROPERTY", "KEY=" + key);
+//                    for(FormatCluster format : m.get(key)) {
+//                        Log.d("PROPERTY", "FORMAT=" + format.mFormat + " UNITS=" + format.mUnits + " DATA=" + format.mData);
+//                    }
+//                    // first check that there are no repeat entries
+//                    if (compareStringArray(mSensorNames, key)) {
+//                        for (FormatCluster formatCluster : m.get(key)) {
+//                            mSensorFormats[p] = formatCluster.mFormat;
+//                            mSensorUnits[p] = formatCluster.mUnits;
+//                            p++;
+//                        }
+//                    }
+//                    mSensorNames[i] = key;
+//                    i++;
+//                }
+//
+//                Log.d("Shimmer", "Data Written");
+//                mFirstWrite = false;
+//            }
+//            lengthXYZ = 0.0;
+//            Log.d("MEASUREMENT", "------------------------------");
+//            for (int r = 0; r < mSensorNames.length; r++) {
+//
+//                Collection<FormatCluster> dataFormats = objectCluster.mPropertyCluster.get(mSensorNames[r]);
+//                FormatCluster formatCluster = returnFormatCluster(dataFormats, mSensorFormats[r], mSensorUnits[r]); // retrieve the calibrated data
+//                if (mSensorNames[r].equals("Accelerometer X")
+//                        || mSensorNames[r].equals("Accelerometer Y")
+//                        || mSensorNames[r].equals("Accelerometer Z")) {
+//
+//                    // maybe to add a condition of having value larger than 60
+//
+//                    if (mSensorNames[r].equals("Accelerometer Y")) {
+//                        accYList.add(formatCluster.mData);
+//                        Log.i("MEASUREMENT", "Y=" + formatCluster.mData);
+//                    } else if (mSensorNames[r].equals("Accelerometer Z")) {
+//                        accZList.add(formatCluster.mData);
+//                        Log.i("MEASUREMENT", "Z=" + formatCluster.mData);
+//                    } else if (mSensorNames[r].equals("Accelerometer X")) {
+//                        accXList.add(formatCluster.mData);
+//                        Log.i("MEASUREMENT", "X=" + formatCluster.mData);
+//                    }
+//                    lengthXYZ += Math.pow(formatCluster.mData, 2);
+//                }
+//            }
             lengthXYZ = 0.0;
-            for (int r = 0; r < mSensorNames.length; r++) {
-
-                Collection<FormatCluster> dataFormats = objectCluster.mPropertyCluster
-                        .get(mSensorNames[r]);
-                FormatCluster formatCluster = returnFormatCluster(dataFormats, mSensorFormats[r], mSensorUnits[r]); // retrieve the calibrated data
-                if (mSensorNames[r].equals("Accelerometer X")
-                        || mSensorNames[r].equals("Accelerometer Y")
-                        || mSensorNames[r].equals("Accelerometer Z")) {
-
-                    // maybe to add a condition of having value larger than 60
-
-                    if (mSensorNames[r].equals("Accelerometer Y")) {
-                        accYList.add(formatCluster.mData);
-                    } else if (mSensorNames[r].equals("Accelerometer Z")) {
-                        accZList.add(formatCluster.mData);
-                    } else if (mSensorNames[r].equals("Accelerometer X")) {
-                        accXList.add(formatCluster.mData);
-                    }
-                    lengthXYZ += Math.pow(formatCluster.mData, 2);
+//            Log.d("MEASUREMENT", "-------------------------------------------");
+            for (FormatCluster data : objectCluster.mPropertyCluster.get("Accelerometer X")) {
+                if(data.mFormat.equals("CAL")) {
+                    accXList.add(data.mData);
+//                    Log.i("MEASUREMENT", "X=" + data.mData);
+                    lengthXYZ += Math.pow(data.mData, 2);
+                }
+            }
+            for (FormatCluster data : objectCluster.mPropertyCluster.get("Accelerometer Y")) {
+                if(data.mFormat.equals("CAL")) {
+                    accYList.add(data.mData);
+//                    Log.i("MEASUREMENT", "Y=" + data.mData);
+                    lengthXYZ += Math.pow(data.mData, 2);
+                }
+            }
+            for (FormatCluster data : objectCluster.mPropertyCluster.get("Accelerometer Z")) {
+                if(data.mFormat.equals("CAL")) {
+                    accZList.add(data.mData);
+//                    Log.i("MEASUREMENT", "Z=" + data.mData);
+                    lengthXYZ += Math.pow(data.mData, 2);
                 }
             }
 
@@ -349,11 +379,11 @@ public class Logging {
 
                 tempList.clear();
                 tempList.add(meanX);
-                tempList.add(meanY);
+                tempList.add(-Math.abs(meanY));
                 tempList.add(meanZ);
                 tempList.add(rmsY);
                 tempList.add(meanLength);
-                /*Log.i("MEASUREMENT", "X=" + meanX + "\tY=" + meanY + "\tZ=" + meanZ + "\tRMS=" + rmsY + "\tl=" + meanLength);
+//                Log.i("MEASUREMENT", "X=" + meanX + "\tY=" + meanY + "\tZ=" + meanZ + "\tRMS=" + rmsY + "\tl=" + meanLength);
                 // do the calculation to get label as standing or sitting
 
                 ArrayList<Double> D = new ArrayList<>();
@@ -368,9 +398,9 @@ public class Logging {
                     }
                     D.add((-0.69314718) - 0.5 * (sumResult + logDetSigma));
                 }
-                isStanding = !(D.get(0) > D.get(1));
-                Log.d("LOGDATA", isStanding ? "STAND" : "SIT");*/
-                boolean isStanding = Math.abs(meanY - 41500) > 4500;
+                boolean isStanding = !(D.get(0) > D.get(1));
+//                Log.d("LOGDATA", isStanding ? "STAND" : "SIT");
+//                boolean isStanding = Math.abs(meanY - 41000) > 4500;
 
                 if(last == null) {
                     last = DatabaseHelper.getInstance(context).getLastLog();
@@ -445,7 +475,7 @@ public class Logging {
         FormatCluster returnFormatCluster = null;
 
         while(iFormatCluster.hasNext()){
-            formatCluster=(FormatCluster)iFormatCluster.next();
+            formatCluster= iFormatCluster.next();
             if (formatCluster.mFormat==format && formatCluster.mUnits==units){
                 returnFormatCluster=formatCluster;
             }

@@ -6,26 +6,24 @@
     android:animateLayoutChanges="true">
 
         <TextView
-            android:id="@+id/receive_UDP_data"
-            android:text="Waiting for UDP data"
-            android:textSize="20sp"
-            android:layout_width="match_parent"
-            android:layout_height="44dp"/> />
-        <TextView
-            android:id="@+id/received_data"
+            android:id="@+id/internet_received_data"
             android:textSize="@dimen/textSize"
             android:layout_width="match_parent"
             android:hint="waiting..."
             android:layout_height="44dp"
             android:layout_marginTop="@dimen/text_separation"/>
-        <TextView
-            android:id="@+id/Send_UDP_data"
-            android:text="Type and then press button to send"
-            android:textSize="20sp"
-            android:layout_width="match_parent"
-            android:layout_height="44dp"/>
         <EditText
-            android:id="@+id/send_data"
+            android:id="@+id/internet_send_id"
+            android:textSize="@dimen/textSize"
+            android:hint="receiver id"
+            android:inputType="number"
+            android:singleLine="true"
+            android:layout_width="match_parent"
+            android:layout_height="44dp"
+            android:layout_marginTop="@dimen/text_separation"/>
+
+        <EditText
+            android:id="@+id/internet_send_data"
             android:textSize="@dimen/textSize"
             android:hint="type here"
             android:singleLine="true"
@@ -33,24 +31,13 @@
             android:layout_height="44dp"
             android:layout_marginTop="@dimen/text_separation"/>
         <Button
-            android:id="@+id/send_button"
+            android:id="@+id/internet_send_button"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:text="Send"
             android:background="@drawable/custom_button"
             android:textColor="@color/material_drawer_primary_text"
             android:onClick="toSend"/>
-        <TextView
-            android:textSize="@dimen/textSize"
-            android:layout_width="match_parent"
-            android:hint="Your Ip address is..."
-            android:layout_height="44dp"
-            android:layout_marginTop="@dimen/text_separation"/>
-        <TextView
-            android:id="@+id/ip_addr"
-            android:textSize="20sp"
-            android:layout_width="match_parent"
-            android:layout_height="44dp"/>
 
 </LinearLayout>
 

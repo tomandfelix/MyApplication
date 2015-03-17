@@ -15,6 +15,7 @@ import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Date;
 import java.util.concurrent.TimeUnit;
 
@@ -143,15 +144,17 @@ public class DatabaseHelper extends SQLiteOpenHelper{
 
     public void truncateLogs() {
         SQLiteDatabase db = getWritableDatabase();
-        db.execSQL("DELETE FROM " + TABLE_LOGS + "; VACUUM;");
+        db.execSQL("DELETE FROM " + TABLE_LOGS);
+        db.execSQL("DELETE FROM sqlite_sequence where name='" + TABLE_LOGS + "'");
         db.close();
+        setIntSetting(LAST_UPLOADED_INDEX, 0);
     }
 
     //--------------------------------------------------------LOGS------------------------------------------------------------------------------
 
     public ArrayList<IdLog> getLogsToUpload() {
         Log.i("getLogsToUpload", "getting logs to upload");
-        String query = "SELECT " + KEY_ID + ", " + KEY_ACTION + ", " + KEY_DATETIME + ", " + KEY_DATA +  " FROM " + TABLE_LOGS + " WHERE " + KEY_ID + " > " + getIntSetting(LAST_UPLOADED_INDEX) + " ORDER BY " + KEY_ID + " ASC";
+        String query = "SELECT " + KEY_ID + ", " + KEY_ACTION + ", " + KEY_DATETIME + ", " + KEY_DATA +  " FROM " + TABLE_LOGS + " WHERE " + KEY_ID + " > " + getIntSetting(LAST_UPLOADED_INDEX) + " ORDER BY " + KEY_ID + " ASC LIMIT 1000";
         SQLiteDatabase db = getReadableDatabase();
         Cursor cursor = db.rawQuery(query, null);
         ArrayList<IdLog> result = null;
@@ -177,7 +180,7 @@ public class DatabaseHelper extends SQLiteOpenHelper{
 
     public void addLog(DBLog log) {
         Log.i("addLog", log.toString());
-        ContentValues input = new ContentValues(2);
+        ContentValues input = new ContentValues(3);
         input.put(KEY_ACTION, log.getAction());
         input.put(KEY_DATETIME, dateToString(log.getDatetime()));
         input.put(KEY_DATA, log.getData() == -1 ? null : log.getData());
@@ -186,15 +189,35 @@ public class DatabaseHelper extends SQLiteOpenHelper{
         db.close();
     }
 
-    public DBLog getLastLog() {
+    public void storeLogs(ArrayList<IdLog> logs) {
+        if(logs != null) {
+            ContentValues input = new ContentValues(4);
+            int maxId = getIntSetting(LAST_UPLOADED_INDEX);
+            Log.i("storeLog", "storing records " + logs.get(0).getId() + "->" + logs.get(logs.size() - 1).getId());
+            SQLiteDatabase db = getWritableDatabase();
+            for (IdLog log : logs) {
+                maxId = Math.max(maxId, log.getId());
+                input.put(KEY_ID, log.getId());
+                input.put(KEY_ACTION, log.getAction());
+                input.put(KEY_DATETIME, dateToString(log.getDatetime()));
+                input.put(KEY_DATA, log.getData() == -1 ? null : log.getData());
+                db.insert(TABLE_LOGS, null, input);
+                input.clear();
+            }
+            db.close();
+            setIntSetting(LAST_UPLOADED_INDEX, maxId);
+        }
+    }
+
+    public IdLog getLastLog() {
         Log.i("getLastLog", "getting last log");
-        String query = "SELECT " + KEY_ACTION + ", " + KEY_DATETIME + ", " + KEY_DATA +  " FROM " + TABLE_LOGS + " WHERE " + KEY_ACTION + " IN('" + LOG_SIT + "', '" + LOG_STAND + "', '" + LOG_CONNECT + "', '" + LOG_OVERTIME + "') ORDER BY " + KEY_ID + " DESC LIMIT 1";
+        String query = "SELECT " + KEY_ID + ", " + KEY_ACTION + ", " + KEY_DATETIME + ", " + KEY_DATA +  " FROM " + TABLE_LOGS + " ORDER BY " + KEY_ID + " DESC LIMIT 1";
         SQLiteDatabase db = getReadableDatabase();
         Cursor cursor = db.rawQuery(query, null);
-        DBLog result = null;
+        IdLog result = null;
         if(cursor != null && cursor.getCount() > 0) {
             cursor.moveToFirst();
-            result = new DBLog(cursor.getString(0), stringToDate(cursor.getString(1)), cursor.getDouble(2));
+            result = new IdLog(cursor.getInt(0), cursor.getString(1), stringToDate(cursor.getString(2)), cursor.getDouble(3));
         }
         db.close();
         return result;
@@ -231,9 +254,14 @@ public class DatabaseHelper extends SQLiteOpenHelper{
         return result;
     }
 
-    public ArrayList<DBLog> getLogsBetween(Date start, Date end) {
-        Log.i("getLogsBetween", "getting logs between " + dateToString(start) + " and " + dateToString(end));
-        String query = "SELECT " + KEY_ACTION + ", " + KEY_DATETIME + ", " + KEY_DATA +  " FROM " + TABLE_LOGS + " WHERE " + KEY_DATETIME + " > '" + dateToString(start) + "' AND " + KEY_DATETIME + " < '" + dateToString(end) + "' ORDER BY " + KEY_ID + " ASC";
+    public ArrayList<DBLog> get2WeekEndLogs() {
+        Log.i("get2WeekEndLogs", "getting end day logs from last 2 weeks");
+        Calendar cal = Calendar.getInstance();
+        cal.setTime(new Date());
+        cal.set(Calendar.SECOND, 0);cal.set(Calendar.MINUTE, 0);cal.set(Calendar.HOUR, 0);cal.set(Calendar.MILLISECOND, 0);
+        Date stop = cal.getTime();
+        cal.add(Calendar.DATE, -14);
+        String query = "SELECT " + KEY_ACTION + ", " + KEY_DATETIME + ", " + KEY_DATA + " FROM " + TABLE_LOGS + " WHERE " + KEY_ACTION + " IN ('" + LOG_ACH_SCORE_PERC + "', '" + LOG_STOP_DAY + "') AND " + KEY_DATETIME + " > '" + dateToString(cal.getTime()) + "' AND " + KEY_DATETIME + " < '" + dateToString(stop) + "' ORDER BY " + KEY_ID + " ASC";
         SQLiteDatabase db = getReadableDatabase();
         Cursor cursor = db.rawQuery(query, null);
         ArrayList<DBLog> result = null;
@@ -247,29 +275,17 @@ public class DatabaseHelper extends SQLiteOpenHelper{
         return result;
     }
 
-    public DBLog getLastSitStand() {
-        Log.i("getLastSitStand", "running");
-        String query = "SELECT " + KEY_ACTION + ", " + KEY_DATETIME + ", " + KEY_DATA + " FROM " + TABLE_LOGS + " WHERE " + KEY_ACTION + " IN('" + LOG_SIT + "', '" + LOG_STAND + "') ORDER BY " + KEY_ID + " DESC LIMIT 1";
+    public ArrayList<DBLog> getLogsBetween(Date start, Date end) {
+        Log.i("getLogsBetween", "getting logs between " + dateToString(start) + " and " + dateToString(end));
+        String query = "SELECT " + KEY_ACTION + ", " + KEY_DATETIME + ", " + KEY_DATA +  " FROM " + TABLE_LOGS + " WHERE " + KEY_DATETIME + " > '" + dateToString(start) + "' AND " + KEY_DATETIME + " < '" + dateToString(end) + "' ORDER BY " + KEY_ID + " ASC";
         SQLiteDatabase db = getReadableDatabase();
         Cursor cursor = db.rawQuery(query, null);
-        DBLog result = null;
+        ArrayList<DBLog> result = null;
         if(cursor != null && cursor.getCount() > 0) {
-            cursor.moveToFirst();
-            result = new DBLog(cursor.getString(0), stringToDate(cursor.getString(1)), cursor.getDouble(2));
-        }
-        db.close();
-        return result;
-    }
-
-    public DBLog getLastSitStandOver() {
-        Log.i("getLastSitStandOver", "running");
-        String query = "SELECT " + KEY_ACTION + ", " + KEY_DATETIME + ", " + KEY_DATA + " FROM " + TABLE_LOGS + " WHERE " + KEY_ACTION + " IN('" + LOG_SIT + "', '" + LOG_STAND + "', '" + LOG_OVERTIME + "') ORDER BY " + KEY_ID + " DESC LIMIT 1";
-        SQLiteDatabase db = getReadableDatabase();
-        Cursor cursor = db.rawQuery(query, null);
-        DBLog result = null;
-        if(cursor != null && cursor.getCount() > 0) {
-            cursor.moveToFirst();
-            result = new DBLog(cursor.getString(0), stringToDate(cursor.getString(1)), cursor.getDouble(2));
+            result = new ArrayList<>();
+            while(cursor.moveToNext()) {
+                result.add(new DBLog(cursor.getString(0), stringToDate(cursor.getString(1)), cursor.getDouble(2)));
+            }
         }
         db.close();
         return result;
@@ -330,39 +346,6 @@ public class DatabaseHelper extends SQLiteOpenHelper{
         db.close();
         return result;
     }
-
-//    public void startDay() {
-//        Log.i("startDay", "starting day");
-//        addLog(LOG_START_DAY, new Date(), -1);
-//    }
-//
-//    public void endDay(Date stopTime, double achieved, double percent, double connectionTime) {
-//        Log.i("endDay", "ending day");
-//        addLog(LOG_ACH_SCORE, stopTime, achieved);
-//        addLog(LOG_ACH_SCORE_PERC, stopTime, percent);
-//        addLog(LOG_STOP_DAY, stopTime, connectionTime);
-//        if(isConnected()) {
-//            addLog(LOG_DISCONNECT, stopTime, -1);
-//        }
-//    }
-
-//    public void addConnectionStatus(Date dateTime, boolean connected) {
-//        Log.i("addConnectionStatus", connected ? "connected" : "disconnected");
-//        Date time = new Date();
-//        if(!connected == isConnected()) {
-//            addLog(connected ? LOG_CONNECT : LOG_DISCONNECT, time, -1);
-//        }
-//    }
-//
-//    public void addSitStand(Date datetime, boolean standing, double data) {
-//        Log.i("addSitStand", standing ? "stand" : "sit");
-//        addLog(standing ? LOG_STAND : LOG_SIT, datetime, data);
-//    }
-//
-//    public void addSitOvertime(Date datetime, double data) {
-//        Log.i("addSitOvertime", Double.toString(data));
-//        addLog(LOG_OVERTIME, datetime, data);
-//    }
 
     //--------------------------------------------------------PROFILES--------------------------------------------------------------------------
 
@@ -524,7 +507,10 @@ public class DatabaseHelper extends SQLiteOpenHelper{
     }
 
     public void setOwnerId(int newOwnerId) {
-        setIntSetting(OWNER, newOwnerId);
+        if(newOwnerId != getOwnerId()) {
+            setIntSetting(OWNER, newOwnerId);
+            truncateLogs();
+        }
     }
 
     public Profile getOwner() {

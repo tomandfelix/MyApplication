@@ -21,11 +21,14 @@ import android.widget.TextView;
 import com.android.volley.Response;
 import com.android.volley.VolleyError;
 import com.example.tom.stapp3.R;
+import com.example.tom.stapp3.application.StApp;
 import com.example.tom.stapp3.persistency.DBLog;
 import com.example.tom.stapp3.persistency.DatabaseHelper;
 import com.example.tom.stapp3.persistency.Profile;
 import com.example.tom.stapp3.persistency.ServerHelper;
 import com.example.tom.stapp3.service.ShimmerService;
+import com.google.android.gms.common.ConnectionResult;
+import com.google.android.gms.common.GooglePlayServicesUtil;
 
 import java.util.Date;
 
@@ -41,32 +44,43 @@ public class FragmentViewer extends FragmentActivity implements FragmentProvider
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        String token = DatabaseHelper.getInstance(getApplicationContext()).getToken();
-        if(token != null && !token.equals("")) {
-            Log.d("start", "Token present");
-            ServerHelper.getInstance(this).getProfile(new ServerHelper.ResponseFunc<Profile>() {
-                @Override
-                public void onResponse(Profile response) {
-                    if(response != null) {
-                        Log.d("start", "Token accepted");
-                        Intent intent = new Intent(FragmentViewer.this, ProfileView.class);
-                        intent.putExtra("profile", response);
-                        startActivity(intent);
-                        finish();
-                    } else {
-                        Log.d("start", "Token rejected");
+        int playServicesResultCode = ((StApp) getApplication()).getPlayServicesResultCode();
+        if(playServicesResultCode != ConnectionResult.SUCCESS) {
+            if(GooglePlayServicesUtil.isUserRecoverableError(playServicesResultCode)) {
+                GooglePlayServicesUtil.getErrorDialog(playServicesResultCode, this, 9000).show();
+            } else {
+                finish();
+            }
+        } else {
+            String token = DatabaseHelper.getInstance(getApplicationContext()).getToken();
+            if (token != null && !token.equals("")) {
+                Log.d("start", "Token present");
+                ServerHelper.getInstance(this).getProfile(new ServerHelper.ResponseFunc<Profile>() {
+                    @Override
+                    public void onResponse(Profile response) {
+                        if (response != null) {
+                            Log.d("start", "Token accepted");
+                            Intent intent = new Intent(FragmentViewer.this, ProfileView.class);
+                            intent.putExtra("profile", response);
+                            startActivity(intent);
+                            ((StApp) getApplication()).getService().uploadData();
+                            ((StApp) getApplication()).getService().downloadData();
+                            finish();
+                        } else {
+                            Log.d("start", "Token rejected");
+                            loadStart();
+                        }
+                    }
+                }, new Response.ErrorListener() {
+                    @Override
+                    public void onErrorResponse(VolleyError error) {
                         loadStart();
                     }
-                }
-            }, new Response.ErrorListener() {
-                @Override
-                public void onErrorResponse(VolleyError error) {
-                    loadStart();
-                }
-            }, true);
-        } else {
-            Log.d("start", "Token absent");
-            loadStart();
+                }, true);
+            } else {
+                Log.d("start", "Token absent");
+                loadStart();
+            }
         }
 
         /*ArrayList<DBLog> logs = new ArrayList<>();
@@ -119,6 +133,8 @@ public class FragmentViewer extends FragmentActivity implements FragmentProvider
                     intent.putExtra("profile", response);
                     startActivity(intent);
                     overridePendingTransition(R.anim.enter_top, R.anim.leave_bottom);
+                    ((StApp) getApplication()).getService().uploadData();
+                    ((StApp) getApplication()).getService().downloadData();
                     finish();
                 }
             }

@@ -41,7 +41,8 @@ public abstract class DrawerActivity extends ServiceActivity {
     protected final static int INTERNET_CONNECTION = 9;
     protected final static int SETTINGS = 10;
     protected final static int LOGOUT = 12;
-    protected static int index = PROFILE;
+    protected final static int INITIAL = PROFILE;
+    protected static int index = INITIAL;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -102,7 +103,7 @@ public abstract class DrawerActivity extends ServiceActivity {
                             loadActivity(LeaderboardView.class);
                             break;
                         case GRAPHS:
-                            loadActivity(Graph.class);
+                            loadActivity(GraphView.class);
                             break;
                         case SOLO_QUEST:
                         case CHALLENGE:
@@ -113,7 +114,7 @@ public abstract class DrawerActivity extends ServiceActivity {
                             loadActivity(ConnectionView.class);
                             break;
                         case INTERNET_CONNECTION:
-                            loadActivity(Internet_Connection.class);
+                            loadActivity(GCMTestActivity.class);
                             break;
                         case LOGOUT:
                             index = oldIndex;
@@ -124,6 +125,7 @@ public abstract class DrawerActivity extends ServiceActivity {
                                     switch (which) {
                                         case DialogInterface.BUTTON_POSITIVE:
                                             DatabaseHelper.getInstance(getApplicationContext()).setToken("");
+                                            index = INITIAL;
                                             Intent intent = new Intent(DrawerActivity.this, FragmentViewer.class);
                                             startActivity(intent);
                                             overridePendingTransition(R.anim.enter_bottom, R.anim.leave_top);

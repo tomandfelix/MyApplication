@@ -1,5 +1,9 @@
 package com.example.tom.stapp3.persistency;
 
+import org.json.JSONException;
+import org.json.JSONObject;
+
+import java.text.ParseException;
 import java.util.Date;
 
 /**
@@ -12,9 +16,15 @@ public class IdLog extends DBLog {
         super(action, datetime, data);
         this.id = id;
     }
+
     public IdLog(int id, DBLog dblog) {
         super(dblog.getAction(), dblog.datetime, dblog.data);
         this.id = id;
+    }
+
+    public IdLog(JSONObject obj) throws JSONException, ParseException {
+        super(obj);
+        this.id = obj.getInt("log_id");
     }
 
     public int getId() {
@@ -28,5 +38,12 @@ public class IdLog extends DBLog {
     @Override
     public String toString() {
         return id + " " + super.toString();
+    }
+
+    @Override
+    public JSONObject toJSONObject() throws JSONException {
+        JSONObject result = super.toJSONObject();
+        result.put("id", id);
+        return result;
     }
 }

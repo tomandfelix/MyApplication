@@ -121,7 +121,6 @@ public class ConnectionView extends DrawerActivity {
         app.getService().removeAddress();
         app.getService().stopStreamingAllDevices();
         Logging.getInstance(this).logAchievedScore();
-        app.getService().uploadData();
     }
 
     @Override
@@ -164,7 +163,6 @@ public class ConnectionView extends DrawerActivity {
     }
 
     private void updateState(int state) {
-        Log.e("State", state + "");
         startDayBtn.setVisibility(View.INVISIBLE);
         deviceList.setVisibility(View.INVISIBLE);
         progress.setVisibility(View.INVISIBLE);

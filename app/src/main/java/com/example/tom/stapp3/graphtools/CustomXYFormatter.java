@@ -1,4 +1,4 @@
-package com.example.tom.stapp3.activity;
+package com.example.tom.stapp3.graphtools;
 
 import android.graphics.Color;
 import android.graphics.Paint;
@@ -6,8 +6,6 @@ import android.graphics.Paint;
 import com.androidplot.ui.SeriesRenderer;
 import com.androidplot.util.PixelUtils;
 import com.androidplot.xy.FillDirection;
-import com.androidplot.xy.LineAndPointRenderer;
-import com.androidplot.xy.PointLabelFormatter;
 import com.androidplot.xy.PointLabeler;
 import com.androidplot.xy.XYPlot;
 import com.androidplot.xy.XYRegionFormatter;
@@ -17,17 +15,9 @@ import com.androidplot.xy.XYSeriesFormatter;
 /**
  * Created by Tom on 3/03/2015.
  */
-public class CustomFormatter extends XYSeriesFormatter<XYRegionFormatter> {
+public class CustomXYFormatter extends XYSeriesFormatter<XYRegionFormatter> {
 
     private static final float DEFAULT_LINE_STROKE_WIDTH_DP   = 2;
-
-    // default implementation prints point's yVal:
-    private PointLabeler pointLabeler = new PointLabeler() {
-        @Override
-        public String getLabel(XYSeries series, int index) {
-            return series.getY(index) + "";
-        }
-    };
 
     public FillDirection getFillDirection() {
         return fillDirection;
@@ -50,15 +40,15 @@ public class CustomFormatter extends XYSeriesFormatter<XYRegionFormatter> {
     /**
      * Should only be used in conjunction with calls to configure()...
      */
-    public CustomFormatter() {
+    public CustomXYFormatter() {
         this(Color.GREEN, Color.YELLOW, Color.RED);
     }
 
-    public CustomFormatter(Integer increaseColor, Integer levelColor, Integer decreaseColor) {
+    public CustomXYFormatter(Integer increaseColor, Integer levelColor, Integer decreaseColor) {
         this(increaseColor, levelColor, decreaseColor, FillDirection.BOTTOM);
     }
 
-    public CustomFormatter(Integer increaseColor, Integer levelColor, Integer decreaseColor, FillDirection fillDir) {
+    public CustomXYFormatter(Integer increaseColor, Integer levelColor, Integer decreaseColor, FillDirection fillDir) {
         initIncreasePaint(increaseColor);
         initLevelPaint(levelColor);
         initDecreasePaint(decreaseColor);
@@ -67,12 +57,12 @@ public class CustomFormatter extends XYSeriesFormatter<XYRegionFormatter> {
 
     @Override
     public Class<? extends SeriesRenderer> getRendererClass() {
-        return CustomRenderer.class;
+        return CustomXYRenderer.class;
     }
 
     @Override
     public SeriesRenderer getRendererInstance(XYPlot plot) {
-        return new CustomRenderer(plot);
+        return new CustomXYRenderer(plot);
     }
 
     protected void initIncreasePaint(Integer increaseColor) {
@@ -133,13 +123,5 @@ public class CustomFormatter extends XYSeriesFormatter<XYRegionFormatter> {
 
     public void setDecreasePaint(Paint decreasePaint) {
         this.decreasePaint = decreasePaint;
-    }
-
-    public PointLabeler getPointLabeler() {
-        return pointLabeler;
-    }
-
-    public void setPointLabeler(PointLabeler pointLabeler) {
-        this.pointLabeler = pointLabeler;
     }
 }
