@@ -83,7 +83,6 @@ public abstract class DrawerActivity extends ServiceActivity {
         super.onPostCreate(savedInstanceState);
         drawerToggle.syncState();
         leftDrawerList.setSelection(index);
-        Log.d("SELECTION", "selected " + index);
     }
 
     @Override
@@ -94,24 +93,6 @@ public abstract class DrawerActivity extends ServiceActivity {
         }
         return super.onOptionsItemSelected(item);
     }
-
-
-//        int avatar_id = getResources().getIdentifier("avatar_" + mProfile.getAvatar() + "_128", "drawable", getPackageName());
-//        drawerBuilder.addDrawerItems(
-//                new PrimaryDrawerItem().withName(menuItems[0]).withIcon(avatar_id),
-//                new DividerDrawerItem(),
-//                new SecondaryDrawerItem().withName(menuItems[1]),
-//                new SecondaryDrawerItem().withName(menuItems[2]),
-//                new SecondaryDrawerItem().withName(menuItems[3]),
-//                new SecondaryDrawerItem().withName(menuItems[4]),
-//                new SecondaryDrawerItem().withName(menuItems[5]),
-//                new DividerDrawerItem(),
-//                new SecondaryDrawerItem().withName(menuItems[6]),
-//                new SecondaryDrawerItem().withName(menuItems[7]),
-//                new SecondaryDrawerItem().withName(menuItems[8]),
-//                new DividerDrawerItem(),
-//                new SecondaryDrawerItem().withName(menuItems[9]));
-
 
     private void loadActivity(int newIndex) {
         index = newIndex;

@@ -1,21 +1,16 @@
 package com.tomandfelix.stapp2.activity;
 
-import android.app.ActionBar;
-import android.app.FragmentTransaction;
+import android.app.Fragment;
+import android.app.FragmentManager;
 import android.content.res.Configuration;
-
 import android.os.Bundle;
+import android.support.v13.app.FragmentPagerAdapter;
 import android.support.v4.view.ViewPager;
+import android.util.Log;
 import android.view.View;
-import android.widget.TextView;
 
-import com.androidplot.xy.XYPlot;
 import com.tomandfelix.stapp2.R;
-import com.tomandfelix.stapp2.pagerAdapter.GraphPagerAdapter;
-import com.tomandfelix.stapp2.persistency.DatabaseHelper;
-import com.tomandfelix.stapp2.graphtools.GraphParser;
-
-import java.util.Date;
+import com.tomandfelix.stapp2.tabs.SlidingTabLayout;
 
 //public class GraphView extends DrawerActivity {
 //    private GraphParser.DailyGraphData dailydata;
@@ -105,55 +100,59 @@ import java.util.Date;
 //    }
 //}
 
-public class GraphView extends DrawerActivity implements ActionBar.TabListener{
+public class GraphView extends DrawerActivity {
+    private SlidingTabLayout tabLayout;
     private ViewPager viewPager;
-    private GraphPagerAdapter mAdapter;
-    private ActionBar actionBar;
-    private String[] tabs = {"Day", "2 Weeks"};
+    private GraphPagerAdapter adapter;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
         setContentView(R.layout.activity_graph);
         super.onCreate(savedInstanceState);
 
-        viewPager = (ViewPager) findViewById(R.id.pager);
-        actionBar = getActionBar();
-        mAdapter = new GraphPagerAdapter(getFragmentManager());
+        adapter = new GraphPagerAdapter(getFragmentManager());
+        viewPager = (ViewPager) findViewById(R.id.graph_pager);
+        viewPager.setAdapter(adapter);
+        tabLayout = (SlidingTabLayout) findViewById(R.id.tabs_bar);
+        tabLayout.setViewPager(viewPager);
+        tabLayout.setSelectedIndicatorColors(R.color.primaryColor);
+    }
 
-        viewPager.setAdapter(mAdapter);
-        actionBar.setHomeButtonEnabled(false);
-        actionBar.setNavigationMode(ActionBar.NAVIGATION_MODE_TABS);
+    @Override
+    public void onConfigurationChanged(Configuration newConfig) {
+        super.onConfigurationChanged(newConfig);
+        tabLayout.setLabelWidth();
+        if(newConfig.orientation == Configuration.ORIENTATION_PORTRAIT)
+            findViewById(R.id.tabs_bar).setVisibility(View.VISIBLE);
+        else
+            findViewById(R.id.tabs_bar).setVisibility(View.GONE);
+    }
 
-        for(String s : tabs) {
-            actionBar.addTab(actionBar.newTab().setText(s).setTabListener(this));
+    private class GraphPagerAdapter extends FragmentPagerAdapter {
+        public GraphPagerAdapter(FragmentManager fm) {
+            super(fm);
         }
 
-        viewPager.setOnPageChangeListener(new ViewPager.OnPageChangeListener() {
-            @Override
-            public void onPageScrolled(int position, float positionOffset, int positionOffsetPixels) {
+        @Override
+        public Fragment getItem(int index) {
+            switch (index) {
+                case 0:
+                    return new GraphDayFragment();
+                case 1:
+                    return new GraphWeekFragment();
+                default:
+                    return null;
             }
+        }
 
-            @Override
-            public void onPageSelected(int position) {
-                actionBar.setSelectedNavigationItem(position);
-            }
+        @Override
+        public int getCount() {
+            return 2;
+        }
 
-            @Override
-            public void onPageScrollStateChanged(int state) {
-            }
-        });
-    }
-
-    @Override
-    public void onTabReselected(ActionBar.Tab tab, FragmentTransaction ft) {
-    }
-
-    @Override
-    public void onTabSelected(ActionBar.Tab tab, FragmentTransaction ft) {
-        viewPager.setCurrentItem(tab.getPosition());
-    }
-
-    @Override
-    public void onTabUnselected(ActionBar.Tab tab, FragmentTransaction ft) {
+        @Override
+        public CharSequence getPageTitle(int position) {
+            return position == 0 ? "1 Day" : "2 Weeks";
+        }
     }
 }
