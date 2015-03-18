@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="com.example.tom.stapp3" >
+    package="com.tomandfelix.stapp2" >
 
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
@@ -10,9 +10,9 @@
     <uses-permission android:name="android.permission.WAKE_LOCK"/>
     <uses-permission android:name="com.google.android.c2dm.permission.RECEIVE"/>
 
-    <permission android:name="com.example.tom.stapp3.permission.C2D_MESSAGE"
+    <permission android:name="com.tomandfelix.stapp2.permission.C2D_MESSAGE"
         android:protectionLevel="signature"/>
-    <uses-permission android:name="com.example.tom.stapp3.permission.C2D_MESSAGE"/>
+    <uses-permission android:name="com.tomandfelix.stapp2.permission.C2D_MESSAGE"/>
 
     <application
         android:allowBackup="true"
@@ -26,7 +26,7 @@
 
             <intent-filter>
                 <action android:name="com.google.android.c2dm.intent.RECEIVE"/>
-                <category android:name="com.example.tom.stapp3"/>
+                <category android:name="com.tomandfelix.stapp2"/>
             </intent-filter>
         </receiver>
 
@@ -41,7 +41,7 @@
 
         <activity
             android:name=".activity.FragmentViewer"
-            android:label="Stapp 3" >
+            android:label="Stapp 2" >
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
@@ -61,7 +61,7 @@
             android:label="@string/title_activity_stranger_view">
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
-                android:value="com.example.tom.stapp3.activity.LeaderboardView" />
+                android:value="com.tomandfelix.stapp2.activity.LeaderboardView" />
         </activity>
         <activity
             android:name=".activity.ConnectionView"

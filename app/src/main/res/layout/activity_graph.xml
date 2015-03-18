@@ -1,58 +1,62 @@
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<!--<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"-->
+<!--android:layout_width="match_parent"-->
+<!--android:layout_height="match_parent"-->
+<!--android:orientation="vertical">-->
+
+<!--<RelativeLayout-->
+<!--android:layout_width="match_parent"-->
+<!--android:layout_height="0dip"-->
+<!--android:layout_weight="0.5">-->
+
+<!--<com.androidplot.xy.XYPlot-->
+<!--android:id="@+id/chart"-->
+<!--android:layout_width="match_parent"-->
+<!--android:layout_height="match_parent"/>-->
+<!--<TextView-->
+<!--android:id="@+id/graph_error"-->
+<!--android:layout_width="match_parent"-->
+<!--android:layout_height="match_parent"-->
+<!--android:gravity="center"-->
+<!--android:visibility="gone"/>-->
+<!--</RelativeLayout>-->
+
+<!--<GridLayout-->
+<!--android:layout_width="match_parent"-->
+<!--android:layout_height="0dip"-->
+<!--android:layout_weight="0.5"-->
+<!--android:layout_margin="@dimen/activity_margin"-->
+<!--android:columnCount="2">-->
+
+<!--<TextView-->
+<!--android:id="@+id/graph_label_1"-->
+<!--android:textSize="20sp"/>-->
+
+<!--<TextView-->
+<!--android:id="@+id/graph_value_1"-->
+<!--android:textSize="20sp"-->
+<!--android:paddingLeft="20dp"/>-->
+
+<!--<TextView-->
+<!--android:id="@+id/graph_label_2"-->
+<!--android:textSize="20sp"/>-->
+
+<!--<TextView-->
+<!--android:id="@+id/graph_value_2"-->
+<!--android:textSize="20sp"-->
+<!--android:paddingLeft="20dp"/>-->
+
+<!--<TextView-->
+<!--android:id="@+id/graph_label_3"-->
+<!--android:textSize="20sp"/>-->
+
+<!--<TextView-->
+<!--android:id="@+id/graph_value_3"-->
+<!--android:textSize="20sp"-->
+<!--android:paddingLeft="20dp"/>-->
+
+<!--</GridLayout>-->
+<!--</LinearLayout>-->
+<android.support.v4.view.ViewPager xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/graph_pager"
     android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:orientation="vertical">
-
-    <RelativeLayout
-        android:layout_width="match_parent"
-        android:layout_height="0dip"
-        android:layout_weight="0.5">
-
-        <com.androidplot.xy.XYPlot
-            android:id="@+id/chart"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"/>
-        <TextView
-            android:id="@+id/graph_error"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:gravity="center"
-            android:visibility="gone"/>
-    </RelativeLayout>
-
-    <GridLayout
-        android:layout_width="match_parent"
-        android:layout_height="0dip"
-        android:layout_weight="0.5"
-        android:layout_margin="@dimen/activity_margin"
-        android:columnCount="2">
-
-        <TextView
-            android:text="@string/graph_good_time"
-            android:textSize="20sp"/>
-
-        <TextView
-            android:id="@+id/graph_good_time"
-            android:textSize="20sp"
-            android:paddingLeft="20dp"/>
-
-        <TextView
-            android:text="@string/graph_bad_time"
-            android:textSize="20sp"/>
-
-        <TextView
-            android:id="@+id/graph_bad_time"
-            android:textSize="20sp"
-            android:paddingLeft="20dp"/>
-
-        <TextView
-            android:text="@string/graph_score"
-            android:textSize="20sp"/>
-
-        <TextView
-            android:id="@+id/graph_ach_score"
-            android:textSize="20sp"
-            android:paddingLeft="20dp"/>
-
-    </GridLayout>
-</LinearLayout>
+    android:layout_height="match_parent"/>

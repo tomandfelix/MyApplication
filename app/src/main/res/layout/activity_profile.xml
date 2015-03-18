@@ -1,151 +1,162 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-
-    android:orientation="vertical"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:padding="@dimen/activity_margin"
-    android:animateLayoutChanges="true">
-
-    <RelativeLayout
+    android:orientation="vertical">
+    <include layout="@layout/toolbar"/>
+    <android.support.v4.widget.DrawerLayout
+        android:id="@+id/drawer"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:animateLayoutChanges="true">
-
-
-        <ImageView
-            android:id="@+id/profile_avatar"
-            android:layout_alignParentTop="true"
-            android:layout_alignParentLeft="true"
-            android:layout_width="100dp"
-            android:layout_height="100dp"
-            android:src="@drawable/avatar_manager_512"/>
-
+        android:layout_height="match_parent">
         <LinearLayout
-            android:id="@+id/profile_info"
             android:orientation="vertical"
-            android:layout_toRightOf="@+id/profile_avatar"
-            android:layout_alignParentTop="true"
-            android:layout_marginLeft="@dimen/text_separation"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content">
-
-
-            <TextView
-                android:id="@+id/profile_username"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:textSize="25sp"
-                android:text="Username"/>
-
-            <TextView
-                android:id="@+id/profile_rank"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:textSize="20sp"
-                android:text="Rank: "/>
-
-            <TextView
-                android:id="@+id/profile_money"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:textSize="15sp"
-                android:text="Money: "/>
-
-            <TextView
-                android:id="@+id/profile_experience"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:textSize="15sp"
-                android:text="Experience: "/>
-        </LinearLayout>
-    </RelativeLayout>
-    <LinearLayout
-        android:id="@+id/profile_edit"
-        android:orientation="vertical"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:visibility="gone"
-        android:animateLayoutChanges="true">
-
-        <GridView
-            android:id="@+id/edit_avatar_grid"
-            android:layout_marginTop="@dimen/text_separation"
-            android:visibility="gone"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:columnWidth="100dp"
-            android:gravity="center"
-            android:numColumns="4"
-            android:verticalSpacing="5dp"
-            android:drawSelectorOnTop="true"
-            android:stretchMode="columnWidth"
-            android:clickable="true">
-        </GridView>
+            android:padding="@dimen/activity_margin"
+            android:animateLayoutChanges="true">
 
-        <EditText
-            android:id="@+id/edit_username"
-            android:hint="Username"
-            android:textSize="@dimen/textSize"
-            android:singleLine="true"
-            android:imeOptions="actionDone"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"/>
+            <RelativeLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:animateLayoutChanges="true">
 
-        <EditText
-            android:id="@+id/edit_firstname"
-            android:hint="First Name"
-            android:textSize="@dimen/textSize"
-            android:singleLine="true"
-            android:imeOptions="actionDone"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="@dimen/text_separation"
-            android:inputType="textPersonName"/>
 
-        <EditText
-            android:id="@+id/edit_lastname"
-            android:hint="Last Name"
-            android:textSize="@dimen/textSize"
-            android:singleLine="true"
-            android:imeOptions="actionDone"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="@dimen/text_separation"
-            android:inputType="textPersonName"/>
+                <ImageView
+                    android:id="@+id/profile_avatar"
+                    android:layout_alignParentTop="true"
+                    android:layout_alignParentLeft="true"
+                    android:layout_width="100dp"
+                    android:layout_height="100dp"
+                    android:src="@drawable/avatar_manager_512"/>
 
-        <EditText
-            android:id="@+id/edit_email"
-            android:hint="Email"
-            android:textSize="@dimen/textSize"
-            android:singleLine="true"
-            android:imeOptions="actionDone"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="@dimen/text_separation"
-            android:inputType="textEmailAddress"/>
+                <LinearLayout
+                    android:id="@+id/profile_info"
+                    android:orientation="vertical"
+                    android:layout_toRightOf="@+id/profile_avatar"
+                    android:layout_alignParentTop="true"
+                    android:layout_marginLeft="@dimen/text_separation"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content">
 
-        <EditText
-            android:id="@+id/edit_password"
-            android:hint="New Password"
-            android:textSize="@dimen/textSize"
-            android:singleLine="true"
-            android:imeOptions="actionDone"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="@dimen/text_separation"
-            android:inputType="textPassword"/>
-    </LinearLayout>
-    <RelativeLayout
-        android:id="@+id/profile_status"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content">
 
-        <ImageView
-            android:id="@+id/profile_status_icon"
-            android:layout_width="100dp"
-            android:layout_height="100dp"
-            android:layout_alignParentTop="true"
-            android:layout_alignParentLeft="true"
-            android:src="@drawable/icon_sit_red"/>
-    </RelativeLayout>
+                    <TextView
+                        android:id="@+id/profile_username"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:textSize="25sp"
+                        android:text="Username"/>
+
+                    <TextView
+                        android:id="@+id/profile_rank"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:textSize="20sp"
+                        android:text="Rank: "/>
+
+                    <TextView
+                        android:id="@+id/profile_money"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:textSize="15sp"
+                        android:text="Money: "/>
+
+                    <TextView
+                        android:id="@+id/profile_experience"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:textSize="15sp"
+                        android:text="Experience: "/>
+                </LinearLayout>
+            </RelativeLayout>
+            <LinearLayout
+                android:id="@+id/profile_edit"
+                android:orientation="vertical"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:visibility="gone"
+                android:animateLayoutChanges="true">
+
+                <GridView
+                    android:id="@+id/edit_avatar_grid"
+                    android:layout_marginTop="@dimen/text_separation"
+                    android:visibility="gone"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:columnWidth="100dp"
+                    android:gravity="center"
+                    android:numColumns="4"
+                    android:verticalSpacing="5dp"
+                    android:drawSelectorOnTop="true"
+                    android:stretchMode="columnWidth"
+                    android:clickable="true">
+                </GridView>
+
+                <EditText
+                    android:id="@+id/edit_username"
+                    android:hint="Username"
+                    android:textSize="@dimen/textSize"
+                    android:singleLine="true"
+                    android:imeOptions="actionDone"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"/>
+
+                <EditText
+                    android:id="@+id/edit_firstname"
+                    android:hint="First Name"
+                    android:textSize="@dimen/textSize"
+                    android:singleLine="true"
+                    android:imeOptions="actionDone"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="@dimen/text_separation"
+                    android:inputType="textPersonName"/>
+
+                <EditText
+                    android:id="@+id/edit_lastname"
+                    android:hint="Last Name"
+                    android:textSize="@dimen/textSize"
+                    android:singleLine="true"
+                    android:imeOptions="actionDone"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="@dimen/text_separation"
+                    android:inputType="textPersonName"/>
+
+                <EditText
+                    android:id="@+id/edit_email"
+                    android:hint="Email"
+                    android:textSize="@dimen/textSize"
+                    android:singleLine="true"
+                    android:imeOptions="actionDone"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="@dimen/text_separation"
+                    android:inputType="textEmailAddress"/>
+
+                <EditText
+                    android:id="@+id/edit_password"
+                    android:hint="New Password"
+                    android:textSize="@dimen/textSize"
+                    android:singleLine="true"
+                    android:imeOptions="actionDone"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="@dimen/text_separation"
+                    android:inputType="textPassword"/>
+            </LinearLayout>
+            <RelativeLayout
+                android:id="@+id/profile_status"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content">
+
+                <ImageView
+                    android:id="@+id/profile_status_icon"
+                    android:layout_width="100dp"
+                    android:layout_height="100dp"
+                    android:layout_alignParentTop="true"
+                    android:layout_alignParentLeft="true"
+                    android:src="@drawable/icon_sit_red"/>
+            </RelativeLayout>
+        </LinearLayout>
+        <include layout="@layout/drawer"/>
+    </android.support.v4.widget.DrawerLayout>
 </LinearLayout>

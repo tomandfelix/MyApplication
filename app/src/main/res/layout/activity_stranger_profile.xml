@@ -23,7 +23,7 @@
         android:layout_margin="1dp"
         android:layout_marginBottom="1dp"
         android:gravity="center"
-        android:textColor="@color/material_drawer_accent"/>
+        android:textColor="@color/accentColor"/>
     <ImageView
         android:id="@+id/stranger_avatar"
         android:src="@drawable/avatar_manager_512"
@@ -31,7 +31,7 @@
         android:layout_height="300dp"
         android:layout_below="@id/stranger_rank"
         android:layout_centerHorizontal="true"/>
-    
+
     <TextView
         android:id="@+id/stranger_username"
         android:text="Username"
@@ -40,7 +40,7 @@
         android:layout_height="80dp"
         android:layout_toRightOf="@+id/stranger_rank"
         android:gravity="center"
-        android:textColor="@color/material_drawer_accent"/>
+        android:textColor="@color/accentColor"/>
 
     <ImageView
         android:id="@+id/stranger_xp_icon"
@@ -56,7 +56,7 @@
         android:layout_width="wrap_content"
         android:layout_height="50dp"
         android:layout_marginTop="@dimen/text_separation"
-        android:textColor="@color/material_drawer_accent"
+        android:textColor="@color/accentColor"
         android:layout_toRightOf="@+id/stranger_xp_icon"
         android:layout_toEndOf="@+id/stranger_xp_icon"
         android:layout_below="@id/stranger_avatar"/>
@@ -67,6 +67,6 @@
         android:text="Challenge me !"
         android:onClick="toChallenge"
         android:layout_below="@+id/stranger_xp_icon"
-        android:background="@color/material_drawer_primary"/>
+        android:background="@color/accentColor"/>
 
 </RelativeLayout>

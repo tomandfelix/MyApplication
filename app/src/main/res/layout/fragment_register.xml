@@ -1,8 +1,8 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-android:orientation="vertical"
-android:id="@+id/new_profile"
-android:layout_width="fill_parent"
-android:layout_height="fill_parent">
+    android:orientation="vertical"
+    android:id="@+id/new_profile"
+    android:layout_width="fill_parent"
+    android:layout_height="fill_parent">
 
     <LinearLayout
         android:orientation="vertical"
@@ -100,7 +100,7 @@ android:layout_height="fill_parent">
             android:layout_weight="1"
             android:text="Back"
             android:onClick="toStart"
-            android:background="@color/material_drawer_primary"/>
+            android:background="@color/primaryColor"/>
 
         <com.gc.materialdesign.views.ButtonFlat
             android:layout_width="0dip"
@@ -108,6 +108,6 @@ android:layout_height="fill_parent">
             android:layout_weight="1"
             android:text="Register"
             android:onClick="registerBtn"
-            android:background="@color/material_drawer_primary"/>
+            android:background="@color/primaryColor"/>
     </LinearLayout>
 </LinearLayout>

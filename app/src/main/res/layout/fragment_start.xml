@@ -34,7 +34,7 @@
             android:layout_weight="1"
             android:text="Login"
             android:onClick="toLogin"
-            android:background="@color/material_drawer_primary"/>
+            android:background="@color/primaryColor"/>
 
         <com.gc.materialdesign.views.ButtonFlat
             android:layout_width="0dip"
@@ -42,6 +42,6 @@
             android:layout_weight="1"
             android:text="New"
             android:onClick="toNewProfile"
-            android:background="@color/material_drawer_primary"/>
+            android:background="@color/primaryColor"/>
     </LinearLayout>
 </LinearLayout>

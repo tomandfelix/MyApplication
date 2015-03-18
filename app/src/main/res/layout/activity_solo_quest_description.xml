@@ -33,17 +33,15 @@
             android:layout_weight="0.5"
             android:text="Back"
             android:onClick="backButton"
-            android:background="@drawable/custom_button"
-            android:textColor="@color/material_drawer_primary_text"/>
+            android:background="@drawable/custom_button"/>
 
         <Button
             android:layout_width="0dip"
             android:layout_height="wrap_content"
             android:layout_weight="0.5"
             android:text="start"
-        android:onClick="startButton"
-            android:background="@drawable/custom_button"
-            android:textColor="@color/material_drawer_primary_text"/>
+            android:onClick="startButton"
+            android:background="@drawable/custom_button"/>
     </LinearLayout>
 
 </LinearLayout>
