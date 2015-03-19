@@ -48,6 +48,22 @@ public class StApp  extends Application {
         }
     };
 
+    public Solo getSolo() {
+        return solo;
+    }
+
+    public void setSolo(Solo solo) {
+        this.solo = solo;
+    }
+
+    public Challenge getChallenge() {
+        return challenge;
+    }
+
+    public void setChallenge(Challenge challenge) {
+        this.challenge = challenge;
+    }
+
     public Profile getProfile() {
         return mProfile;
     }

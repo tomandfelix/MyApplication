@@ -13,6 +13,7 @@ import android.widget.TextView;
 import com.android.volley.Response;
 import com.android.volley.VolleyError;
 import com.tomandfelix.stapp2.R;
+import com.tomandfelix.stapp2.persistency.Challenge;
 import com.tomandfelix.stapp2.persistency.Profile;
 import com.tomandfelix.stapp2.persistency.ServerHelper;
 
@@ -50,14 +51,19 @@ public class ChallengeStranger extends ServiceActivity {
 //    }
 
     private void updateVisual(Profile profile) {
+        Challenge challenge = app.getChallenge();
         TextView rank = (TextView) findViewById(R.id.challenger_rank);
         TextView username = (TextView) findViewById(R.id.challenger_username);
         ImageView avatar = (ImageView) findViewById(R.id.challenger_avatar);
+        TextView challengeTitle = (TextView) findViewById(R.id.challenge_title);
+        TextView challengeDescription = (TextView) findViewById(R.id.challenge_description);
         int avatarID = getResources().getIdentifier("avatar_" + profile.getAvatar() + "_512", "drawable", getPackageName());
 
         rank.setText( profile.getRank() + "");
         username.setText(profile.getUsername());
         avatar.setImageResource(avatarID);
+        challengeTitle.setText( challenge.getName());
+        challengeDescription.setText(challenge.getDescription() + "\n" + "duration : " + challenge.getDuration() + " seconds");
         getSupportActionBar().setTitle("challenge " + profile.getUsername());
     }
     public void toChallenge(View view){
