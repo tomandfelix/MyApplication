@@ -175,7 +175,8 @@
                         android:layout_height="@dimen/raised_button_height"
                         android:layout_gravity="center_vertical"
                         android:background="@color/primaryColor"
-                        android:text="Pause/Resume"/>
+                        android:text="Pause/Resume"
+                        android:onClick="onPauseResume"/>
 
                     <com.gc.materialdesign.views.ButtonRectangle
                         android:id="@+id/profile_start_stop_button"
@@ -184,7 +185,8 @@
                         android:layout_height="@dimen/raised_button_height"
                         android:layout_gravity="center_vertical"
                         android:background="@color/primaryColor"
-                        android:text="Start/Stop"/>
+                        android:text="Start/Stop"
+                        android:onClick="onStartStop"/>
                 </LinearLayout>
             </RelativeLayout>
         </LinearLayout>

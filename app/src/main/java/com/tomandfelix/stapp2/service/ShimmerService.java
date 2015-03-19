@@ -103,11 +103,6 @@ public class ShimmerService extends Service {
         return address;
     }
 
-    public void removeAddress() {
-        Log.i(TAG, "Address removed");
-        address = "";
-    }
-
     @Override
     public IBinder onBind(Intent intent) {
         return mBinder;
@@ -241,7 +236,7 @@ public class ShimmerService extends Service {
 
     }
 
-    public void connectShimmer(String bluetoothAddress,String selectedDevice){
+    public void connectShimmer(String bluetoothAddress,String selectedDevice) {
         Log.d("Shimmer","net Connection");
         Logging.getInstance(this).logConnecting();
         address = bluetoothAddress;
@@ -251,6 +246,12 @@ public class ShimmerService extends Service {
             mMultiShimmer.put(bluetoothAddress,shimmerDevice);
             ((Shimmer) mMultiShimmer.get(bluetoothAddress)).connect(bluetoothAddress);
         }
+    }
+
+    public void disconnectShimmer() {
+        address = "";
+        Logging.getInstance(this).logDisconnect();
+        stopStreamingAllDevices();
     }
 
     public void onStop(){
@@ -335,7 +336,7 @@ public class ShimmerService extends Service {
     }
 
 
-    public void stopStreamingAllDevices() {
+    private void stopStreamingAllDevices() {
         // TODO Auto-generated method stub
         Collection<Object> colS=mMultiShimmer.values();
         for (Object col : colS) {

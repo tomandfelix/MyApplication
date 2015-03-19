@@ -22,6 +22,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.TimeZone;
 
 /**
  * Created by Tom on 14/03/2015.
@@ -96,6 +97,7 @@ public abstract class GraphParser {
             totalGood = 0;
             totalBad = 0;
             totalScore = 0;
+            df.setTimeZone(TimeZone.getTimeZone("UTC"));
         }
 
         public String getTotalGood() {
@@ -264,6 +266,7 @@ public abstract class GraphParser {
         public LongTermGraphData() {
             averageScore = 0;
             averageConnectionTime = 0;
+            df.setTimeZone(TimeZone.getTimeZone("UTC"));
         }
 
         public double getAverageScore() {

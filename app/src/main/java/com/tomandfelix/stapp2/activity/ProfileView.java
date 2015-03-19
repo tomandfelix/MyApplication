@@ -1,7 +1,10 @@
 package com.tomandfelix.stapp2.activity;
 
+import android.app.Activity;
 import android.app.AlertDialog;
+import android.bluetooth.BluetoothAdapter;
 import android.content.DialogInterface;
+import android.content.Intent;
 import android.content.res.Configuration;
 import android.content.res.TypedArray;
 import android.os.Bundle;
@@ -26,6 +29,7 @@ import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.Spinner;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.android.volley.Response;
 import com.android.volley.VolleyError;
@@ -240,9 +244,36 @@ public class ProfileView extends DrawerActivity {
 //        }
 //    }
 
+    public void onPauseResume(View view) {
+        if(pauseButton.getText().equals(PAUSE)) {
+            app.getService().disconnectShimmer();
+        } else {
+            String sensor = DatabaseHelper.getInstance(this).getSensor();
+            if (sensor != null && !sensor.equals("")) {
+                app.getService().connectShimmer(sensor, "Device");
+            }
+        }
+    }
+
+    public void onStartStop(View view) {
+        if(startStopButton.getText().equals(START)) {
+            BluetoothAdapter mBluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
+            if (!mBluetoothAdapter.isEnabled()) {
+                Intent enableBTIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
+                startActivityForResult(enableBTIntent, 1);
+            } else {
+                Logging.getInstance(this).logStartDay();
+                String sensor = DatabaseHelper.getInstance(this).getSensor();
+                app.getService().connectShimmer(sensor, "Device");
+            }
+        } else {
+            app.getService().disconnectShimmer();
+            Logging.getInstance(this).logAchievedScore();
+        }
+    }
+
     private void updateState(int state) {
         switch(state) {
-            case Logging.STATE_DAY_STARTED:
             case Logging.STATE_CONNECTING:
                 statusIcon.setImageResource(R.drawable.icon_disconnected);
                 pauseButton.setVisibility(View.VISIBLE);
@@ -261,11 +292,6 @@ public class ProfileView extends DrawerActivity {
                 startStopButton.setText(START);
                 break;
             case Logging.STATE_CONNECTED:
-                statusIcon.setImageResource(R.drawable.icon_sit_green);
-                pauseButton.setVisibility(View.VISIBLE);
-                pauseButton.setText(PAUSE);
-                startStopButton.setText(STOP);
-                break;
             case Logging.STATE_SIT:
                 statusIcon.setImageResource(R.drawable.icon_sit_green);
                 pauseButton.setVisibility(View.VISIBLE);
@@ -299,6 +325,20 @@ public class ProfileView extends DrawerActivity {
             if(mProfileView.get() != null) {
                 mProfileView.get().updateState(msg.what);
             }
+        }
+    }
+
+    @Override
+    public void onActivityResult(int requestCode, int resultCode, Intent data) {
+        if (requestCode == 1) {
+            if (resultCode == Activity.RESULT_OK) {
+                onStartStop(null);
+            } else {
+                Toast.makeText(this, "Bluetooth not enabled\nExiting...", Toast.LENGTH_SHORT).show();
+                finish();
+            }
+        } else {
+            super.onActivityResult(requestCode, resultCode, data);
         }
     }
 }

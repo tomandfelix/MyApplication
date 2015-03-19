@@ -137,8 +137,6 @@ public class Logging {
             return STATE_DAY_STOPPED;
         } else if(connecting) {
             return STATE_CONNECTING;
-        } else if(last.getAction().equals(DatabaseHelper.LOG_START_DAY)) {
-            return STATE_DAY_STARTED;
         } else if(!connected) {
             return STATE_DISCONNECTED;
         } else if(currentActivity == null) {

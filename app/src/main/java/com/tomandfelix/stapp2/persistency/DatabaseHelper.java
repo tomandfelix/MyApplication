@@ -55,6 +55,7 @@ public class DatabaseHelper extends SQLiteOpenHelper{
     public static final String UPLOAD3G = "upload_if_3g";
     public static final String LAST_UPLOADED_INDEX = "last_uploaded_index";
     public static final String UPLOAD_FREQUENCY = "upload_frequency";
+    public static final String LAST_USED_SENSOR = "last_used_sensor";
     public static final String LOG_SIT = "sit";
     public static final String LOG_OVERTIME = "sit_overtime";
     public static final String LOG_STAND = "stand";
@@ -109,6 +110,10 @@ public class DatabaseHelper extends SQLiteOpenHelper{
         values.clear();
         values.put(KEY_SETTING, UPLOAD_FREQUENCY);
         values.put(KEY_VALUE_INT, 60000);
+        db.insert(TABLE_SETTINGS, null, values);
+        values.clear();
+        values.put(KEY_SETTING, LAST_USED_SENSOR);
+        values.put(KEY_VALUE_STRING, "");
         db.insert(TABLE_SETTINGS, null, values);
     }
 
@@ -551,6 +556,14 @@ public class DatabaseHelper extends SQLiteOpenHelper{
 
     public void setUploadFrequency(int uploadFrequency) {
         setIntSetting(UPLOAD_FREQUENCY, uploadFrequency);
+    }
+
+    public String getSensor() {
+        return getStringSetting(LAST_USED_SENSOR);
+    }
+
+    public void setSensor(String newSensor) {
+        setStringSetting(LAST_USED_SENSOR, newSensor);
     }
 
     //--------------------------------------------------------SENSORS---------------------------------------------------------------------------

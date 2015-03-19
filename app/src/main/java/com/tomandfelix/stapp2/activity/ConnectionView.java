@@ -117,8 +117,7 @@ public class ConnectionView extends DrawerActivity {
     }
 
     public void stopDay(View v) {
-        app.getService().removeAddress();
-        app.getService().stopStreamingAllDevices();
+        app.getService().disconnectShimmer();
         Logging.getInstance(this).logAchievedScore();
     }
 
