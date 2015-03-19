@@ -28,17 +28,17 @@
 
 
 
-        <com.gc.materialdesign.views.ButtonFlat
+        <com.gc.materialdesign.views.ButtonRectangle
             android:layout_width="0dip"
-            android:layout_height="wrap_content"
+            android:layout_height="@dimen/raised_button_height"
             android:layout_weight="1"
             android:text="Login"
             android:onClick="toLogin"
             android:background="@color/primaryColor"/>
 
-        <com.gc.materialdesign.views.ButtonFlat
+        <com.gc.materialdesign.views.ButtonRectangle
             android:layout_width="0dip"
-            android:layout_height="wrap_content"
+            android:layout_height="@dimen/raised_button_height"
             android:layout_weight="1"
             android:text="New"
             android:onClick="toNewProfile"
