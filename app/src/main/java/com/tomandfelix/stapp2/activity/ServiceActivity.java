@@ -16,7 +16,7 @@ public abstract class ServiceActivity extends ActionBarActivity {
     protected StApp app;
 
     @Override
-    public void onCreate(Bundle savedInstanceState) {
+    protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         this.app = (StApp) getApplication();
         toolbar = (Toolbar) findViewById(R.id.toolbar);

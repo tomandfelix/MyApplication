@@ -15,6 +15,8 @@
     <string name="title_activity_challenge_stranger">ChallengeStranger</string>
     <string name="title_activity_challenge_description">ChallengeDescription</string>
     <string name="title_activity_challenge_view">Challenges</string>
+    <string name="title_activity_settings_view">Settings</string>
+    <string name="title_activity_sensor_selection">Sensors</string>
 
     <string name="graph_daily_error">There is not yet any data available for today,\nplease connect a sensor and try again</string>
     <string name="graph_2week_error">There is note yet any data available for the last two weeks,\nplease try again tomorrow</string>

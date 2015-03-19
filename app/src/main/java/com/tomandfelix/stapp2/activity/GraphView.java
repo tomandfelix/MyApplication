@@ -18,7 +18,7 @@ public class GraphView extends DrawerActivity {
     private GraphPagerAdapter adapter;
 
     @Override
-    public void onCreate(Bundle savedInstanceState) {
+    protected void onCreate(Bundle savedInstanceState) {
         setContentView(R.layout.activity_graph);
         super.onCreate(savedInstanceState);
 

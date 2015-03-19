@@ -49,7 +49,7 @@ public abstract class DrawerActivity extends ServiceActivity {
     private static int selectedTextColor;
 
     @Override
-    public void onCreate(Bundle savedInstanceState) {
+    protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
         backgroundColor = getResources().getColor(R.color.background);
@@ -73,7 +73,7 @@ public abstract class DrawerActivity extends ServiceActivity {
     }
 
     @Override
-    public void onPostCreate(Bundle savedInstanceState) {
+    protected void onPostCreate(Bundle savedInstanceState) {
         super.onPostCreate(savedInstanceState);
         drawerToggle.syncState();
         leftDrawerList.setSelection(index);
@@ -92,6 +92,9 @@ public abstract class DrawerActivity extends ServiceActivity {
         index = newIndex;
         Class destination;
         switch(newIndex) {
+            case PROFILE:
+                destination = ProfileView.class;
+                break;
             case LEADERBOARD:
                 destination = LeaderboardView.class;
                 break;
@@ -110,8 +113,8 @@ public abstract class DrawerActivity extends ServiceActivity {
             case INTERNET_CONNECTION:
                 destination = GCMTestActivity.class;
                 break;
-            case PROFILE:
-                destination = ProfileView.class;
+            case SETTINGS:
+                destination = SettingsView.class;
                 break;
             default:
                 index = PROFILE;
@@ -119,7 +122,7 @@ public abstract class DrawerActivity extends ServiceActivity {
                 break;
         }
         Log.i("loadActivity", destination.getName());
-        Intent intent = new Intent(DrawerActivity.this, destination);
+        Intent intent = new Intent(this, destination);
         intent.setFlags(Intent.FLAG_ACTIVITY_NO_ANIMATION);
         startActivity(intent);
         finish();

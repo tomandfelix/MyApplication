@@ -147,7 +147,7 @@
                     <!--android:layout_marginTop="@dimen/text_separation"-->
                     <!--android:inputType="textPassword"/>-->
             <!--</LinearLayout>-->
-            <RelativeLayout
+            <LinearLayout
                 android:id="@+id/profile_status"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content">
@@ -156,39 +156,34 @@
                     android:id="@+id/profile_status_icon"
                     android:layout_width="100dp"
                     android:layout_height="100dp"
-                    android:layout_alignParentTop="true"
-                    android:layout_alignParentLeft="true"
                     android:src="@drawable/icon_sit_red"/>
 
-                <LinearLayout
-                    android:layout_width="match_parent"
+                <com.gc.materialdesign.views.ProgressBarCircularIndeterminate
+                    android:id="@+id/profile_progress"
+                    android:layout_width="100dp"
                     android:layout_height="100dp"
-                    android:layout_toRightOf="@id/profile_status_icon"
-                    android:layout_marginLeft="@dimen/text_separation"
-                    android:layout_marginRight="@dimen/text_separation"
-                    android:layout_alignTop="@id/profile_status_icon">
+                    android:background="@color/primaryColor" />
 
-                    <com.gc.materialdesign.views.ButtonRectangle
-                        android:id="@+id/profile_pause_button"
-                        android:layout_width="0dp"
-                        android:layout_weight="1"
-                        android:layout_height="@dimen/raised_button_height"
-                        android:layout_gravity="center_vertical"
-                        android:background="@color/primaryColor"
-                        android:text="Pause/Resume"
-                        android:onClick="onPauseResume"/>
+                <com.gc.materialdesign.views.ButtonRectangle
+                    android:id="@+id/profile_pause_button"
+                    android:layout_width="0dp"
+                    android:layout_weight="1"
+                    android:layout_height="@dimen/raised_button_height"
+                    android:layout_gravity="center_vertical"
+                    android:background="@color/primaryColor"
+                    android:text="Pause/Resume"
+                    android:onClick="onPauseResume"/>
 
-                    <com.gc.materialdesign.views.ButtonRectangle
-                        android:id="@+id/profile_start_stop_button"
-                        android:layout_width="0dp"
-                        android:layout_weight="1"
-                        android:layout_height="@dimen/raised_button_height"
-                        android:layout_gravity="center_vertical"
-                        android:background="@color/primaryColor"
-                        android:text="Start/Stop"
-                        android:onClick="onStartStop"/>
-                </LinearLayout>
-            </RelativeLayout>
+                <com.gc.materialdesign.views.ButtonRectangle
+                    android:id="@+id/profile_start_stop_button"
+                    android:layout_width="0dp"
+                    android:layout_weight="1"
+                    android:layout_height="@dimen/raised_button_height"
+                    android:layout_gravity="center_vertical"
+                    android:background="@color/primaryColor"
+                    android:text="Start/Stop"
+                    android:onClick="onStartStop"/>
+            </LinearLayout>
         </LinearLayout>
         <include layout="@layout/drawer"/>
     </android.support.v4.widget.DrawerLayout>

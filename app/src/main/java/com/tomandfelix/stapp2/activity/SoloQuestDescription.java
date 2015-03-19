@@ -20,7 +20,7 @@ public class SoloQuestDescription extends ServiceActivity {
     final Handler myHandler = new Handler();
 
     @Override
-    public void onCreate(Bundle savedInstanceState) {
+    protected void onCreate(Bundle savedInstanceState) {
         setContentView(R.layout.activity_solo_quest_description);
         super.onCreate(savedInstanceState);
         TextView name = (TextView) findViewById(R.id.solo_quest_name);

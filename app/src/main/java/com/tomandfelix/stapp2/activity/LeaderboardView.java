@@ -35,7 +35,7 @@ public class LeaderboardView extends DrawerActivity {
     private ArrayList<Profile> list;
 
     @Override
-    public void onCreate(Bundle savedInstanceState) {
+    protected void onCreate(Bundle savedInstanceState) {
         Log.d("onCreate", "LeaderBoardView");
         setContentView(R.layout.activity_leaderboard);
         super.onCreate(savedInstanceState);

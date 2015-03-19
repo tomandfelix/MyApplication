@@ -14,7 +14,7 @@ import com.tomandfelix.stapp2.persistency.ServerHelper;
 public class GCMTestActivity extends DrawerActivity {
 
     @Override
-    public void onCreate(Bundle savedInstanceState) {
+    protected void onCreate(Bundle savedInstanceState) {
         setContentView(R.layout.activity_gcm_test);
         super.onCreate(savedInstanceState);
     }

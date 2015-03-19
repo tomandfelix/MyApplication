@@ -15,15 +15,14 @@ import com.tomandfelix.stapp2.persistency.ServerHelper;
 public class StrangerView extends ServiceActivity {
 
     @Override
-    public void onCreate(Bundle savedInstanceState) {
+    protected void onCreate(Bundle savedInstanceState) {
         setContentView(R.layout.activity_stranger_profile);
         super.onCreate(savedInstanceState);
 
-        Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
-        if (toolbar != null) {
-            setSupportActionBar(toolbar);
+        if(getSupportActionBar() != null) {
             getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         }
+
         int strangerId = getIntent().getIntExtra("strangerId", -1);
         ServerHelper.getInstance(this).getOtherProfile(strangerId,
                 new ServerHelper.ResponseFunc<Profile>() {

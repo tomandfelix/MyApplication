@@ -34,6 +34,7 @@ import android.widget.Toast;
 import com.android.volley.Response;
 import com.android.volley.VolleyError;
 import com.gc.materialdesign.views.ButtonRectangle;
+import com.gc.materialdesign.views.ProgressBarCircularIndeterminate;
 import com.tomandfelix.stapp2.R;
 import com.tomandfelix.stapp2.persistency.DatabaseHelper;
 import com.tomandfelix.stapp2.persistency.Profile;
@@ -55,13 +56,14 @@ public class ProfileView extends DrawerActivity {
     private ImageView avatar;
     private ButtonRectangle pauseButton;
     private ButtonRectangle startStopButton;
+    private ProgressBarCircularIndeterminate connecting;
     private static final String PAUSE = "Pause";
     private static final String RESUME = "Resume";
     private static final String START = "Start";
     private static final String STOP = "Stop";
 
     @Override
-    public void onCreate(Bundle savedInstanceState) {
+    protected void onCreate(Bundle savedInstanceState) {
         Log.i("onCreate", "ProfileView");
         setContentView(R.layout.activity_profile);
         super.onCreate(savedInstanceState);
@@ -71,6 +73,7 @@ public class ProfileView extends DrawerActivity {
         avatar = (ImageView) findViewById(R.id.profile_avatar);
         pauseButton = (ButtonRectangle) findViewById(R.id.profile_pause_button);
         startStopButton = (ButtonRectangle) findViewById(R.id.profile_start_stop_button);
+        connecting = (ProgressBarCircularIndeterminate) findViewById(R.id.profile_progress);
 
         Profile profile = getIntent().getParcelableExtra("profile");
         if (profile != null) {
@@ -275,37 +278,48 @@ public class ProfileView extends DrawerActivity {
     private void updateState(int state) {
         switch(state) {
             case Logging.STATE_CONNECTING:
-                statusIcon.setImageResource(R.drawable.icon_disconnected);
+                statusIcon.setVisibility(View.GONE);
+                connecting.setVisibility(View.VISIBLE);
                 pauseButton.setVisibility(View.VISIBLE);
                 pauseButton.setText(PAUSE);
                 startStopButton.setText(STOP);
                 break;
             case Logging.STATE_DISCONNECTED:
+                statusIcon.setVisibility(View.VISIBLE);
                 statusIcon.setImageResource(R.drawable.icon_disconnected);
+                connecting.setVisibility(View.GONE);
                 pauseButton.setVisibility(View.VISIBLE);
                 pauseButton.setText(RESUME);
                 startStopButton.setText(STOP);
                 break;
             case Logging.STATE_DAY_STOPPED:
+                statusIcon.setVisibility(View.VISIBLE);
                 statusIcon.setImageResource(R.drawable.icon_no_day_started);
+                connecting.setVisibility(View.GONE);
                 pauseButton.setVisibility(View.GONE);
                 startStopButton.setText(START);
                 break;
             case Logging.STATE_CONNECTED:
             case Logging.STATE_SIT:
+                statusIcon.setVisibility(View.VISIBLE);
                 statusIcon.setImageResource(R.drawable.icon_sit_green);
+                connecting.setVisibility(View.GONE);
                 pauseButton.setVisibility(View.VISIBLE);
                 pauseButton.setText(PAUSE);
                 startStopButton.setText(STOP);
                 break;
             case Logging.STATE_STAND:
+                statusIcon.setVisibility(View.VISIBLE);
                 statusIcon.setImageResource(R.drawable.icon_stand);
+                connecting.setVisibility(View.GONE);
                 pauseButton.setVisibility(View.VISIBLE);
                 pauseButton.setText(PAUSE);
                 startStopButton.setText(STOP);
                 break;
             case Logging.STATE_OVERTIME:
+                statusIcon.setVisibility(View.VISIBLE);
                 statusIcon.setImageResource(R.drawable.icon_sit_red);
+                connecting.setVisibility(View.GONE);
                 pauseButton.setVisibility(View.VISIBLE);
                 pauseButton.setText(PAUSE);
                 startStopButton.setText(STOP);

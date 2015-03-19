@@ -42,6 +42,7 @@ public class ListChallengesFragment extends ListFragment {
     }
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+        Log.d("ListChallengesFragment", "onCreateView");
         View view = new ListView(getActivity());
         container.addView(view);
         return view;
@@ -49,6 +50,7 @@ public class ListChallengesFragment extends ListFragment {
 
     @Override
     public void onActivityCreated(Bundle savedInstanceState){
+        Log.d("ListChallengesFragment", "onActivityCreated");
         super.onActivityCreated(savedInstanceState);
         ChallengeListAdapter challengeAdapter = new ChallengeListAdapter(getActivity(), R.layout.list_item_challenge, list);
         this.setListAdapter(challengeAdapter);
