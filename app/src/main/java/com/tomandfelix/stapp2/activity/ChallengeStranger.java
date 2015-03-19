@@ -1,0 +1,75 @@
+package com.tomandfelix.stapp2.activity;
+
+import android.content.Intent;
+import android.support.v4.app.NavUtils;
+import android.os.Bundle;
+import android.support.v7.widget.Toolbar;
+import android.util.Log;
+import android.view.MenuItem;
+import android.view.View;
+import android.widget.ImageView;
+import android.widget.TextView;
+
+import com.android.volley.Response;
+import com.android.volley.VolleyError;
+import com.tomandfelix.stapp2.R;
+import com.tomandfelix.stapp2.persistency.Profile;
+import com.tomandfelix.stapp2.persistency.ServerHelper;
+
+public class ChallengeStranger extends ServiceActivity {
+    Profile mProfile;
+    @Override
+    public void onCreate(Bundle savedInstanceState) {
+        setContentView(R.layout.activity_challenge_stranger);
+        super.onCreate(savedInstanceState);
+        Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
+        if (toolbar != null) {
+            setSupportActionBar(toolbar);
+            getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+        }
+        int strangerId = getIntent().getIntExtra("strangerId", -1);
+        ServerHelper.getInstance(this).getOtherProfile(strangerId,
+                new ServerHelper.ResponseFunc<Profile>() {
+                    @Override
+                    public void onResponse(Profile response) {
+                        mProfile = response;
+                        updateVisual(response);
+                    }
+                }, null, false); //TODO make this a meaningful errorListener
+
+    }
+
+//    @Override
+//    public boolean onOptionsItemSelected(MenuItem item) {
+//        if(item.getItemId() == android.R.id.home) {
+//            NavUtils.navigateUpFromSameTask(this);
+//            return true;
+//        } else {
+//            return super.onOptionsItemSelected(item);
+//        }
+//    }
+
+    private void updateVisual(Profile profile) {
+        TextView rank = (TextView) findViewById(R.id.challenger_rank);
+        TextView username = (TextView) findViewById(R.id.challenger_username);
+        ImageView avatar = (ImageView) findViewById(R.id.challenger_avatar);
+        int avatarID = getResources().getIdentifier("avatar_" + profile.getAvatar() + "_512", "drawable", getPackageName());
+
+        rank.setText( profile.getRank() + "");
+        username.setText(profile.getUsername());
+        avatar.setImageResource(avatarID);
+        getSupportActionBar().setTitle("challenge " + profile.getUsername());
+    }
+    public void toChallenge(View view){
+        int[] ids =  new int[1];
+        ids[1] = mProfile.getId();
+        ServerHelper.getInstance(this).sendMessage(ids, -1, "", new Response.ErrorListener() {
+            @Override
+            public void onErrorResponse(VolleyError volleyError) {
+                if(!volleyError.getMessage().equals("none")) {
+                    Log.e("GCMTestActivity", volleyError.getMessage());
+                }
+            }
+        });
+    }
+}

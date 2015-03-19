@@ -5,6 +5,7 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
+import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -25,20 +26,21 @@ import com.tomandfelix.stapp2.persistency.ServerHelper;
 
 import java.util.ArrayList;
 
-/**
- * Created by Tom on 17/11/2014.
- * This is the class that will display the leaderboard
- */
-public class LeaderboardView extends DrawerActivity {
+public class ChallengeLeaderboard extends ServiceActivity {
     private ListView leaderboardList;
-    private LeaderboardListAdapter adapter;
+    private ChallengeLeaderboardAdapter adapter;
     private ArrayList<Profile> list;
-
     @Override
     public void onCreate(Bundle savedInstanceState) {
         Log.d("onCreate", "LeaderBoardView");
-        setContentView(R.layout.activity_leaderboard);
+        setContentView(R.layout.activity_challenge_leaderboard);
         super.onCreate(savedInstanceState);
+        Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
+        if (toolbar != null) {
+            setSupportActionBar(toolbar);
+            getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+        }
+
         leaderboardList = (ListView) findViewById(R.id.leaderboard_list);
         ServerHelper.getInstance(this).getLeaderboardById(DatabaseHelper.getInstance(this).getOwnerId(),
                 new ServerHelper.ResponseFunc<ArrayList<Profile>>() {
@@ -50,7 +52,7 @@ public class LeaderboardView extends DrawerActivity {
                 }, new Response.ErrorListener() {
                     @Override
                     public void onErrorResponse(VolleyError volleyError) {
-                        final AlertDialog alertDialog = new AlertDialog.Builder(LeaderboardView.this).create();
+                        final AlertDialog alertDialog = new AlertDialog.Builder(ChallengeLeaderboard.this).create();
                         alertDialog.setMessage("It seems like an error occured, please logout and try again");
                         alertDialog.setButton("Dismiss", new DialogInterface.OnClickListener() {
                             @Override
@@ -64,7 +66,7 @@ public class LeaderboardView extends DrawerActivity {
     }
 
     private void setupList() {
-        adapter = new LeaderboardListAdapter(LeaderboardView.this, R.layout.list_item_leaderboard, list);
+        adapter = new ChallengeLeaderboardAdapter(ChallengeLeaderboard.this, R.layout.list_item_leaderboard, list);
         View header = getLayoutInflater().inflate(R.layout.list_head_foot_leaderboard, leaderboardList, false);
         TextView head = (TextView) header.findViewById(R.id.head_foot_text);
         head.setText("Load 10 higher ranks");
@@ -99,11 +101,8 @@ public class LeaderboardView extends DrawerActivity {
                             }, null, false);
                 } else  if(position > 0 && position <= list.size()) {
                     int destId = list.get(position - 1).getId();
-                    if(destId == DatabaseHelper.getInstance(getApplicationContext()).getOwnerId()) {
-//                        drawer.setSelection(PROFILE);
-                        //TODO why was this here?
-                    } else {
-                        Intent intent = new Intent(LeaderboardView.this, StrangerView.class);
+                    if(destId != DatabaseHelper.getInstance(getApplicationContext()).getOwnerId()) {
+                        Intent intent = new Intent(ChallengeLeaderboard.this, ChallengeStranger.class);
                         intent.putExtra("strangerId", destId);
                         startActivity(intent);
                         overridePendingTransition(R.anim.enter_right, R.anim.leave_left);
@@ -113,13 +112,13 @@ public class LeaderboardView extends DrawerActivity {
         });
     }
 
-    private class LeaderboardListAdapter extends ArrayAdapter<Profile> {
+    private class ChallengeLeaderboardAdapter extends ArrayAdapter<Profile> {
         private int normalColor = getResources().getColor(R.color.secondaryText);
         private int accentColor = getResources().getColor(R.color.accentColor);
         private ArrayList<Profile> data;
         private int itemLayoutId;
 
-        public LeaderboardListAdapter(Context context, int itemLayoutId, ArrayList<Profile> data) {
+        public ChallengeLeaderboardAdapter(Context context, int itemLayoutId, ArrayList<Profile> data) {
             super(context, itemLayoutId, data);
             this.data = data;
             this.itemLayoutId = itemLayoutId;
@@ -159,3 +158,4 @@ public class LeaderboardView extends DrawerActivity {
         }
     }
 }
+

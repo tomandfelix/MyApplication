@@ -2,6 +2,7 @@ package com.tomandfelix.stapp2.activity;
 
 import android.os.Bundle;
 import android.support.v4.app.NavUtils;
+import android.support.v7.widget.Toolbar;
 import android.view.MenuItem;
 import android.widget.ImageView;
 import android.widget.TextView;
@@ -17,8 +18,11 @@ public class StrangerView extends ServiceActivity {
     public void onCreate(Bundle savedInstanceState) {
         setContentView(R.layout.activity_stranger_profile);
         super.onCreate(savedInstanceState);
-        if(getActionBar() != null) {
-            getActionBar().setDisplayHomeAsUpEnabled(true);
+
+        Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
+        if (toolbar != null) {
+            setSupportActionBar(toolbar);
+            getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         }
         int strangerId = getIntent().getIntExtra("strangerId", -1);
         ServerHelper.getInstance(this).getOtherProfile(strangerId,

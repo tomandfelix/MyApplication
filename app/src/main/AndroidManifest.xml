@@ -6,37 +6,41 @@
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
     <uses-permission android:name="android.permission.BLUETOOTH" />
     <uses-permission android:name="android.permission.BLUETOOTH_ADMIN" />
-    <uses-permission android:name="android.permission.GET_ACCOUNTS"/>
-    <uses-permission android:name="android.permission.WAKE_LOCK"/>
-    <uses-permission android:name="com.google.android.c2dm.permission.RECEIVE"/>
+    <uses-permission android:name="android.permission.GET_ACCOUNTS" />
+    <uses-permission android:name="android.permission.WAKE_LOCK" />
+    <uses-permission android:name="com.google.android.c2dm.permission.RECEIVE" />
 
-    <permission android:name="com.tomandfelix.stapp2.permission.C2D_MESSAGE"
-        android:protectionLevel="signature"/>
-    <uses-permission android:name="com.tomandfelix.stapp2.permission.C2D_MESSAGE"/>
+    <permission
+        android:name="com.tomandfelix.stapp2.permission.C2D_MESSAGE"
+        android:protectionLevel="signature" />
+
+    <uses-permission android:name="com.tomandfelix.stapp2.permission.C2D_MESSAGE" />
 
     <application
+        android:name=".application.StApp"
         android:allowBackup="true"
         android:icon="@drawable/ic_launcher"
         android:label="@string/app_name"
-        android:theme="@style/AppTheme"
-        android:name=".application.StApp">
-
-        <receiver android:name=".gcm.GCMBroadCastReceiver"
-            android:permission="com.google.android.c2dm.permission.SEND">
-
+        android:theme="@style/AppTheme" >
+        <receiver
+            android:name=".gcm.GCMBroadCastReceiver"
+            android:permission="com.google.android.c2dm.permission.SEND" >
             <intent-filter>
-                <action android:name="com.google.android.c2dm.intent.RECEIVE"/>
-                <category android:name="com.tomandfelix.stapp2"/>
+                <action android:name="com.google.android.c2dm.intent.RECEIVE" />
+
+                <category android:name="com.tomandfelix.stapp2" />
             </intent-filter>
         </receiver>
 
-        <service android:name=".gcm.GCMMessageHandler"/>
-        <meta-data android:name="com.google.android.gms.version"
-            android:value="@integer/google_play_services_version"/>
+        <service android:name=".gcm.GCMMessageHandler" />
+
+        <meta-data
+            android:name="com.google.android.gms.version"
+            android:value="@integer/google_play_services_version" />
 
         <service
             android:name=".service.ShimmerService"
-            android:enabled="true">
+            android:enabled="true" >
         </service>
 
         <activity
@@ -50,15 +54,16 @@
         </activity>
         <activity
             android:name=".activity.ProfileView"
-            android:label="@string/title_activity_profile_view">
+            android:label="@string/title_activity_profile_view" >
         </activity>
         <activity
             android:name=".activity.LeaderboardView"
             android:label="@string/title_activity_leaderboard_view"
-            android:launchMode="singleTop">
+            android:launchMode="singleTop" >
         </activity>
-        <activity android:name=".activity.StrangerView"
-            android:label="@string/title_activity_stranger_view">
+        <activity
+            android:name=".activity.StrangerView"
+            android:label="@string/title_activity_stranger_view" >
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value="com.tomandfelix.stapp2.activity.LeaderboardView" />
@@ -67,9 +72,8 @@
             android:name=".activity.ConnectionView"
             android:label="@string/title_activity_connection_view" >
         </activity>
-
         <activity
-            android:name=".activity.QuestList"
+            android:name=".activity.SoloQuestList"
             android:label="@string/title_activity_quest_view" >
         </activity>
         <activity
@@ -79,11 +83,30 @@
         <activity
             android:name=".activity.GraphView"
             android:configChanges="orientation|screenSize"
-            android:label="@string/title_activity_graph">
+            android:label="@string/title_activity_graph" >
         </activity>
         <activity
             android:name=".activity.GCMTestActivity"
             android:label="@string/title_activity_internet__connection" >
         </activity>
+        <activity
+            android:name=".activity.ChallengeLeaderboard"
+            android:label="@string/title_activity_challenge_leaderboard" >
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value="com.tomandfelix.stapp2.activity.ChallengeView" />
+        </activity>
+        <activity
+            android:name=".activity.ChallengeStranger"
+            android:label="@string/title_activity_challenge_stranger" >
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value="com.tomandfelix.stapp2.activity.ChallengeLeaderboard" />
+        </activity>
+
+        <activity
+            android:name=".activity.ChallengeView"
+            android:label="@string/title_activity_challenge_view"/>
     </application>
+
 </manifest>

@@ -10,17 +10,24 @@ import android.os.AsyncTask;
 import android.os.IBinder;
 import android.util.Log;
 
+import com.tomandfelix.stapp2.persistency.Challenge;
+import com.tomandfelix.stapp2.persistency.Profile;
+import com.tomandfelix.stapp2.persistency.Solo;
 import com.tomandfelix.stapp2.service.ShimmerService;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.GooglePlayServicesUtil;
 import com.google.android.gms.gcm.GoogleCloudMessaging;
 
 import java.io.IOException;
+import java.util.ArrayList;
 
 /**
  * Created by Tom on 11/03/2015.
  */
 public class StApp  extends Application {
+    private Solo solo;
+    private Challenge challenge;
+    private Profile mProfile;
     private static StApp singleton;
     private ShimmerService mService;
     private boolean mBound;
@@ -40,6 +47,14 @@ public class StApp  extends Application {
             mBound = false;
         }
     };
+
+    public Profile getProfile() {
+        return mProfile;
+    }
+
+    public void setProfile(Profile mProfile) {
+        this.mProfile = mProfile;
+    }
 
     public static StApp getInstance() {
         return singleton;

@@ -7,7 +7,6 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
-import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.MenuItem;
@@ -21,7 +20,6 @@ import android.widget.TextView;
 
 import com.tomandfelix.stapp2.R;
 import com.tomandfelix.stapp2.persistency.DatabaseHelper;
-import com.tomandfelix.stapp2.persistency.Profile;
 
 /**
  * Created by Tom on 18/11/2014.
@@ -101,9 +99,10 @@ public abstract class DrawerActivity extends ServiceActivity {
                 destination = GraphView.class;
                 break;
             case SOLO_QUEST:
+                destination = SoloQuestList.class;
+                break;
             case CHALLENGE:
-            case CO_OPERATIVE:
-                destination = QuestList.class;
+                destination = ChallengeView.class;
                 break;
             case CONNECTION:
                 destination = ConnectionView.class;

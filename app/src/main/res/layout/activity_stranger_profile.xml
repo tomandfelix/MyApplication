@@ -1,72 +1,78 @@
-<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:padding="@dimen/activity_margin">
-
-
-    <ImageView
-        android:id="@+id/stanger_star_rank"
-        android:src="@drawable/icon_star"
-        android:layout_width="80dp"
-        android:layout_height="80dp"
-        android:layout_alignParentTop="true"
-        android:layout_alignParentLeft="true"/>
-    <TextView
-        android:id="@+id/stranger_rank"
-        android:text="Rank"
-        android:textSize="20sp"
-        android:layout_width="100dp"
-        android:layout_height="wrap_content"
-        android:layout_alignTop="@+id/stanger_star_rank"
-        android:layout_alignRight="@+id/stanger_star_rank"
-        android:layout_alignBottom="@+id/stanger_star_rank"
-        android:layout_margin="1dp"
-        android:layout_marginBottom="1dp"
-        android:gravity="center"
-        android:textColor="@color/accentColor"/>
-    <ImageView
-        android:id="@+id/stranger_avatar"
-        android:src="@drawable/avatar_manager_512"
-        android:layout_width="300dp"
-        android:layout_height="300dp"
-        android:layout_below="@id/stranger_rank"
-        android:layout_centerHorizontal="true"/>
-
-    <TextView
-        android:id="@+id/stranger_username"
-        android:text="Username"
-        android:textSize="27sp"
-        android:layout_width="match_parent"
-        android:layout_height="80dp"
-        android:layout_toRightOf="@+id/stranger_rank"
-        android:gravity="center"
-        android:textColor="@color/accentColor"/>
-
-    <ImageView
-        android:id="@+id/stranger_xp_icon"
-        android:layout_width="50dp"
-        android:layout_height="50dp"
-        android:background="@drawable/icon_xp"
-        android:layout_below="@id/stranger_avatar"/>
-
-    <TextView
-        android:id="@+id/stranger_experience_text"
-        android:text="Experience: "
-        android:textSize="30sp"
-        android:layout_width="wrap_content"
-        android:layout_height="50dp"
-        android:layout_marginTop="@dimen/text_separation"
-        android:textColor="@color/accentColor"
-        android:layout_toRightOf="@+id/stranger_xp_icon"
-        android:layout_toEndOf="@+id/stranger_xp_icon"
-        android:layout_below="@id/stranger_avatar"/>
-
-    <com.gc.materialdesign.views.ButtonFlat
+    android:orientation="vertical">
+    <include layout="@layout/toolbar"/>
+       <RelativeLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:text="Challenge me !"
-        android:onClick="toChallenge"
-        android:layout_below="@+id/stranger_xp_icon"
-        android:background="@color/accentColor"/>
+        android:padding="@dimen/activity_margin">
 
-</RelativeLayout>
+
+        <ImageView
+            android:id="@+id/stanger_star_rank"
+            android:src="@drawable/icon_star"
+            android:layout_width="80dp"
+            android:layout_height="80dp"
+            android:layout_alignParentTop="true"
+            android:layout_alignParentLeft="true"/>
+        <TextView
+            android:id="@+id/stranger_rank"
+            android:text="Rank"
+            android:textSize="20sp"
+            android:layout_width="100dp"
+            android:layout_height="wrap_content"
+            android:layout_alignTop="@+id/stanger_star_rank"
+            android:layout_alignRight="@+id/stanger_star_rank"
+            android:layout_alignBottom="@+id/stanger_star_rank"
+            android:layout_margin="1dp"
+            android:layout_marginBottom="1dp"
+            android:gravity="center"
+            android:textColor="@color/accentColor"/>
+        <ImageView
+            android:id="@+id/stranger_avatar"
+            android:src="@drawable/avatar_manager_512"
+            android:layout_width="300dp"
+            android:layout_height="300dp"
+            android:layout_below="@id/stranger_rank"
+            android:layout_centerHorizontal="true"/>
+
+        <TextView
+            android:id="@+id/stranger_username"
+            android:text="Username"
+            android:textSize="27sp"
+            android:layout_width="match_parent"
+            android:layout_height="80dp"
+            android:layout_toRightOf="@+id/stranger_rank"
+            android:gravity="center"
+            android:textColor="@color/accentColor"/>
+
+        <ImageView
+            android:id="@+id/stranger_xp_icon"
+            android:layout_width="50dp"
+            android:layout_height="50dp"
+            android:background="@drawable/icon_xp"
+            android:layout_below="@id/stranger_avatar"/>
+
+        <TextView
+            android:id="@+id/stranger_experience_text"
+            android:text="Experience: "
+            android:textSize="30sp"
+            android:layout_width="wrap_content"
+            android:layout_height="50dp"
+            android:layout_marginTop="@dimen/text_separation"
+            android:textColor="@color/accentColor"
+            android:layout_toRightOf="@+id/stranger_xp_icon"
+            android:layout_toEndOf="@+id/stranger_xp_icon"
+            android:layout_below="@id/stranger_avatar"/>
+
+        <com.gc.materialdesign.views.ButtonFlat
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:text="Challenge me !"
+            android:onClick="toChallenge"
+            android:layout_below="@+id/stranger_xp_icon"
+            android:background="@color/accentColor"/>
+
+    </RelativeLayout>
+</LinearLayout>

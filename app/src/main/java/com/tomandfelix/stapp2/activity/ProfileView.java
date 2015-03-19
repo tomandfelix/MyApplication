@@ -74,16 +74,16 @@ public class ProfileView extends DrawerActivity {
 
         Profile profile = getIntent().getParcelableExtra("profile");
         if (profile != null) {
-            mProfile = profile;
+            app.setProfile(profile);
             updateVisual();
         } else {
-            mProfile = DatabaseHelper.getInstance(this).getOwner();
+            app.setProfile(DatabaseHelper.getInstance(this).getOwner());
             updateVisual();
             ServerHelper.getInstance(this).getProfile(new ServerHelper.ResponseFunc<Profile>() {
                 @Override
                 public void onResponse(Profile response) {
                     if (response != null) {
-                        mProfile = response;
+                        app.setProfile(response);
                         updateVisual();
                     }
                 }
@@ -174,10 +174,10 @@ public class ProfileView extends DrawerActivity {
     }
 
     private void updateVisual() {
-        getSupportActionBar().setTitle(mProfile.getFirstName() + " " + mProfile.getLastName());
-        rank.setText(Integer.toString(mProfile.getRank()));
-        username.setText(mProfile.getUsername());
-        int avatarID = getResources().getIdentifier("avatar_" + mProfile.getAvatar() + "_512", "drawable", getPackageName());
+        getSupportActionBar().setTitle(app.getProfile().getFirstName() + " " + app.getProfile().getLastName());
+        rank.setText(Integer.toString(app.getProfile().getRank()));
+        username.setText(app.getProfile().getUsername());
+        int avatarID = getResources().getIdentifier("avatar_" + app.getProfile().getAvatar() + "_512", "drawable", getPackageName());
         avatar.setImageResource(avatarID);
 //        ((TextView) findViewById(R.id.profile_experience)).setText(mProfile.getExperience() + " XP");
 

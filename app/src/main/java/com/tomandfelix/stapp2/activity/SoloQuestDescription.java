@@ -45,7 +45,7 @@ public class SoloQuestDescription extends ServiceActivity {
     }
 
     public void backButton(View v) {
-        Intent intent = new Intent(SoloQuestDescription.this, QuestList.class);
+        Intent intent = new Intent(SoloQuestDescription.this, SoloQuestList.class);
         intent.putExtra("Position", 3);
         intent.setFlags(Intent.FLAG_ACTIVITY_NO_ANIMATION);
         startActivity(intent);
