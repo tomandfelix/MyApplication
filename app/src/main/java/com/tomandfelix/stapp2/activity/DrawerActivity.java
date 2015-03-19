@@ -28,7 +28,6 @@ import com.tomandfelix.stapp2.persistency.Profile;
  * Base class for every activity that needs a side menu, this class takes care of this menu and the event handling for it
  */
 public abstract class DrawerActivity extends ServiceActivity {
-    protected Profile mProfile;
     protected String[] menuItems;
     protected final static int PROFILE = 0;
     protected final static int LEADERBOARD = 2;
@@ -42,7 +41,6 @@ public abstract class DrawerActivity extends ServiceActivity {
     protected final static int LOGOUT = 12;
     protected final static int INITIAL = PROFILE;
     protected static int index = INITIAL;
-    private Toolbar toolbar;
     private DrawerLayout drawerLayout;
     private ActionBarDrawerToggle drawerToggle;
     private ListView leftDrawerList;
@@ -62,17 +60,15 @@ public abstract class DrawerActivity extends ServiceActivity {
         selectedTextColor = getResources().getColor(R.color.drawerSelectedText);
 
 
-        mProfile = DatabaseHelper.getInstance(this).getOwner();
+        app.setProfile(DatabaseHelper.getInstance(this).getOwner());
         menuItems = getResources().getStringArray(R.array.sideMenu);
         leftDrawerList = (ListView) findViewById(R.id.drawer_list);
-        toolbar = (Toolbar) findViewById(R.id.toolbar);
+
         drawerLayout = (DrawerLayout) findViewById(R.id.drawer);
         navigationDrawerAdapter = new DrawerAdapter(this, R.layout.list_item_drawer_profile, R.layout.list_item_drawer_divider, R.layout.list_item_drawer_normal, menuItems);
         leftDrawerList.setAdapter(navigationDrawerAdapter);
 
-        if (toolbar != null) {
-            setSupportActionBar(toolbar);
-        }
+
         drawerToggle = new ActionBarDrawerToggle(this, drawerLayout, toolbar, R.string.drawer_open, R.string.drawer_close);
         drawerLayout.setDrawerListener(drawerToggle);
         leftDrawerList.setOnItemClickListener(new DrawerListener());
@@ -210,10 +206,10 @@ public abstract class DrawerActivity extends ServiceActivity {
             }
             switch(result) {
                 case PROF:
-                    int avatarId = getResources().getIdentifier("avatar_" + mProfile.getAvatar() + "_128", "drawable", getPackageName());
+                    int avatarId = getResources().getIdentifier("avatar_" + app.getProfile().getAvatar() + "_128", "drawable", getPackageName());
                     ((ImageView) convertView.findViewById(R.id.drawer_avatar)).setImageResource(avatarId);
                     TextView username = (TextView) convertView.findViewById(R.id.drawer_username);
-                    username.setText(mProfile.getUsername());
+                    username.setText(app.getProfile().getUsername());
                     if(position == index) {
                         setSelected(convertView, username);
                     } else {
