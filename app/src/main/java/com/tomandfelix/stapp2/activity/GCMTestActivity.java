@@ -9,6 +9,7 @@ import android.widget.EditText;
 import com.android.volley.Response;
 import com.android.volley.VolleyError;
 import com.tomandfelix.stapp2.R;
+import com.tomandfelix.stapp2.persistency.GCMMessage;
 import com.tomandfelix.stapp2.persistency.ServerHelper;
 
 public class GCMTestActivity extends DrawerActivity {
@@ -26,7 +27,7 @@ public class GCMTestActivity extends DrawerActivity {
         for(int i = 0; i < idStrings.length; i++) {
             ids[i] = Integer.parseInt(idStrings[i]);
         }
-        ServerHelper.getInstance(this).sendMessage(ids, -1, ((EditText) findViewById(R.id.internet_send_data)).getText().toString(), new Response.ErrorListener() {
+        ServerHelper.getInstance(this).sendMessage(new GCMMessage(ids, -1, -1, 0, ((EditText) findViewById(R.id.internet_send_data)).getText().toString()), new Response.ErrorListener() {
             @Override
             public void onErrorResponse(VolleyError volleyError) {
                 if(!volleyError.getMessage().equals("none")) {

@@ -9,22 +9,32 @@ import android.content.ServiceConnection;
 import android.os.AsyncTask;
 import android.os.IBinder;
 import android.util.Log;
+import android.widget.Toast;
 
+import com.android.volley.Response;
+import com.android.volley.VolleyError;
 import com.tomandfelix.stapp2.persistency.Challenge;
+import com.tomandfelix.stapp2.persistency.GCMMessage;
 import com.tomandfelix.stapp2.persistency.Profile;
+import com.tomandfelix.stapp2.persistency.ServerHelper;
 import com.tomandfelix.stapp2.persistency.Solo;
 import com.tomandfelix.stapp2.service.ShimmerService;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.GooglePlayServicesUtil;
 import com.google.android.gms.gcm.GoogleCloudMessaging;
+import com.tomandfelix.stapp2.tools.Algorithms;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Date;
 
 /**
  * Created by Tom on 11/03/2015.
  */
 public class StApp  extends Application {
+    public static Challenge exampleChallenge;
+    private ArrayList<GCMMessage> requests;
+    private ArrayList<GCMMessage> results;
     private Solo solo;
     private Challenge challenge;
     private Profile mProfile;
@@ -72,6 +82,26 @@ public class StApp  extends Application {
         this.mProfile = mProfile;
     }
 
+    public ArrayList<GCMMessage> getRequests() {
+        return requests;
+    }
+
+    public void addRequest(GCMMessage newRequest) {
+        if(newRequest != null) {
+            requests.add(newRequest);
+        }
+    }
+    public ArrayList<GCMMessage> getResults() {
+        return results;
+    }
+
+    public void addResult(GCMMessage newResult) {
+        if(newResult != null) {
+            results.add(newResult);
+        }
+    }
+
+
     public static StApp getInstance() {
         return singleton;
     }
@@ -100,6 +130,37 @@ public class StApp  extends Application {
 
     @Override
     public void onCreate() {
+
+        requests = new ArrayList<>();
+        results = new ArrayList<>();
+        exampleChallenge = new Challenge(1, "testChallenge1", "you have 30 seconds time to stand more than your oponent", 2,30,new Runnable(){
+            @Override
+            public void run(){
+                long now = System.currentTimeMillis();
+                Date start = new Date(now - 30 * 1000);
+                Date end = new Date(now);
+                long result = Algorithms.millisecondsStood(StApp.this, start, end);
+                Log.i("TestChallenge", Long.toString(result));
+                if(getResults().size() > 0) {
+                    long otherMilliseconds = Integer.parseInt(getResults().get(0).getMessage());
+                    if(result > otherMilliseconds) {
+                        Toast.makeText(getApplicationContext(), "You won, big time!", Toast.LENGTH_LONG).show();
+                    } else if (result == otherMilliseconds) {
+                        Toast.makeText(getApplicationContext(), "It's a Tie, how did you pull this off?", Toast.LENGTH_LONG).show();
+                    } else {
+                        Toast.makeText(getApplicationContext(), "You had one thing to do, ONE! (you lost)", Toast.LENGTH_LONG).show();
+                    }
+                }
+                ServerHelper.getInstance(StApp.this).sendMessage(new GCMMessage(new int[]{requests.get(0).getSenderId()}, requests.get(0).getChallengeId(), GCMMessage.RESULT, 0, Long.toString(result)),
+                        new Response.ErrorListener() {
+                            @Override
+                            public void onErrorResponse(VolleyError volleyError) {
+                                Log.e("StApp", volleyError.getMessage());
+                            }
+                        });
+            }
+        });
+
         super.onCreate();
         singleton = this;
         if(!isServiceRunning()) {

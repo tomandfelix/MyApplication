@@ -632,18 +632,20 @@ public class ServerHelper {
         VolleyQueue.getInstance(context).addToRequestQueue(downloadLogs);
     }
 
-    public void sendMessage(int[] ids, int challengeId, String message, final Response.ErrorListener errorListener) {
+    public void sendMessage(GCMMessage message, final Response.ErrorListener errorListener) {
         JSONObject request = new JSONObject();
         JSONArray requestArray = new JSONArray();
         try {
             request.put("id", DatabaseHelper.getInstance(context).getOwnerId());
             request.put("token", DatabaseHelper.getInstance(context).getToken());
-            for(int i : ids) {
+            for(int i : message.getRecievers()) {
                 requestArray.put(i);
             }
             request.put("receiver_ids", requestArray);
-            request.put("challenge_id", challengeId);
-            request.put("message", message);
+            request.put("challenge_id", message.getChallengeId());
+            request.put("message", message.getMessage());
+            request.put("message_type", message.getMessageType());
+            request.put("sender_id", DatabaseHelper.getInstance(context).getOwnerId());
         } catch (JSONException e) {
             e.printStackTrace();
         }

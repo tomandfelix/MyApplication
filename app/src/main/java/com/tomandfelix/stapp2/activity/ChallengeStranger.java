@@ -14,6 +14,7 @@ import com.android.volley.Response;
 import com.android.volley.VolleyError;
 import com.tomandfelix.stapp2.R;
 import com.tomandfelix.stapp2.persistency.Challenge;
+import com.tomandfelix.stapp2.persistency.GCMMessage;
 import com.tomandfelix.stapp2.persistency.Profile;
 import com.tomandfelix.stapp2.persistency.ServerHelper;
 
@@ -69,7 +70,7 @@ public class ChallengeStranger extends ServiceActivity {
     public void toChallenge(View view){
         int[] ids =  new int[1];
         ids[1] = mProfile.getId();
-        ServerHelper.getInstance(this).sendMessage(ids, -1, "", new Response.ErrorListener() {
+        ServerHelper.getInstance(this).sendMessage(new GCMMessage(ids, -1, GCMMessage.REQUEST, 0, ""), new Response.ErrorListener() {
             @Override
             public void onErrorResponse(VolleyError volleyError) {
                 if(!volleyError.getMessage().equals("none")) {
