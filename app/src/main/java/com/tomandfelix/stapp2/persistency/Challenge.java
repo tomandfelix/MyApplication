@@ -2,6 +2,11 @@ package com.tomandfelix.stapp2.persistency;
 
 import android.os.Parcel;
 import android.os.Parcelable;
+import android.util.Log;
+
+import com.tomandfelix.stapp2.tools.Algorithms;
+
+import java.util.Date;
 
 /**
  * Created by Flixse on 27/01/2015.

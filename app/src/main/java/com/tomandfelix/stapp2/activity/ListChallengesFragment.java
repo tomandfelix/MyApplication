@@ -15,6 +15,7 @@ import android.widget.ListView;
 import android.widget.TextView;
 
 import com.tomandfelix.stapp2.R;
+import com.tomandfelix.stapp2.application.StApp;
 import com.tomandfelix.stapp2.persistency.Challenge;
 import com.tomandfelix.stapp2.persistency.Quest;
 import com.tomandfelix.stapp2.tools.Algorithms;
@@ -30,15 +31,7 @@ public class ListChallengesFragment extends ListFragment {
     public ListChallengesFragment(){
         super();
         list = new ArrayList<>();
-        list.add(new Challenge(1, "testChallenge1", "you have 30 seconds time to stand more than your oponent", 2,30,new Runnable(){
-            @Override
-            public void run(){
-                long now = System.currentTimeMillis();
-                Date start = new Date(now - 30 * 1000);
-                Date end = new Date(now);
-                Log.i("TestChallenge", Long.toString(Algorithms.millisecondsStood(getActivity(), start, end)));
-            }
-        }));
+        list.add(StApp.exampleChallenge);
     }
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {

@@ -53,6 +53,8 @@ public class ChallengeView extends DrawerActivity {
             switch (index) {
                 case 0:
                     return new ListChallengesFragment();
+                case 1:
+                    return new OpenChallengesFragment();
                 default:
                     return null;
             }
@@ -60,7 +62,7 @@ public class ChallengeView extends DrawerActivity {
 
         @Override
         public int getCount() {
-            return 1;
+            return 2;
         }
 
         @Override
