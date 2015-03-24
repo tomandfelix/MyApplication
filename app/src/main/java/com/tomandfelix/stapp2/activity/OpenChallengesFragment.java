@@ -2,6 +2,7 @@ package com.tomandfelix.stapp2.activity;
 
 import android.app.ListFragment;
 import android.content.Context;
+import android.content.Intent;
 import android.database.DataSetObserver;
 import android.os.Bundle;
 import android.util.Log;
@@ -42,12 +43,17 @@ public class OpenChallengesFragment extends ListFragment {
         Log.d("ListChallengesFragment", "onActivityCreated");
         super.onActivityCreated(savedInstanceState);
         RequestAdapter requestAdapter = new RequestAdapter(getActivity(), R.layout.list_item_request, GCMMessageHandler.challenges);
+
         this.setListAdapter(requestAdapter);
         this.getListView().setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
                 if(GCMMessageHandler.challenges.get(position).getState() == Challenge.REQ_REC) {
                     GCMMessageHandler.challenges.get(position).sendMessage(GCMMessage.ACCEPTED, "");
+                    Intent i = new Intent(getActivity(), OpenChallenge.class);
+                    i.putExtra("challenge_id",GCMMessageHandler.challenges.get(position).getId());
+                    i.putExtra("opponent_ids", GCMMessageHandler.challenges.get(position).getOpponents());
+                    startActivity(i);
                 }
             }
         });
@@ -56,7 +62,7 @@ public class OpenChallengesFragment extends ListFragment {
     @Override
     public void onSaveInstanceState(Bundle outState) {
         super.onSaveInstanceState(outState);
-        outState.putString("DO NOT CRASH", "OK");
+        outState.putString("DO NOT CRASH", "MKAY");
     }
 
     private class RequestAdapter extends ArrayAdapter<Challenge> {

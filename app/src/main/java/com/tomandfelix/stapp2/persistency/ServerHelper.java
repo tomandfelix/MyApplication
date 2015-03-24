@@ -705,6 +705,7 @@ public class ServerHelper {
                             }
                             float result = upper / divider ;
                             callback.getResult(result);
+                            callback.getResultArray(null);
                             Log.d("end result", result + "");
                         }else{
                             Log.e("error", "one of the two arrays is empty");
@@ -720,7 +721,40 @@ public class ServerHelper {
             , errorListener);
         VolleyQueue.getInstance().addToRequestQueue(getProgressOfOther);
     }
+    public void getProfilesByIds(final int[] ids,final Response.ErrorListener errorListener,final VolleyCallback callback) {
+
+        JSONObject request = new JSONObject();
+        try {
+            request.put("ids", ids);
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+        Log.d("getProfilesByIds", request.toString());
+        JsonArrayRequest getProfilesByIds = new JsonArrayRequest(Request.Method.POST, "http://eng.studev.groept.be/thesis/a14_stapp2/getProfilesByIds.php", request, new Response.Listener<JSONArray>() {
+            @Override
+            public void onResponse(JSONArray response) {
+                if(!response.isNull(0)){
+                    ArrayList<Profile> results = new ArrayList<>();
+                    for(int i = 0 ; i < response.length(); i++){
+                        Profile profile = null;
+                        try {
+                            profile = extractProfile(response.getJSONObject(i));
+                        } catch (JSONException e) {
+                            e.printStackTrace();
+                        }
+                        results.add(profile);
+                        callback.getResultArray(results);
+                        callback.getResult(0);
+                    }
+                }
+
+            }
+        }, errorListener);
+        VolleyQueue.getInstance().addToRequestQueue(getProfilesByIds);
+
+    }
     public interface VolleyCallback{
         void getResult(float result);
+        void getResultArray(ArrayList<Profile> result);
     }
 }

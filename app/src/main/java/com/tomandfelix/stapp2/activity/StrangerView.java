@@ -14,6 +14,8 @@ import com.tomandfelix.stapp2.R;
 import com.tomandfelix.stapp2.persistency.Profile;
 import com.tomandfelix.stapp2.persistency.ServerHelper;
 
+import java.util.ArrayList;
+
 
 public class StrangerView extends ServiceActivity {
 
@@ -72,6 +74,11 @@ public class StrangerView extends ServiceActivity {
                 }else{
                     progress.setText(profile.getUsername() + " has not been active in the past 2 weeks");
                 }
+            }
+
+            @Override
+            public void getResultArray(ArrayList<Profile> result) {
+
             }
         });
     }

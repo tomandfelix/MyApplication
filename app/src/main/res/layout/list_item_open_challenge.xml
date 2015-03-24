@@ -1,0 +1,56 @@
+<RelativeLayout  xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:animateLayoutChanges="true" >
+
+    <ImageView
+        android:id="@+id/open_challenge_avatar"
+        android:layout_alignParentTop="true"
+        android:layout_alignParentLeft="true"
+        android:layout_width="75dp"
+        android:layout_height="75dp"
+        android:src="@drawable/avatar_manager_128"/>
+
+    <ImageView
+        android:id="@+id/challenger_rank_icon"
+        android:layout_alignParentTop="true"
+        android:layout_alignParentRight="true"
+        android:layout_width="75dp"
+        android:layout_height="75dp"
+        android:src="@drawable/icon_leaderboard"/>
+
+    <TextView
+        android:id="@+id/open_challenge_rank"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignLeft="@id/challenger_rank_icon"
+        android:layout_alignRight="@id/challenger_rank_icon"
+        android:layout_alignTop="@id/challenger_rank_icon"
+        android:layout_alignBottom="@id/challenger_rank_icon"
+        android:textSize="15sp"
+        android:textColor="@color/background"
+        android:layout_marginTop="18dp"
+        android:gravity="center"
+        android:text="1"/>
+
+    <TextView
+        android:id="@+id/open_challenge_username"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:textSize="25sp"
+        android:layout_toRightOf="@+id/challenger_avatar"
+        android:layout_marginLeft="@dimen/text_separation"
+        android:layout_toLeftOf="@id/challenger_rank_icon"
+        android:layout_marginRight="@dimen/text_separation"
+        android:layout_alignTop="@id/open_challenge_avatar"
+        android:layout_alignBottom="@id/open_challenge_avatar"
+        android:gravity="center"
+        android:text="tomsalens"/>
+    <View
+        android:id="@+id/prof_div_1"
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:layout_marginTop="15dp"
+        android:layout_marginBottom="15dp"
+        android:background="@color/divider"/>
+</RelativeLayout>
