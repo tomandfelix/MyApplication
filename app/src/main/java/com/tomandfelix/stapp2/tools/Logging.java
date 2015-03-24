@@ -211,6 +211,8 @@ public class Logging {
             DatabaseHelper.getInstance().addLog(last);
             connected = false;
             sendUpdate();
+        } else if(getState() == STATE_CONNECTING) {
+            sendUpdate();
         }
     }
 
