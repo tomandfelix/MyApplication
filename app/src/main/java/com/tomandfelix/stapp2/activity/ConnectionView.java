@@ -109,16 +109,16 @@ public class ConnectionView extends DrawerActivity {
                 }
             });
         }
-        updateState(Logging.getInstance(this).getState());
+        updateState(Logging.getInstance().getState());
     }
 
     public void startDay(View v) {
-        Logging.getInstance(this).logStartDay();
+        Logging.getInstance().logStartDay();
     }
 
     public void stopDay(View v) {
         app.getService().disconnectShimmer();
-        Logging.getInstance(this).logAchievedScore();
+        Logging.getInstance().logAchievedScore();
     }
 
     @Override
@@ -137,7 +137,7 @@ public class ConnectionView extends DrawerActivity {
         if(Logging.getHandler() != loggingMessageHandler) {
             Logging.setHandler(loggingMessageHandler);
         }
-        updateState(Logging.getInstance(this).getState());
+        updateState(Logging.getInstance().getState());
     }
 
     @Override

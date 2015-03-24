@@ -104,7 +104,7 @@ public class ProfileView extends DrawerActivity {
         }
 
         statusIcon = (ImageView) findViewById(R.id.profile_status_icon);
-        updateState(Logging.getInstance(this).getState());
+        updateState(Logging.getInstance().getState());
 
 //        avatarChanged = false;
 //        TypedArray avatars = getResources().obtainTypedArray(R.array.avatars);
@@ -204,7 +204,7 @@ public class ProfileView extends DrawerActivity {
         if(Logging.getHandler() != loggingMessageHandler) {
             Logging.setHandler(loggingMessageHandler);
         }
-        updateState(Logging.getInstance(this).getState());
+        updateState(Logging.getInstance().getState());
     }
 
     @Override
@@ -306,13 +306,13 @@ public class ProfileView extends DrawerActivity {
             } else if(DatabaseHelper.getInstance().getSensor() == null || DatabaseHelper.getInstance().getSensor().equals("")) {
                 createSensorDialog().show();
             } else {
-                Logging.getInstance(this).logStartDay();
+                Logging.getInstance().logStartDay();
                 String sensor = DatabaseHelper.getInstance().getSensor();
                 app.getService().connectShimmer(sensor, "Device");
             }
         } else {
             app.getService().disconnectShimmer();
-            Logging.getInstance(this).logAchievedScore();
+            Logging.getInstance().logAchievedScore();
         }
     }
 

@@ -152,7 +152,7 @@ public class ShimmerService extends Service {
                     }
                 });
             } else {
-                int state = Logging.getInstance(this).getState();
+                int state = Logging.getInstance().getState();
                 if(state == Logging.STATE_CONNECTING || state == Logging.STATE_DISCONNECTED || state == Logging.STATE_DAY_STOPPED) {
                     stopUploadTask();
                 }
@@ -238,7 +238,7 @@ public class ShimmerService extends Service {
 
     public void connectShimmer(String bluetoothAddress,String selectedDevice) {
         Log.d("Shimmer","net Connection");
-        Logging.getInstance(this).logConnecting();
+        Logging.getInstance().logConnecting();
         address = bluetoothAddress;
         Shimmer shimmerDevice=new Shimmer(this, mHandler,selectedDevice,false);
         mMultiShimmer.remove(bluetoothAddress);
@@ -250,7 +250,7 @@ public class ShimmerService extends Service {
 
     public void disconnectShimmer() {
         address = "";
-        Logging.getInstance(this).logDisconnect();
+        Logging.getInstance().logDisconnect();
         stopStreamingAllDevices();
     }
 
@@ -281,7 +281,7 @@ public class ShimmerService extends Service {
                         if ((msg.obj instanceof ObjectCluster)) {    // within each msg an object can be include, objectclusters are used to represent the data structure of the shimmer device
                             ObjectCluster objectCluster = (ObjectCluster) msg.obj;
                             if (mEnableLogging) {
-                                Logging.getInstance(mShimmerService.get()).logData(objectCluster);
+                                Logging.getInstance().logData(objectCluster);
                             }
                         }
                         break;
@@ -290,10 +290,10 @@ public class ShimmerService extends Service {
                         if (msg.getData().getString(Shimmer.TOAST).equals("Device connection was lost") ||
                                 msg.getData().getString(Shimmer.TOAST).contains("stopped streaming") ||
                                 msg.getData().getString(Shimmer.TOAST).contains("Killing Connection")) {
-                            Logging.getInstance(mShimmerService.get()).logDisconnect();
+                            Logging.getInstance().logDisconnect();
                             mShimmerService.get().tryReconnect();
                         } else if (msg.getData().getString(Shimmer.TOAST).contains("is now Streaming")) {
-                            Logging.getInstance(mShimmerService.get()).logConnect();
+                            Logging.getInstance().logConnect();
                             mShimmerService.get().startUploadTask();
                             mShimmerService.get().retryAmount = 0;
                         } else if (msg.getData().getString(Shimmer.TOAST).contains("is ready for Streaming")) {

@@ -58,13 +58,6 @@ public class Logging {
     private static Logging uniqueInstance;
     private static final long _30mn_to_ms = 30 * 60 * 1000;
     private static final long _24h_to_ms = 24 * 60 * 60 * 1000;
-    private boolean mFirstWrite = true;
-
-    private Context context;
-
-    private String[] mSensorNames;
-    private String[] mSensorFormats;
-    private String[] mSensorUnits;
 
     private final double logDetSigma = 58.2792;
     private double meanY = 0.0;
@@ -102,13 +95,9 @@ public class Logging {
     private boolean dayStarted = false;
     private boolean overtimeLogged = false;
 
-    private Logging(Context context){
-        this.context = context;
-    }
-
-    public static Logging getInstance(Context context) {
+    public static Logging getInstance() {
         if (uniqueInstance == null) {
-            uniqueInstance = new Logging(context.getApplicationContext());
+            uniqueInstance = new Logging();
         }
         return uniqueInstance;
     }
@@ -204,6 +193,7 @@ public class Logging {
     }
 
     public void logDisconnect() {
+        connecting = false;
         if(DatabaseHelper.getInstance().isConnected()) {
             Date now = new Date();
             connTimeSinceCurr += now.getTime() - last.getDatetime().getTime();
@@ -241,6 +231,12 @@ public class Logging {
                 DatabaseHelper.getInstance().addLog(new DBLog(DatabaseHelper.LOG_ACH_SCORE, now, achievedScore));
                 DatabaseHelper.getInstance().addLog(new DBLog(DatabaseHelper.LOG_ACH_SCORE_PERC, now, achievedScorePercentage));
                 last = new DBLog(DatabaseHelper.LOG_STOP_DAY, now, connectionTime);
+                DatabaseHelper.getInstance().addLog(last);
+                currentActivity = null;
+            } else {
+                DatabaseHelper.getInstance().addLog(new DBLog(DatabaseHelper.LOG_ACH_SCORE, now, 0));
+                DatabaseHelper.getInstance().addLog(new DBLog(DatabaseHelper.LOG_ACH_SCORE_PERC, now, 0));
+                last = new DBLog(DatabaseHelper.LOG_STOP_DAY, now, 0);
                 DatabaseHelper.getInstance().addLog(last);
                 currentActivity = null;
             }
