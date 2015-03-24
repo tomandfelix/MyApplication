@@ -75,7 +75,7 @@ public class OpenChallenge extends ActionBarActivity {
 
     private void updateVisual() {
         adapter = new OpenChallengeListAdapter(OpenChallenge.this, R.layout.list_item_open_challenge, mProfileList);
-
+        openChallengeList.setAdapter(adapter);
         openChallengeList.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
