@@ -10,26 +10,24 @@
         android:layout_height="match_parent"
         android:padding="@dimen/activity_margin"
         android:animateLayoutChanges="true">
-        <RelativeLayout
+
+        <LinearLayout
             android:layout_width="match_parent"
-            android:layout_height="wrap_content">
-            <TextView
+            android:layout_height="200dp">
+
+            <ListView
+                android:id="@+id/open_challenge_list_view"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="@string/challenge_opponent"
-                android:textSize="23sp"/>
-        </RelativeLayout>
-        <ListView
-            android:id="@+id/open_challenge_list_view"
-            android:layout_width="match_parent"
-            android:layout_height="200dp"/>
-
+                android:dividerHeight="1dp"
+                android:divider="@color/divider"/>
+        </LinearLayout>
         <TextView
             android:id="@+id/open_challenge_title"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:text="Challenge title"
-            android:textSize="30dp"/>
+            android:textSize="20dp"/>
         <TextView
             android:id="@+id/open_challenge_description"
             android:layout_width="match_parent"
@@ -37,7 +35,7 @@
             android:layout_weight="1"
             android:layout_below="@id/open_challenge_title"
             android:text="description of challenge"
-            android:textSize="23dp"/>
+            android:textSize="15dp"/>
         <LinearLayout
             android:orientation="horizontal"
             android:layout_width="match_parent"

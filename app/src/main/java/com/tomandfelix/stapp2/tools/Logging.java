@@ -202,10 +202,7 @@ public class Logging {
             connected = false;
             sendUpdate();
         } else if(getState() == STATE_CONNECTING) {
-            Log.d("in","sendupdate");
-//            connecting = false;
             sendUpdate();
-
         }
     }
 

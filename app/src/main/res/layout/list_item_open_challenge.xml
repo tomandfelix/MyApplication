@@ -1,22 +1,21 @@
 <RelativeLayout  xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
-    android:layout_height="wrap_content"
-    android:animateLayoutChanges="true" >
+    android:layout_height="wrap_content">
 
     <ImageView
         android:id="@+id/open_challenge_avatar"
         android:layout_alignParentTop="true"
         android:layout_alignParentLeft="true"
-        android:layout_width="75dp"
-        android:layout_height="75dp"
+        android:layout_width="50dp"
+        android:layout_height="50dp"
         android:src="@drawable/avatar_manager_128"/>
 
     <ImageView
         android:id="@+id/challenger_rank_icon"
         android:layout_alignParentTop="true"
         android:layout_alignParentRight="true"
-        android:layout_width="75dp"
-        android:layout_height="75dp"
+        android:layout_width="50dp"
+        android:layout_height="50dp"
         android:src="@drawable/icon_leaderboard"/>
 
     <TextView
@@ -27,9 +26,9 @@
         android:layout_alignRight="@id/challenger_rank_icon"
         android:layout_alignTop="@id/challenger_rank_icon"
         android:layout_alignBottom="@id/challenger_rank_icon"
-        android:textSize="15sp"
+        android:textSize="10sp"
         android:textColor="@color/background"
-        android:layout_marginTop="18dp"
+        android:layout_marginTop="12dp"
         android:gravity="center"
         android:text="1"/>
 
@@ -46,11 +45,4 @@
         android:layout_alignBottom="@id/open_challenge_avatar"
         android:gravity="center"
         android:text="tomsalens"/>
-    <View
-        android:id="@+id/prof_div_1"
-        android:layout_width="match_parent"
-        android:layout_height="1dp"
-        android:layout_marginTop="15dp"
-        android:layout_marginBottom="15dp"
-        android:background="@color/divider"/>
 </RelativeLayout>
