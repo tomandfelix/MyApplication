@@ -724,8 +724,12 @@ public class ServerHelper {
     public void getProfilesByIds(final int[] ids,final Response.ErrorListener errorListener,final VolleyCallback callback) {
 
         JSONObject request = new JSONObject();
+        JSONArray requestArray = new JSONArray();
         try {
-            request.put("ids", ids);
+            for(int i : ids) {
+                requestArray.put(i);
+            }
+            request.put("ids",requestArray);
         } catch (JSONException e) {
             e.printStackTrace();
         }
