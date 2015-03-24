@@ -29,11 +29,12 @@ public class SettingsView extends DrawerActivity {
         setContentView(R.layout.activity_settings);
         super.onCreate(savedInstanceState);
 
-        settings = new Setting[4];
+        settings = new Setting[6];
         int freq = DatabaseHelper.getInstance().getUploadFrequency() / 60000;
         settings[0] = new Setting("Upload frequency", freq + (freq == 1 ? " minute" : " minutes"));
         settings[1] = new Setting("Sensor", DatabaseHelper.getInstance().getSensor());
-        settings[2] = new Setting("Upload over 3G", "If set, your phone will upload data to the server at the upload frequency", DatabaseHelper.getInstance().uploadOn3G(),
+        settings[2] = new Setting("Account settings", DatabaseHelper.getInstance().getOwner().getUsername());
+        settings[3] = new Setting("Mobile data", "Allow communications over mobile data", DatabaseHelper.getInstance().uploadOn3G(),
                 new CheckBox.OnCheckListener() {
                     @Override
                     public void onCheck(boolean b) {
@@ -41,7 +42,7 @@ public class SettingsView extends DrawerActivity {
                         DatabaseHelper.getInstance().setUploadOn3G(b);
                     }
                 });
-        settings[3] = new Setting("Notifications", null, DatabaseHelper.getInstance().getNotification(),
+        settings[4] = new Setting("Notifications", null, DatabaseHelper.getInstance().getNotification(),
                 new CheckBox.OnCheckListener() {
                     @Override
                     public void onCheck(boolean b) {
@@ -49,57 +50,29 @@ public class SettingsView extends DrawerActivity {
                         DatabaseHelper.getInstance().setNotification(b);
                     }
                 });
+        settings[5] = new Setting("Logout", null);
 
         settingsList = (ListView) findViewById(R.id.settings_list);
         adapter = new SettingsAdapter(this, R.layout.list_item_settings, settings);
         settingsList.setAdapter(adapter);
-        settingsList.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-            @Override
-            public void onItemClick(AdapterView<?> parent, final View view, int position, long id) {
-                if(position == 0) {
-                    AlertDialog.Builder alert = new AlertDialog.Builder(SettingsView.this);
-                    alert.setMessage("Please enter a new value, in minutes").setTitle("Upload frequency");
-                    final EditText input = new EditText(SettingsView.this);
-                    input.setInputType(InputType.TYPE_CLASS_NUMBER);
-                    alert.setView(input);
-                    DialogInterface.OnClickListener listener = new DialogInterface.OnClickListener() {
-                        @Override
-                        public void onClick(DialogInterface dialog, int which) {
-                            switch(which) {
-                                case DialogInterface.BUTTON_POSITIVE:
-                                    int newUploadFreq = Integer.parseInt(input.getText().toString());
-                                    if(newUploadFreq > 0) {
-                                        DatabaseHelper.getInstance().setUploadFrequency(newUploadFreq * 60000);
-                                        settings[0].subTitle = newUploadFreq + (newUploadFreq == 1 ? " minute" : " minutes");
-                                        adapter.notifyDataSetChanged();
-                                    }
-                                    break;
-                                case DialogInterface.BUTTON_NEGATIVE:
-                                    break;
-                            }
-                        }
-                    };
-                    alert.setPositiveButton("CONFIRM", listener);
-                    alert.setNegativeButton("CANCEL", listener);
-                    alert.show();
-                } else if(position == 1) {
-                    Intent intent = new Intent(SettingsView.this, SensorSelection.class);
-                    startActivityForResult(intent, 1);
-                }
-            }
-        });
+        settingsList.setOnItemClickListener(new SettingsListener());
     }
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-        Log.d("SettingsView", "reqCode=" + requestCode + ", resCode=" + resultCode);
-        if(requestCode == 1) {
-            String address = data.getExtras().getString("address");
-            DatabaseHelper.getInstance().setSensor(address);
-            settings[1].subTitle = address;
-            adapter.notifyDataSetChanged();
-        } else {
-            super.onActivityResult(requestCode, resultCode, data);
+        switch(requestCode) {
+            case 1:
+                String address = data.getExtras().getString("address");
+                DatabaseHelper.getInstance().setSensor(address);
+                settings[1].subTitle = address;
+                adapter.notifyDataSetChanged();
+                break;
+            case 2:
+                settings[2].subTitle = app.getProfile().getUsername();
+                adapter.notifyDataSetChanged();
+                break;
+            default:
+                super.onActivityResult(requestCode, resultCode, data);
         }
     }
 
@@ -110,7 +83,6 @@ public class SettingsView extends DrawerActivity {
         private CheckBox.OnCheckListener listener;
 
         private Setting(String title, String subTitle, boolean checked, CheckBox.OnCheckListener listener) {
-            Log.d("Setting", "checked=" + checked);
             this.title = title;
             this.subTitle = subTitle;
             this.checked = checked;
@@ -138,20 +110,26 @@ public class SettingsView extends DrawerActivity {
                 convertView = getLayoutInflater().inflate(resourceId, parent, false);
             }
 
-            Setting s = data[position];
+            final Setting s = data[position];
 
             if(s != null) {
                 ((TextView) convertView.findViewById(R.id.setting_title)).setText(s.title);
-                if(s.subTitle != null) {
-                    ((TextView) convertView.findViewById(R.id.settings_subtitle)).setText(s.subTitle);
+                TextView subTitle = (TextView) convertView.findViewById(R.id.settings_subtitle);
+                if(s.subTitle != null && !s.subTitle.equals("")) {
+                    subTitle.setText(s.subTitle);
+                    subTitle.setVisibility(View.VISIBLE);
                 } else {
-                    convertView.findViewById(R.id.settings_subtitle).setVisibility(View.GONE);
+                    subTitle.setVisibility(View.GONE);
                 }
                 if(s.listener != null) {
-                    CheckBox checkBox = (CheckBox) convertView.findViewById(R.id.settings_checkBox);
+                    final CheckBox checkBox = (CheckBox) convertView.findViewById(R.id.settings_checkBox);
                     checkBox.setVisibility(View.VISIBLE);
-                    Log.d("Setting", position + " drawing=" + s.checked);
-                    checkBox.setChecked(s.checked);
+                    checkBox.post(new Runnable() {
+                        @Override
+                        public void run() {
+                            checkBox.setChecked(s.checked);
+                        }
+                    });
                     checkBox.setOncheckListener(s.listener);
                 } else {
                     convertView.findViewById(R.id.settings_checkBox).setVisibility(View.INVISIBLE);
@@ -163,6 +141,71 @@ public class SettingsView extends DrawerActivity {
         @Override
         public boolean isEnabled(int position) {
             return data[position].listener == null;
+        }
+    }
+
+    private class SettingsListener implements AdapterView.OnItemClickListener {
+        @Override
+        public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+            switch(position) {
+                case 0:
+                    AlertDialog.Builder alert = new AlertDialog.Builder(SettingsView.this);
+                    alert.setMessage("Please enter a new value, in minutes").setTitle("Upload frequency");
+                    final EditText input = new EditText(SettingsView.this);
+                    input.setInputType(InputType.TYPE_CLASS_NUMBER);
+                    alert.setView(input);
+                    DialogInterface.OnClickListener listener = new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialog, int which) {
+                            switch (which) {
+                                case DialogInterface.BUTTON_POSITIVE:
+                                    int newUploadFreq = Integer.parseInt(input.getText().toString());
+                                    if (newUploadFreq > 0) {
+                                        DatabaseHelper.getInstance().setUploadFrequency(newUploadFreq * 60000);
+                                        settings[0].subTitle = newUploadFreq + (newUploadFreq == 1 ? " minute" : " minutes");
+                                        adapter.notifyDataSetChanged();
+                                    }
+                                    break;
+                                case DialogInterface.BUTTON_NEGATIVE:
+                                    break;
+                            }
+                        }
+                    };
+                    alert.setPositiveButton("CONFIRM", listener);
+                    alert.setNegativeButton("CANCEL", listener);
+                    alert.show();
+                    break;
+                case 1:
+                    Intent sensorIntent = new Intent(SettingsView.this, SensorSelection.class);
+                    startActivityForResult(sensorIntent, 1);
+                    break;
+                case 2:
+                    Intent accountIntent = new Intent(SettingsView.this, AccountSettings.class);
+                    startActivityForResult(accountIntent, 2);
+                    break;
+                case 5:
+                    DialogInterface.OnClickListener dialogListener = new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialog, int which) {
+                            switch (which) {
+                                case DialogInterface.BUTTON_POSITIVE:
+                                    DatabaseHelper.getInstance().setToken("");
+                                    index = INITIAL;
+                                    Intent intent = new Intent(SettingsView.this, FragmentViewer.class);
+                                    startActivity(intent);
+                                    overridePendingTransition(R.anim.enter_bottom, R.anim.leave_top);
+                                    finish();
+                                    break;
+                            }
+                        }
+                    };
+                    final AlertDialog.Builder alertDialog = new AlertDialog.Builder(SettingsView.this);
+                    alertDialog.setMessage("Are you sure you want to log out?");
+                    alertDialog.setPositiveButton("Logout", dialogListener);
+                    alertDialog.setNegativeButton("Cancel", dialogListener);
+                    alertDialog.show();
+                    break;
+            }
         }
     }
 }

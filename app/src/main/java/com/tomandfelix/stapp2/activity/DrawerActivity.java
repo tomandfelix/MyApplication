@@ -33,10 +33,7 @@ public abstract class DrawerActivity extends ServiceActivity {
     protected final static int SOLO_QUEST = 4;
     protected final static int CHALLENGE = 5;
     protected final static int CO_OPERATIVE = 6;
-    protected final static int CONNECTION = 8;
-    protected final static int INTERNET_CONNECTION = 9;
-    protected final static int SETTINGS = 10;
-    protected final static int LOGOUT = 12;
+    protected final static int SETTINGS = 8;
     protected final static int INITIAL = PROFILE;
     protected static int index = INITIAL;
     private DrawerLayout drawerLayout;
@@ -107,12 +104,6 @@ public abstract class DrawerActivity extends ServiceActivity {
             case CHALLENGE:
                 destination = ChallengeView.class;
                 break;
-            case CONNECTION:
-                destination = ConnectionView.class;
-                break;
-            case INTERNET_CONNECTION:
-                destination = GCMTestActivity.class;
-                break;
             case SETTINGS:
                 destination = SettingsView.class;
                 break;
@@ -134,31 +125,7 @@ public abstract class DrawerActivity extends ServiceActivity {
             drawerLayout.closeDrawers();
             view.setSelected(true);
             if (position != index) {
-                if(position == LOGOUT) {
-                    Log.d("logout", "clicked");
-                    DialogInterface.OnClickListener listener = new DialogInterface.OnClickListener() {
-                        @Override
-                        public void onClick(DialogInterface dialog, int which) {
-                            switch (which) {
-                                case DialogInterface.BUTTON_POSITIVE:
-                                    DatabaseHelper.getInstance().setToken("");
-                                    index = INITIAL;
-                                    Intent intent = new Intent(DrawerActivity.this, FragmentViewer.class);
-                                    startActivity(intent);
-                                    overridePendingTransition(R.anim.enter_bottom, R.anim.leave_top);
-                                    finish();
-                                    break;
-                            }
-                        }
-                    };
-                    final AlertDialog.Builder alertDialog = new AlertDialog.Builder(DrawerActivity.this);
-                    alertDialog.setMessage("Are you sure you want to log out?");
-                    alertDialog.setPositiveButton("Logout", listener);
-                    alertDialog.setNegativeButton("Cancel", listener);
-                    alertDialog.show();
-                } else {
-                    loadActivity(position);
-                }
+                loadActivity(position);
             }
         }
     }

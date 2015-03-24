@@ -124,7 +124,9 @@ public class StApp  extends Application {
                             ServerHelper.getInstance().updateProfileSettings(null, null, null, null, null, new Response.ErrorListener() {
                                 @Override
                                 public void onErrorResponse(VolleyError volleyError) {
-                                    Log.e("handleGCM", volleyError.getMessage());
+                                    if(!volleyError.getMessage().equals("none")) {
+                                        Log.e("handleGCM", volleyError.getMessage());
+                                    }
                                 }
                             });
                         }
