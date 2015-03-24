@@ -273,6 +273,7 @@ public class ServerHelper {
             } catch (JSONException e) {
                 e.printStackTrace();
             }
+            Log.d("GetOtherProfile", request.toString());
             JsonObjectRequest getOtherProfile = new JsonObjectRequest(Request.Method.POST, "http://eng.studev.groept.be/thesis/a14_stapp2/getOtherProfile.php", request, new Response.Listener<JSONObject>() {
                 @Override
                 public void onResponse(JSONObject response) {

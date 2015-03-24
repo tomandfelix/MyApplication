@@ -288,6 +288,7 @@ public class ProfileView extends DrawerActivity {
 
     public void onPauseResume(View view) {
         if(pauseButton.getText().equals(PAUSE)) {
+            Log.e("onPauseResume", pauseButton.getText());
             app.getService().disconnectShimmer();
         } else {
             String sensor = DatabaseHelper.getInstance().getSensor();

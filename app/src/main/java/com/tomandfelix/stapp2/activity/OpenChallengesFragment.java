@@ -1,12 +1,9 @@
 package com.tomandfelix.stapp2.activity;
 
-import android.app.Fragment;
 import android.app.ListFragment;
 import android.content.Context;
-import android.content.Intent;
 import android.database.DataSetObserver;
 import android.os.Bundle;
-import android.os.Handler;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -19,17 +16,12 @@ import android.widget.TextView;
 import com.android.volley.Response;
 import com.android.volley.VolleyError;
 import com.tomandfelix.stapp2.R;
-import com.tomandfelix.stapp2.application.StApp;
 import com.tomandfelix.stapp2.gcm.GCMMessageHandler;
 import com.tomandfelix.stapp2.persistency.Challenge;
 import com.tomandfelix.stapp2.persistency.GCMMessage;
 import com.tomandfelix.stapp2.persistency.Profile;
-import com.tomandfelix.stapp2.persistency.Quest;
 import com.tomandfelix.stapp2.persistency.ServerHelper;
-import com.tomandfelix.stapp2.tools.Algorithms;
 
-import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 
 /**
@@ -55,7 +47,7 @@ public class OpenChallengesFragment extends ListFragment {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
                 if(GCMMessageHandler.challenges.get(position).getState() == Challenge.REQ_REC) {
-                    GCMMessageHandler.challenges.get(position).sendMessage(Challenge.ACCEPTED, "");
+                    GCMMessageHandler.challenges.get(position).sendMessage(GCMMessage.ACCEPTED, "");
                 }
             }
         });

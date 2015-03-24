@@ -53,7 +53,6 @@ public class GCMMessageHandler extends IntentService {
             e.printStackTrace();
         }
         Log.i("GCM", "Received : (" + gcm.getMessageType(intent) +")  "+extras.getString("message"));
-        Log.d("GCM", extras.getString("receiver_ids"));
         GCMMessage message = new GCMMessage(recIds,
                 Integer.parseInt(extras.getString("challenge_id")),
                 Integer.parseInt(extras.getString("message_type")),
@@ -143,29 +142,26 @@ public class GCMMessageHandler extends IntentService {
                             for (Challenge c : challenges) {
                                 if (message.getChallengeId() == c.getId()) {
                                     c.addResult(message);
+                                    handler.post(c.getValidator());
                                 }
                             }
                         }
                     }
                 } else if (msg.what == MSG_SENT) {
                     if (message.getMessageType() == GCMMessage.REQUEST) {
-                        challenges.add(new Challenge(message.getChallengeId(), message.getReceivers()));
-                        challenges.get(challenges.size() - 1).setState(Challenge.REQ_SENT);
+                        synchronized (challenges) {
+                            for(Challenge c : challenges) {
+                                if(message.getChallengeId() == c.getId()) {
+                                    c.setState(Challenge.REQ_SENT);
+                                }
+                            }
+                        }
                     } else if (message.getMessageType() == GCMMessage.ACCEPTED) {
                         synchronized (challenges) {
                             for (Challenge c : challenges) {
                                 if (message.getChallengeId() == c.getId()) {
                                     c.setState(Challenge.STARTED);
                                     handler.postDelayed(c.getValidator(), c.getDuration() * 1000);
-                                }
-                            }
-                        }
-                    } else if (message.getMessageType() == GCMMessage.RESULT) {
-                        synchronized (challenges) {
-                            for (Challenge c : challenges) {
-                                if (message.getChallengeId() == c.getId()) {
-                                    c.setState(Challenge.DONE);
-                                    c.addResult(message);
                                 }
                             }
                         }

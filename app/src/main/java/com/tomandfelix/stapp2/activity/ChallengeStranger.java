@@ -72,14 +72,9 @@ public class ChallengeStranger extends ServiceActivity {
     public void toChallenge(View view){
         int[] ids =  new int[1];
         ids[0] = mProfile.getId();
-        ServerHelper.getInstance().sendMessage(new GCMMessage(ids, ChallengeList.challenges.get(0).getId(), GCMMessage.REQUEST, 0, ""), new Response.ErrorListener() {
-            @Override
-            public void onErrorResponse(VolleyError volleyError) {
-                if(!volleyError.getMessage().equals("none")) {
-                    Log.e("GCMTestActivity", volleyError.getMessage());
-                }
-            }
-        });
+        Challenge challenge = new Challenge(1, ids);
+        GCMMessageHandler.challenges.add(challenge);
+        challenge.sendMessage(GCMMessage.REQUEST, "");
         Intent intent = new Intent(this, ProfileView.class);
         intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
         startActivity(intent);

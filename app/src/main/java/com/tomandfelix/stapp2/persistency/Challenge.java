@@ -92,8 +92,8 @@ public class Challenge extends Quest {
         return results;
     }
 
-    public void sendMessage(int messageType, String message) {
-        GCMMessage msg = new GCMMessage(opponents, id, messageType, 0, message);
+    public GCMMessage sendMessage(int messageType, String message) {
+        GCMMessage msg = new GCMMessage(opponents, id, messageType, -1, message);
         ServerHelper.getInstance().sendMessage(msg, new Response.ErrorListener() {
             @Override
             public void onErrorResponse(VolleyError volleyError) {
@@ -101,6 +101,7 @@ public class Challenge extends Quest {
             }
         });
         GCMMessageHandler.handler.obtainMessage(GCMMessageHandler.MSG_SENT, msg).sendToTarget();
+        return msg;
     }
 
     @Override
