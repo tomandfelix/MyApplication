@@ -26,7 +26,7 @@
     <string name="graph_average_connection_time">Average duration</string>
     <string name="drawer_open">open</string>
     <string name="drawer_close">close</string>
-    <string name="challenge_oponent"><u>Oponent</u> </string>
+    <string name="challenge_oponent"><u>Opponents</u> </string>
 
     <string-array name="sideMenu">
         <item>Profile</item>
