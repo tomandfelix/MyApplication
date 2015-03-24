@@ -40,7 +40,7 @@ public class LeaderboardView extends DrawerActivity {
         setContentView(R.layout.activity_leaderboard);
         super.onCreate(savedInstanceState);
         leaderboardList = (ListView) findViewById(R.id.leaderboard_list);
-        ServerHelper.getInstance(this).getLeaderboardById(DatabaseHelper.getInstance(this).getOwnerId(),
+        ServerHelper.getInstance().getLeaderboardById(DatabaseHelper.getInstance().getOwnerId(),
                 new ServerHelper.ResponseFunc<ArrayList<Profile>>() {
                     @Override
                     public void onResponse(ArrayList<Profile> response) {
@@ -80,7 +80,7 @@ public class LeaderboardView extends DrawerActivity {
                 int startRank;
                 int endRank;
                 if(position == 0 && (startRank = list.get(0).getRank()) != 1) {
-                    ServerHelper.getInstance(getApplicationContext()).getLeaderboardByRank(startRank - 2,
+                    ServerHelper.getInstance().getLeaderboardByRank(startRank - 2,
                             new ServerHelper.ResponseFunc<ArrayList<Profile>>() {
                                 @Override
                                 public void onResponse(ArrayList<Profile> response) {
@@ -89,7 +89,7 @@ public class LeaderboardView extends DrawerActivity {
                                 }
                             }, null, false);
                 } else if (position == list.size() + 1 && (endRank = list.get(list.size() - 1).getRank()) % 10 == 0) {
-                    ServerHelper.getInstance(getApplicationContext()).getLeaderboardByRank(endRank + 1,
+                    ServerHelper.getInstance().getLeaderboardByRank(endRank + 1,
                             new ServerHelper.ResponseFunc<ArrayList<Profile>>() {
                                 @Override
                                 public void onResponse(ArrayList<Profile> response) {
@@ -99,7 +99,7 @@ public class LeaderboardView extends DrawerActivity {
                             }, null, false);
                 } else  if(position > 0 && position <= list.size()) {
                     int destId = list.get(position - 1).getId();
-                    if(destId == DatabaseHelper.getInstance(getApplicationContext()).getOwnerId()) {
+                    if(destId == DatabaseHelper.getInstance().getOwnerId()) {
 //                        drawer.setSelection(PROFILE);
                         //TODO why was this here?
                     } else {

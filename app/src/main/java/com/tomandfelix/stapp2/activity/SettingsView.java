@@ -30,23 +30,23 @@ public class SettingsView extends DrawerActivity {
         super.onCreate(savedInstanceState);
 
         settings = new Setting[4];
-        int freq = DatabaseHelper.getInstance(this).getUploadFrequency() / 60000;
+        int freq = DatabaseHelper.getInstance().getUploadFrequency() / 60000;
         settings[0] = new Setting("Upload frequency", freq + (freq == 1 ? " minute" : " minutes"));
-        settings[1] = new Setting("Sensor", DatabaseHelper.getInstance(this).getSensor());
-        settings[2] = new Setting("Upload over 3G", "If set, your phone will upload data to the server at the upload frequency", DatabaseHelper.getInstance(this).uploadOn3G(),
+        settings[1] = new Setting("Sensor", DatabaseHelper.getInstance().getSensor());
+        settings[2] = new Setting("Upload over 3G", "If set, your phone will upload data to the server at the upload frequency", DatabaseHelper.getInstance().uploadOn3G(),
                 new CheckBox.OnCheckListener() {
                     @Override
                     public void onCheck(boolean b) {
                         Log.d("Settings", "Upload3G=" + b);
-                        DatabaseHelper.getInstance(SettingsView.this).setUploadOn3G(b);
+                        DatabaseHelper.getInstance().setUploadOn3G(b);
                     }
                 });
-        settings[3] = new Setting("Notifications", null, DatabaseHelper.getInstance(this).getNotification(),
+        settings[3] = new Setting("Notifications", null, DatabaseHelper.getInstance().getNotification(),
                 new CheckBox.OnCheckListener() {
                     @Override
                     public void onCheck(boolean b) {
                         Log.d("Settings", "Notification=" + b);
-                        DatabaseHelper.getInstance(SettingsView.this).setNotification(b);
+                        DatabaseHelper.getInstance().setNotification(b);
                     }
                 });
 
@@ -69,7 +69,7 @@ public class SettingsView extends DrawerActivity {
                                 case DialogInterface.BUTTON_POSITIVE:
                                     int newUploadFreq = Integer.parseInt(input.getText().toString());
                                     if(newUploadFreq > 0) {
-                                        DatabaseHelper.getInstance(SettingsView.this).setUploadFrequency(newUploadFreq * 60000);
+                                        DatabaseHelper.getInstance().setUploadFrequency(newUploadFreq * 60000);
                                         settings[0].subTitle = newUploadFreq + (newUploadFreq == 1 ? " minute" : " minutes");
                                         adapter.notifyDataSetChanged();
                                     }
@@ -95,7 +95,7 @@ public class SettingsView extends DrawerActivity {
         Log.d("SettingsView", "reqCode=" + requestCode + ", resCode=" + resultCode);
         if(requestCode == 1) {
             String address = data.getExtras().getString("address");
-            DatabaseHelper.getInstance(this).setSensor(address);
+            DatabaseHelper.getInstance().setSensor(address);
             settings[1].subTitle = address;
             adapter.notifyDataSetChanged();
         } else {

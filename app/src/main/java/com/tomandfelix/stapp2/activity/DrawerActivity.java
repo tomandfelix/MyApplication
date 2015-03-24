@@ -58,7 +58,7 @@ public abstract class DrawerActivity extends ServiceActivity {
         selectedTextColor = getResources().getColor(R.color.drawerSelectedText);
 
 
-        app.setProfile(DatabaseHelper.getInstance(this).getOwner());
+        app.setProfile(DatabaseHelper.getInstance().getOwner());
         menuItems = getResources().getStringArray(R.array.sideMenu);
         leftDrawerList = (ListView) findViewById(R.id.drawer_list);
 
@@ -141,7 +141,7 @@ public abstract class DrawerActivity extends ServiceActivity {
                         public void onClick(DialogInterface dialog, int which) {
                             switch (which) {
                                 case DialogInterface.BUTTON_POSITIVE:
-                                    DatabaseHelper.getInstance(getApplicationContext()).setToken("");
+                                    DatabaseHelper.getInstance().setToken("");
                                     index = INITIAL;
                                     Intent intent = new Intent(DrawerActivity.this, FragmentViewer.class);
                                     startActivity(intent);

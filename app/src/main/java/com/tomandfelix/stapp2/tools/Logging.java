@@ -177,9 +177,9 @@ public class Logging {
     }
 
     public void logStartDay() {
-        if(DatabaseHelper.getInstance(context).dayStarted() == null) {
+        if(DatabaseHelper.getInstance().dayStarted() == null) {
             last = new DBLog(DatabaseHelper.LOG_START_DAY, new Date(), -1);
-            DatabaseHelper.getInstance(context).addLog(last);
+            DatabaseHelper.getInstance().addLog(last);
             connTimeSinceCurr = 0;
             dayStarted = true;
             sendUpdate();
@@ -194,9 +194,9 @@ public class Logging {
     }
 
     public void logConnect() {
-        if(!DatabaseHelper.getInstance(context).isConnected()) {
+        if(!DatabaseHelper.getInstance().isConnected()) {
             last = new DBLog(DatabaseHelper.LOG_CONNECT, new Date(), -1);
-            DatabaseHelper.getInstance(context).addLog(last);
+            DatabaseHelper.getInstance().addLog(last);
             connecting = false;
             connected = true;
             sendUpdate();
@@ -204,11 +204,11 @@ public class Logging {
     }
 
     public void logDisconnect() {
-        if(DatabaseHelper.getInstance(context).isConnected()) {
+        if(DatabaseHelper.getInstance().isConnected()) {
             Date now = new Date();
             connTimeSinceCurr += now.getTime() - last.getDatetime().getTime();
             last = new DBLog(DatabaseHelper.LOG_DISCONNECT, now, -1);
-            DatabaseHelper.getInstance(context).addLog(last);
+            DatabaseHelper.getInstance().addLog(last);
             connected = false;
             sendUpdate();
         }
@@ -231,15 +231,15 @@ public class Logging {
             }
 
             double achievedScorePercentage;
-            DBLog first = DatabaseHelper.getInstance(context).getFirstRecordOfDay();
+            DBLog first = DatabaseHelper.getInstance().getFirstRecordOfDay();
             if (first != null) {
-                long connectionTime = getConnectionTime(first, DatabaseHelper.getInstance(context).getTodaysConnectionLogs(), stopTime);
+                long connectionTime = getConnectionTime(first, DatabaseHelper.getInstance().getTodaysConnectionLogs(), stopTime);
                 double maxScoreToBeAchieved = getIncreasingScore(connectionTime, 0);
                 achievedScorePercentage = Math.round(achievedScore * 10000 / maxScoreToBeAchieved) / 100.0;
-                DatabaseHelper.getInstance(context).addLog(new DBLog(DatabaseHelper.LOG_ACH_SCORE, now, achievedScore));
-                DatabaseHelper.getInstance(context).addLog(new DBLog(DatabaseHelper.LOG_ACH_SCORE_PERC, now, achievedScorePercentage));
+                DatabaseHelper.getInstance().addLog(new DBLog(DatabaseHelper.LOG_ACH_SCORE, now, achievedScore));
+                DatabaseHelper.getInstance().addLog(new DBLog(DatabaseHelper.LOG_ACH_SCORE_PERC, now, achievedScorePercentage));
                 last = new DBLog(DatabaseHelper.LOG_STOP_DAY, now, connectionTime);
-                DatabaseHelper.getInstance(context).addLog(last);
+                DatabaseHelper.getInstance().addLog(last);
                 currentActivity = null;
             }
             dayStarted = false;
@@ -400,14 +400,14 @@ public class Logging {
 //                boolean isStanding = Math.abs(meanY - 41000) > 4500;
 
                 if(last == null) {
-                    last = DatabaseHelper.getInstance(context).getLastLog();
+                    last = DatabaseHelper.getInstance().getLastLog();
                 }
                 if(dayStarted && connected) {
                     Date now = new Date();
                     if (currentActivity == null) { //first record of the day
                         last = new DBLog(isStanding ? DatabaseHelper.LOG_STAND : DatabaseHelper.LOG_SIT, now, 0);
                         currentActivity = last;
-                        DatabaseHelper.getInstance(context).addLog(last);
+                        DatabaseHelper.getInstance().addLog(last);
                         connTimeSinceCurr = 0;
                         sendUpdate();
                     } else if (currentActivity.getAction().equals(DatabaseHelper.LOG_SIT)) {
@@ -416,7 +416,7 @@ public class Logging {
                                 connTimeSinceCurr += now.getTime() - last.getDatetime().getTime();
                                 last = new DBLog(DatabaseHelper.LOG_STAND, now, getDecreasingScore(connTimeSinceCurr, currentActivity.getData()));
                                 currentActivity = last;
-                                DatabaseHelper.getInstance(context).addLog(last);
+                                DatabaseHelper.getInstance().addLog(last);
                                 connTimeSinceCurr = 0;
                                 overtimeLogged = false;
                                 sendUpdate();
@@ -424,14 +424,14 @@ public class Logging {
                                 connTimeSinceCurr += now.getTime() - last.getDatetime().getTime();
                                 last = new DBLog(DatabaseHelper.LOG_STAND, now, getIncreasingScore(connTimeSinceCurr, currentActivity.getData()));
                                 currentActivity = last;
-                                DatabaseHelper.getInstance(context).addLog(last);
+                                DatabaseHelper.getInstance().addLog(last);
                                 connTimeSinceCurr = 0;
                                 sendUpdate();
                             }
                         } else if (!overtimeLogged && (now.getTime() - last.getDatetime().getTime() + connTimeSinceCurr) >= _30mn_to_ms) {
                             connTimeSinceCurr += now.getTime() - last.getDatetime().getTime();
                             last = new DBLog(DatabaseHelper.LOG_OVERTIME, now, getIncreasingScore(connTimeSinceCurr, currentActivity.getData()));
-                            DatabaseHelper.getInstance(context).addLog(last);
+                            DatabaseHelper.getInstance().addLog(last);
                             overtimeLogged = true;
                             sendUpdate();
                         }
@@ -440,7 +440,7 @@ public class Logging {
                             connTimeSinceCurr += now.getTime() - last.getDatetime().getTime();
                             last = new DBLog(DatabaseHelper.LOG_SIT, now, getIncreasingScore(connTimeSinceCurr, currentActivity.getData()));
                             currentActivity = last;
-                            DatabaseHelper.getInstance(context).addLog(last);
+                            DatabaseHelper.getInstance().addLog(last);
                             connTimeSinceCurr = 0;
                             sendUpdate();
                         }

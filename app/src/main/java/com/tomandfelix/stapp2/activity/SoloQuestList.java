@@ -41,7 +41,7 @@ public class SoloQuestList extends DrawerActivity {
                 long now = System.currentTimeMillis();
                 Date start = new Date(now - 30 * 1000);
                 Date end = new Date(now);
-                Log.i("TestQuest", Long.toString(Algorithms.millisecondsStood(SoloQuestList.this, start, end)));
+                Log.i("TestQuest", Long.toString(Algorithms.millisecondsStood(start, end)));
             }
         }));
         //list.add(new Solo(2, "testQuest2", "This Quest is for testing purposes only. Do not try this at home!", 2, 20, 30, Solo.MEDIUM));

@@ -29,9 +29,9 @@ public class Algorithms {
         return result;
     }
 
-    public static long millisecondsStood(Context context, Date start, Date end) {
-        ArrayList<DBLog> logs = DatabaseHelper.getInstance(context).getLogsBetween(start, end);
-        DBLog logBefore = DatabaseHelper.getInstance(context).getLastLogBefore(start);
+    public static long millisecondsStood(Date start, Date end) {
+        ArrayList<DBLog> logs = DatabaseHelper.getInstance().getLogsBetween(start, end);
+        DBLog logBefore = DatabaseHelper.getInstance().getLastLogBefore(start);
         long result = logs == null ? 0 : millisecondsStood(logs);
         if(logs != null && logs.size() > 0) {
             if (logBefore.getAction().equals(DatabaseHelper.LOG_STAND)) {

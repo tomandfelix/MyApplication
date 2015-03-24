@@ -38,41 +38,38 @@ public class FragmentViewer extends FragmentActivity implements FragmentProvider
         super.onCreate(savedInstanceState);
         int playServicesResultCode = ((StApp) getApplication()).getPlayServicesResultCode();
         if(playServicesResultCode != ConnectionResult.SUCCESS) {
-            if(GooglePlayServicesUtil.isUserRecoverableError(playServicesResultCode)) {
+            if (GooglePlayServicesUtil.isUserRecoverableError(playServicesResultCode)) {
                 GooglePlayServicesUtil.getErrorDialog(playServicesResultCode, this, 9000).show();
             } else {
                 finish();
             }
+        }
+        String token = DatabaseHelper.getInstance().getToken();
+        if (token != null && !token.equals("")) {
+            Log.d("start", "Token present");
+            ServerHelper.getInstance().getProfile(new ServerHelper.ResponseFunc<Profile>() {
+                @Override
+                public void onResponse(Profile response) {
+                    if (response != null) {
+                        Log.d("start", "Token accepted");
+                        Intent intent = new Intent(FragmentViewer.this, ProfileView.class);
+                        intent.putExtra("profile", response);
+                        startActivity(intent);
+                        ((StApp) getApplication()).getService().uploadData();
+                        ((StApp) getApplication()).getService().downloadData();
+                        finish();
+                    }
+                }
+            }, new Response.ErrorListener() {
+                @Override
+                public void onErrorResponse(VolleyError error) {
+                    Log.d("start", "Token rejected / No internet connection");
+                    loadStart();
+                }
+            }, true);
         } else {
-            String token = DatabaseHelper.getInstance(getApplicationContext()).getToken();
-            if (token != null && !token.equals("")) {
-                Log.d("start", "Token present");
-                ServerHelper.getInstance(this).getProfile(new ServerHelper.ResponseFunc<Profile>() {
-                    @Override
-                    public void onResponse(Profile response) {
-                        if (response != null) {
-                            Log.d("start", "Token accepted");
-                            Intent intent = new Intent(FragmentViewer.this, ProfileView.class);
-                            intent.putExtra("profile", response);
-                            startActivity(intent);
-                            ((StApp) getApplication()).getService().uploadData();
-                            ((StApp) getApplication()).getService().downloadData();
-                            finish();
-                        } else {
-                            Log.d("start", "Token rejected");
-                            loadStart();
-                        }
-                    }
-                }, new Response.ErrorListener() {
-                    @Override
-                    public void onErrorResponse(VolleyError error) {
-                        loadStart();
-                    }
-                }, true);
-            } else {
-                Log.d("start", "Token absent");
-                loadStart();
-            }
+            Log.d("start", "Token absent");
+            loadStart();
         }
 
         /*ArrayList<DBLog> logs = new ArrayList<>();
@@ -115,8 +112,8 @@ public class FragmentViewer extends FragmentActivity implements FragmentProvider
         final EditText username = (EditText) findViewById(R.id.login_username);
         final EditText password = (EditText) findViewById(R.id.login_password);
         final TextView txtView = (TextView) findViewById(R.id.succes);
-        DatabaseHelper.getInstance(getApplicationContext()).setLastEnteredUsername(username.getText().toString());
-        ServerHelper.getInstance(this).login(username.getText().toString(), password.getText().toString(), new ServerHelper.ResponseFunc<Profile>() {
+        DatabaseHelper.getInstance().setLastEnteredUsername(username.getText().toString());
+        ServerHelper.getInstance().login(username.getText().toString(), password.getText().toString(), new ServerHelper.ResponseFunc<Profile>() {
             @Override
             public void onResponse(Profile response) {
                 if(response != null) {
@@ -153,7 +150,7 @@ public class FragmentViewer extends FragmentActivity implements FragmentProvider
         EditText email = (EditText) findViewById(R.id.new_email);
         EditText password = (EditText) findViewById(R.id.new_password);
 
-        ServerHelper.getInstance(this).createProfile(firstName.getText().toString(), lastName.getText().toString(), username.getText().toString(), email.getText().toString(), avatar, password.getText().toString(), new ServerHelper.ResponseFunc<Profile>() {
+        ServerHelper.getInstance().createProfile(firstName.getText().toString(), lastName.getText().toString(), username.getText().toString(), email.getText().toString(), avatar, password.getText().toString(), new ServerHelper.ResponseFunc<Profile>() {
             @Override
             public void onResponse(Profile response) {
                 Intent intent = new Intent(FragmentViewer.this, ProfileView.class);

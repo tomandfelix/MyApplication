@@ -110,7 +110,7 @@ public class ShimmerService extends Service {
 
     @Override
     public void onCreate() {
-        uploadFrequency = DatabaseHelper.getInstance(this).getUploadFrequency();
+        uploadFrequency = DatabaseHelper.getInstance().getUploadFrequency();
         uploadHandler = new Handler();
         uploadCheck = new Runnable() {
             @Override
@@ -120,23 +120,23 @@ public class ShimmerService extends Service {
             }
         };
         Log.d(TAG, "onCreate");
-        if(DatabaseHelper.getInstance(this).dayStarted() == null) {
+        if(DatabaseHelper.getInstance().dayStarted() == null) {
             address = "";
         }
     }
 
     public void uploadData() {
         NetworkInfo wifi = ((ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE)).getNetworkInfo(ConnectivityManager.TYPE_WIFI);
-        if (wifi.isConnected() || DatabaseHelper.getInstance(this).uploadOn3G()) {
-            ArrayList<IdLog> logs = DatabaseHelper.getInstance(this).getLogsToUpload();
+        if (wifi.isConnected() || DatabaseHelper.getInstance().uploadOn3G()) {
+            ArrayList<IdLog> logs = DatabaseHelper.getInstance().getLogsToUpload();
             if(logs != null) {
                 Log.d("uploadData", "uploading records " + logs.get(0).getId() + "->" + logs.get(logs.size() - 1).getId());
 //                for (IdLog log : logs) Log.d("uploadData", log.toString());
                 final boolean more = logs.size() == 1000;
-                ServerHelper.getInstance(this).uploadLogs(logs, new ServerHelper.ResponseFunc<Integer>() {
+                ServerHelper.getInstance().uploadLogs(logs, new ServerHelper.ResponseFunc<Integer>() {
                     @Override
                     public void onResponse(Integer response) {
-                        DatabaseHelper.getInstance(ShimmerService.this).confirmUpload(response);
+                        DatabaseHelper.getInstance().confirmUpload(response);
                         if(more) {
                             uploadData();
                         }
@@ -161,8 +161,8 @@ public class ShimmerService extends Service {
     }
 
     public void downloadData() {
-        IdLog last = DatabaseHelper.getInstance(this).getLastLog();
-        ServerHelper.getInstance(this).downloadLogs(last == null ? 0 : last.getId(), new Response.ErrorListener() {
+        IdLog last = DatabaseHelper.getInstance().getLastLog();
+        ServerHelper.getInstance().downloadLogs(last == null ? 0 : last.getId(), new Response.ErrorListener() {
             @Override
             public void onErrorResponse(VolleyError volleyError) {
                 if(!volleyError.getMessage().equals("none")) {
@@ -215,7 +215,7 @@ public class ShimmerService extends Service {
         Log.d("LocalService", "Received start id " + startId + ": " + intent);
         // We want this service to continue running until it is explicitly
         // stopped, so return sticky.
-        if(DatabaseHelper.getInstance(this).dayStarted() != null) {
+        if(DatabaseHelper.getInstance().dayStarted() != null) {
             if(!address.equals("")) {
                 if(!DevicesConnected(address)) {
                     connectShimmer(address, "Device");

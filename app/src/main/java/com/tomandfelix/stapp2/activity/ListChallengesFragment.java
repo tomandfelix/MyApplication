@@ -1,9 +1,9 @@
 package com.tomandfelix.stapp2.activity;
 
-import android.app.Fragment;
 import android.app.ListFragment;
 import android.content.Context;
 import android.content.Intent;
+import android.database.DataSetObserver;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -15,23 +15,21 @@ import android.widget.ListView;
 import android.widget.TextView;
 
 import com.tomandfelix.stapp2.R;
-import com.tomandfelix.stapp2.application.StApp;
 import com.tomandfelix.stapp2.persistency.Challenge;
+import com.tomandfelix.stapp2.persistency.ChallengeList;
 import com.tomandfelix.stapp2.persistency.Quest;
-import com.tomandfelix.stapp2.tools.Algorithms;
 
 import java.util.ArrayList;
-import java.util.Date;
+import java.util.List;
 
 /**
  * Created by Flixse on 19/03/2015.
  */
 public class ListChallengesFragment extends ListFragment {
-    private ArrayList<Quest> list;
+    private List<Challenge> list;
     public ListChallengesFragment(){
         super();
-        list = new ArrayList<>();
-        list.add(StApp.exampleChallenge);
+        list = ChallengeList.challenges;
     }
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
@@ -58,11 +56,17 @@ public class ListChallengesFragment extends ListFragment {
         });
     }
 
-    private class ChallengeListAdapter extends ArrayAdapter<Quest> {
-        private ArrayList<Quest> data;
+    @Override
+    public void onSaveInstanceState(Bundle outState) {
+        super.onSaveInstanceState(outState);
+        outState.putString("DO NOT CRASH", "OK");
+    }
+
+    private class ChallengeListAdapter extends ArrayAdapter<Challenge> {
+        private List<Challenge> data;
         private int itemLayoutId;
 
-        public ChallengeListAdapter(Context context, int itemLayoutId, ArrayList<Quest> data) {
+        public ChallengeListAdapter(Context context, int itemLayoutId, List<Challenge> data) {
             super(context, itemLayoutId, data);
             this.data = data;
             this.itemLayoutId = itemLayoutId;
@@ -75,16 +79,23 @@ public class ListChallengesFragment extends ListFragment {
                 convertView = inflater.inflate(itemLayoutId, parent, false);
             }
 
-            Challenge c = (Challenge) data.get(position);
+            Challenge c = data.get(position);
 
             if(c != null) {
                 TextView name = (TextView) convertView.findViewById(R.id.challenge_list_name);
                 TextView people = (TextView) convertView.findViewById(R.id.challenge_list_people);
 
                 name.setText(c.getName());
-                people.setText(Integer.toString(c.getPeopleAmount()));
+                people.setText(Integer.toString(c.getMaxAmount()));
             }
             return convertView;
+        }
+
+        @Override
+        public void unregisterDataSetObserver(DataSetObserver observer) {
+            if(observer != null) {
+                super.unregisterDataSetObserver(observer);
+            }
         }
     }
 }

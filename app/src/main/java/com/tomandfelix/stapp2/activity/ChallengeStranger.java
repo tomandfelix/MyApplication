@@ -13,7 +13,9 @@ import android.widget.TextView;
 import com.android.volley.Response;
 import com.android.volley.VolleyError;
 import com.tomandfelix.stapp2.R;
+import com.tomandfelix.stapp2.gcm.GCMMessageHandler;
 import com.tomandfelix.stapp2.persistency.Challenge;
+import com.tomandfelix.stapp2.persistency.ChallengeList;
 import com.tomandfelix.stapp2.persistency.GCMMessage;
 import com.tomandfelix.stapp2.persistency.Profile;
 import com.tomandfelix.stapp2.persistency.ServerHelper;
@@ -30,7 +32,7 @@ public class ChallengeStranger extends ServiceActivity {
             getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         }
         int strangerId = getIntent().getIntExtra("strangerId", -1);
-        ServerHelper.getInstance(this).getOtherProfile(strangerId,
+        ServerHelper.getInstance().getOtherProfile(strangerId,
                 new ServerHelper.ResponseFunc<Profile>() {
                     @Override
                     public void onResponse(Profile response) {
@@ -52,7 +54,7 @@ public class ChallengeStranger extends ServiceActivity {
 //    }
 
     private void updateVisual(Profile profile) {
-        Challenge challenge = app.getChallenge();
+        Challenge challenge = ChallengeList.challenges.get(0);
         TextView rank = (TextView) findViewById(R.id.challenger_rank);
         TextView username = (TextView) findViewById(R.id.challenger_username);
         ImageView avatar = (ImageView) findViewById(R.id.challenger_avatar);
@@ -63,14 +65,14 @@ public class ChallengeStranger extends ServiceActivity {
         rank.setText( profile.getRank() + "");
         username.setText(profile.getUsername());
         avatar.setImageResource(avatarID);
-//        challengeTitle.setText( challenge.getName());
-//        challengeDescription.setText(challenge.getDescription() + "\n" + "duration : " + challenge.getDuration() + " seconds");
-//        getSupportActionBar().setTitle("challenge " + profile.getUsername());
+        challengeTitle.setText( challenge.getName());
+        challengeDescription.setText(challenge.getDescription() + "\n" + "duration : " + challenge.getDuration() + " seconds");
+        getSupportActionBar().setTitle("Challenge " + profile.getUsername());
     }
     public void toChallenge(View view){
         int[] ids =  new int[1];
-        ids[1] = mProfile.getId();
-        ServerHelper.getInstance(this).sendMessage(new GCMMessage(ids, -1, GCMMessage.REQUEST, 0, ""), new Response.ErrorListener() {
+        ids[0] = mProfile.getId();
+        ServerHelper.getInstance().sendMessage(new GCMMessage(ids, ChallengeList.challenges.get(0).getId(), GCMMessage.REQUEST, 0, ""), new Response.ErrorListener() {
             @Override
             public void onErrorResponse(VolleyError volleyError) {
                 if(!volleyError.getMessage().equals("none")) {
@@ -78,5 +80,8 @@ public class ChallengeStranger extends ServiceActivity {
                 }
             }
         });
+        Intent intent = new Intent(this, ProfileView.class);
+        intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+        startActivity(intent);
     }
 }

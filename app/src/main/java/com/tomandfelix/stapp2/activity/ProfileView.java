@@ -2,7 +2,9 @@ package com.tomandfelix.stapp2.activity;
 
 import android.app.Activity;
 import android.app.AlertDialog;
+import android.app.Dialog;
 import android.bluetooth.BluetoothAdapter;
+import android.bluetooth.BluetoothDevice;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.res.Configuration;
@@ -17,6 +19,7 @@ import android.support.v7.widget.Toolbar;
 import android.text.InputType;
 import android.text.method.PasswordTransformationMethod;
 import android.util.Log;
+import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
@@ -42,6 +45,8 @@ import com.tomandfelix.stapp2.persistency.ServerHelper;
 import com.tomandfelix.stapp2.tools.Logging;
 
 import java.lang.ref.WeakReference;
+import java.util.ArrayList;
+import java.util.Set;
 
 /**
  * Created by Tom on 17/11/2014.
@@ -80,9 +85,9 @@ public class ProfileView extends DrawerActivity {
             app.setProfile(profile);
             updateVisual();
         } else {
-            app.setProfile(DatabaseHelper.getInstance(this).getOwner());
+            app.setProfile(DatabaseHelper.getInstance().getOwner());
             updateVisual();
-            ServerHelper.getInstance(this).getProfile(new ServerHelper.ResponseFunc<Profile>() {
+            ServerHelper.getInstance().getProfile(new ServerHelper.ResponseFunc<Profile>() {
                 @Override
                 public void onResponse(Profile response) {
                     if (response != null) {
@@ -93,10 +98,7 @@ public class ProfileView extends DrawerActivity {
             }, new Response.ErrorListener() {
                 @Override
                 public void onErrorResponse(VolleyError volleyError) {
-                    final AlertDialog.Builder alertDialog = new AlertDialog.Builder(ProfileView.this);
-                    alertDialog.setMessage("It seems like an error occured, please logout and try again");
-                    alertDialog.setPositiveButton("Dismiss", null);
-                    alertDialog.show();
+                    askForPassword();
                 }
             }, true);
         }
@@ -158,6 +160,43 @@ public class ProfileView extends DrawerActivity {
 //                return super.onOptionsItemSelected(item);
 //        }
 //    }
+
+    private void askForPassword() {
+        AlertDialog.Builder alert = new AlertDialog.Builder(ProfileView.this);
+        alert.setMessage("It seems like an error occured, Please enter your password again").setTitle("Password");
+        final EditText input = new EditText(ProfileView.this);
+        input.setInputType(InputType.TYPE_TEXT_VARIATION_PASSWORD);
+        input.setTransformationMethod(PasswordTransformationMethod.getInstance());
+        alert.setView(input);
+        DialogInterface.OnClickListener listener = new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                switch(which) {
+                    case DialogInterface.BUTTON_POSITIVE:
+                        String password = input.getText().toString();
+                        ServerHelper.getInstance().login(DatabaseHelper.getInstance().getOwner().getUsername(), password,
+                                new ServerHelper.ResponseFunc<Profile>() {
+                                    @Override
+                                    public void onResponse(Profile response) {
+                                        app.setProfile(response);
+                                        updateVisual();
+                                    }
+                                }, new Response.ErrorListener() {
+                                    @Override
+                                    public void onErrorResponse(VolleyError volleyError) {
+                                        if(volleyError.getMessage().equals("wrong")) {
+                                            askForPassword();
+                                        }
+                                    }
+                                });
+                        break;
+                }
+            }
+        };
+        alert.setPositiveButton("CONFIRM", listener);
+        alert.setNegativeButton("CANCEL", listener);
+        alert.show();
+    }
 
     @Override
     protected void onResume() {
@@ -251,7 +290,7 @@ public class ProfileView extends DrawerActivity {
         if(pauseButton.getText().equals(PAUSE)) {
             app.getService().disconnectShimmer();
         } else {
-            String sensor = DatabaseHelper.getInstance(this).getSensor();
+            String sensor = DatabaseHelper.getInstance().getSensor();
             if (sensor != null && !sensor.equals("")) {
                 app.getService().connectShimmer(sensor, "Device");
             }
@@ -264,9 +303,11 @@ public class ProfileView extends DrawerActivity {
             if (!mBluetoothAdapter.isEnabled()) {
                 Intent enableBTIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
                 startActivityForResult(enableBTIntent, 1);
+            } else if(DatabaseHelper.getInstance().getSensor() == null || DatabaseHelper.getInstance().getSensor().equals("")) {
+                createSensorDialog().show();
             } else {
                 Logging.getInstance(this).logStartDay();
-                String sensor = DatabaseHelper.getInstance(this).getSensor();
+                String sensor = DatabaseHelper.getInstance().getSensor();
                 app.getService().connectShimmer(sensor, "Device");
             }
         } else {
@@ -354,5 +395,48 @@ public class ProfileView extends DrawerActivity {
         } else {
             super.onActivityResult(requestCode, resultCode, data);
         }
+    }
+
+    private Dialog createSensorDialog() {
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setMessage("Please Select a sensor, you can change this later in the settings").setTitle("Select a sensor");
+        ListView listView = new ListView(this);
+        builder.setView(listView);
+
+        final ArrayList<String> deviceNames = new ArrayList<>();
+        BluetoothAdapter mBluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
+        if(mBluetoothAdapter != null) {
+            //Get paired devices and add their address to the list
+            Set<BluetoothDevice> pairedDevices = mBluetoothAdapter.getBondedDevices();
+            if (pairedDevices.size() > 0) {
+                for (BluetoothDevice d : pairedDevices) {
+                    if (d.getName().contains("RN42")) {
+                        deviceNames.add(d.getAddress());
+                    }
+                }
+            } else {
+                deviceNames.add("No devices Found");
+            }
+        }
+
+            //Populate the listView
+            ArrayAdapter deviceNamesAdapter = new ArrayAdapter<>(this, R.layout.list_item_devices, deviceNames);
+            listView.setAdapter(deviceNamesAdapter);
+        builder.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                dialog.dismiss();
+            }
+        });
+        final Dialog result =  builder.create();
+        listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> parent, View view, final int position, long id) {
+                DatabaseHelper.getInstance().setSensor(deviceNames.get(position));
+                result.dismiss();
+                onStartStop(null);
+            }
+        });
+        return result;
     }
 }

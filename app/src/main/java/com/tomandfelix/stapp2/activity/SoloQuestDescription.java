@@ -31,7 +31,7 @@ public class SoloQuestDescription extends ServiceActivity {
                 long now = System.currentTimeMillis();
                 Date start = new Date(now - 30 * 1000);
                 Date end = new Date(now);
-                long result = Algorithms.millisecondsStood(SoloQuestDescription.this, start, end);
+                long result = Algorithms.millisecondsStood(start, end);
                 Log.i("TestQuest", Long.toString(result));
                 if(result > 10000) {
                     description.setText("YOU WON!");

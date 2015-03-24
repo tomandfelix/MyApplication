@@ -13,17 +13,24 @@ import com.android.volley.toolbox.Volley;
  */
 public class VolleyQueue {
     private static VolleyQueue mVolleyQueue;
-    private RequestQueue mQueue;
     private static Context mContext;
+    private RequestQueue mQueue;
+
+    public static void init(Context context) {
+        if (mVolleyQueue == null) {
+            mVolleyQueue = new VolleyQueue(context);
+            mContext = context;
+        }
+    }
 
     private VolleyQueue(Context context) {
         mContext = context;
         mQueue = getRequestQueue();
     }
 
-    public static synchronized VolleyQueue getInstance(Context context) {
+    public static synchronized VolleyQueue getInstance() {
         if (mVolleyQueue == null) {
-            mVolleyQueue = new VolleyQueue(context);
+            mVolleyQueue = new VolleyQueue(mContext);
         }
         return mVolleyQueue;
     }

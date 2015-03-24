@@ -4,6 +4,7 @@ import android.app.Fragment;
 import android.app.ListFragment;
 import android.content.Context;
 import android.content.Intent;
+import android.database.DataSetObserver;
 import android.os.Bundle;
 import android.os.Handler;
 import android.util.Log;
@@ -19,6 +20,7 @@ import com.android.volley.Response;
 import com.android.volley.VolleyError;
 import com.tomandfelix.stapp2.R;
 import com.tomandfelix.stapp2.application.StApp;
+import com.tomandfelix.stapp2.gcm.GCMMessageHandler;
 import com.tomandfelix.stapp2.persistency.Challenge;
 import com.tomandfelix.stapp2.persistency.GCMMessage;
 import com.tomandfelix.stapp2.persistency.Profile;
@@ -28,17 +30,13 @@ import com.tomandfelix.stapp2.tools.Algorithms;
 
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 
 /**
  * Created by Flixse on 19/03/2015.
  */
 public class OpenChallengesFragment extends ListFragment {
-    private ArrayList<GCMMessage> list;
-    public static Handler handler = new Handler();
-    public OpenChallengesFragment(){
-        super();
-        list = new ArrayList<>(((StApp) getActivity().getApplication()).getRequests());
-    }
+
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         Log.d("ListChallengesFragment", "onCreateView");
@@ -51,30 +49,29 @@ public class OpenChallengesFragment extends ListFragment {
     public void onActivityCreated(Bundle savedInstanceState){
         Log.d("ListChallengesFragment", "onActivityCreated");
         super.onActivityCreated(savedInstanceState);
-        RequestAdapter requestAdapter = new RequestAdapter(getActivity(), R.layout.list_item_request, list);
+        RequestAdapter requestAdapter = new RequestAdapter(getActivity(), R.layout.list_item_request, GCMMessageHandler.challenges);
         this.setListAdapter(requestAdapter);
         this.getListView().setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                GCMMessage message = list.get(position);
-                ServerHelper.getInstance(getActivity()).sendMessage(new GCMMessage(new int[]{message.getSenderId()}, message.getChallengeId(), GCMMessage.ACCEPTED, 0, ""),
-                        new Response.ErrorListener() {
-                            @Override
-                            public void onErrorResponse(VolleyError volleyError) {
-                                Log.e("OpenChallengesFragment", volleyError.getMessage());
-                            }
-                        });
-                handler.postDelayed(StApp.exampleChallenge.getValidator(), 30000);
-                list.remove(0);
+                if(GCMMessageHandler.challenges.get(position).getState() == Challenge.REQ_REC) {
+                    GCMMessageHandler.challenges.get(position).sendMessage(Challenge.ACCEPTED, "");
+                }
             }
         });
     }
 
-    private class RequestAdapter extends ArrayAdapter<GCMMessage> {
-        private ArrayList<GCMMessage> data;
+    @Override
+    public void onSaveInstanceState(Bundle outState) {
+        super.onSaveInstanceState(outState);
+        outState.putString("DO NOT CRASH", "OK");
+    }
+
+    private class RequestAdapter extends ArrayAdapter<Challenge> {
+        private List<Challenge> data;
         private int itemLayoutId;
 
-        public RequestAdapter(Context context, int itemLayoutId, ArrayList<GCMMessage> data) {
+        public RequestAdapter(Context context, int itemLayoutId, List<Challenge> data) {
             super(context, itemLayoutId, data);
             this.data = data;
             this.itemLayoutId = itemLayoutId;
@@ -87,15 +84,14 @@ public class OpenChallengesFragment extends ListFragment {
                 convertView = inflater.inflate(itemLayoutId, parent, false);
             }
 
-            final GCMMessage m = data.get(position);
-            Challenge solution = StApp.exampleChallenge;
+            Challenge solution = data.get(position);
 
-            if(m != null) {
+            if(solution != null) {
                 TextView title = (TextView) convertView.findViewById(R.id.request_title);
                 final TextView challenger = (TextView) convertView.findViewById(R.id.request_challenger);
 
                 title.setText(solution.getName());
-                ServerHelper.getInstance(getActivity()).getOtherProfile(m.getSenderId(),
+                ServerHelper.getInstance().getOtherProfile(solution.getOpponents()[0],
                         new ServerHelper.ResponseFunc<Profile>() {
                             @Override
                             public void onResponse(Profile response) {
@@ -109,6 +105,13 @@ public class OpenChallengesFragment extends ListFragment {
                         }, false);
             }
             return convertView;
+        }
+
+        @Override
+        public void unregisterDataSetObserver(DataSetObserver observer) {
+            if(observer != null) {
+                super.unregisterDataSetObserver(observer);
+            }
         }
     }
 }

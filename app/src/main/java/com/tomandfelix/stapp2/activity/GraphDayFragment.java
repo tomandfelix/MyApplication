@@ -22,7 +22,7 @@ public class GraphDayFragment extends Fragment {
 
     public GraphDayFragment() {
         super();
-        dailydata = GraphParser.formatDailyData(DatabaseHelper.getInstance(getActivity()).getTodaysLogs(), DatabaseHelper.getInstance(getActivity()).getTodaysConnectionLogs());
+        dailydata = GraphParser.formatDailyData(DatabaseHelper.getInstance().getTodaysLogs(), DatabaseHelper.getInstance().getTodaysConnectionLogs());
     }
 
     @Override

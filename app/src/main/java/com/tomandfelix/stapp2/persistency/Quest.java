@@ -11,6 +11,10 @@ public class Quest implements Parcelable {
     protected String name;
     protected String description;
 
+    protected Quest(int id) {
+        this.id = id;
+    }
+
     public Quest(int id, String name, String description){
         this.id = id;
         this.description = description;

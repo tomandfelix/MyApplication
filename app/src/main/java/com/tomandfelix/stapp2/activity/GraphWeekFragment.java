@@ -24,7 +24,7 @@ public class GraphWeekFragment extends Fragment {
 
     public GraphWeekFragment() {
         super();
-        longTermData = GraphParser.formatLongTermData(DatabaseHelper.getInstance(getActivity()).get2WeekEndLogs(), new Date());
+        longTermData = GraphParser.formatLongTermData(DatabaseHelper.getInstance().get2WeekEndLogs(), new Date());
     }
 
     @Override

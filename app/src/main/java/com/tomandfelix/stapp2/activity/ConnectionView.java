@@ -59,7 +59,7 @@ public class ConnectionView extends DrawerActivity {
             for(BluetoothDevice d:pairedDevices) {
                 if(d.getName().contains("RN42")) {
                     shimmerDevices.add(d);
-                    String friendlyName = DatabaseHelper.getInstance(this).getFriendlyName(d.getAddress());
+                    String friendlyName = DatabaseHelper.getInstance().getFriendlyName(d.getAddress());
                     if(friendlyName == null) {
                         deviceNames.add(d.getName());
                     } else {
@@ -88,7 +88,7 @@ public class ConnectionView extends DrawerActivity {
                     final String bluetoothAddress = shimmerDevices.get(position).getAddress();
                     app.getService().connectShimmer(bluetoothAddress, "Device");
 
-                    if(DatabaseHelper.getInstance(getApplicationContext()).getFriendlyName(shimmerDevices.get(position).getAddress()) == null) {
+                    if(DatabaseHelper.getInstance().getFriendlyName(shimmerDevices.get(position).getAddress()) == null) {
                         AlertDialog.Builder alert = new AlertDialog.Builder(ConnectionView.this);
                         alert.setMessage("This is your first time connecting to this sensor, please provide a friendly name for this device").setTitle("Friendly Name");
                         final EditText input = new EditText(ConnectionView.this);
@@ -101,7 +101,7 @@ public class ConnectionView extends DrawerActivity {
                                 Log.d("onClick", "setting pos " + position + " to " + friendlyName);
                                 deviceNames.set(position, friendlyName);
                                 deviceNamesAdapter.notifyDataSetChanged();
-                                DatabaseHelper.getInstance(getApplicationContext()).setFriendlyName(bluetoothAddress, friendlyName);
+                                DatabaseHelper.getInstance().setFriendlyName(bluetoothAddress, friendlyName);
                             }
                         });
                         alert.show();

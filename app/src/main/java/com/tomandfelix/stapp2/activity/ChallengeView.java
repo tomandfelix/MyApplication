@@ -67,7 +67,7 @@ public class ChallengeView extends DrawerActivity {
 
         @Override
         public CharSequence getPageTitle(int position) {
-            return position == 0 ? "1 Day" : "2 Weeks";
+            return position == 0 ? "Challenges" : "Progress";
         }
     }
 }

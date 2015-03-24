@@ -70,33 +70,20 @@
                 android:layout_marginTop="15dp"
                 android:layout_marginBottom="15dp"
                 android:background="@color/divider"/>
-            <RelativeLayout
+            <TextView
+                android:id="@+id/challenge_title"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:animateLayoutChanges="true">
-
-                <TextView
-                    android:id="@+id/challenge_title"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:text="Challenge title"
-                    android:textSize="30dp"/>
-                <TextView
-                    android:id="@+id/challenge_description"
-                    android:layout_width="match_parent"
-                    android:layout_height="150dp"
-                    android:layout_below="@id/challenge_title"
-                    android:text="description of challenge"
-                    android:textSize="23dp"/>
-
-
-                </RelativeLayout>
-            <View
-                android:id="@+id/prof_div_2"
+                android:text="Challenge title"
+                android:textSize="30dp"/>
+            <TextView
+                android:id="@+id/challenge_description"
                 android:layout_width="match_parent"
-                android:layout_height="100dp"
-                android:layout_marginTop="15dp"
-                android:layout_marginBottom="15dp"/>
+                android:layout_height="0dp"
+                android:layout_weight="1"
+                android:layout_below="@id/challenge_title"
+                android:text="description of challenge"
+                android:textSize="23dp"/>
             <LinearLayout
                 android:orientation="horizontal"
                 android:layout_width="match_parent"

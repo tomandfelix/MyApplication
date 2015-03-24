@@ -35,13 +35,20 @@ Log.e("OUTPUT", output);*/
 
 public class ServerHelper {
     private static ServerHelper uniqueInstance;
-    private Context context;
+    private static Context context;
 
     private ServerHelper(Context context) {
-        this.context = context;
+        ServerHelper.context = context;
     }
 
-    public static ServerHelper getInstance(Context context) {
+    public static void init(Context context) {
+        if(uniqueInstance == null) {
+            uniqueInstance = new ServerHelper(context.getApplicationContext());
+            ServerHelper.context = context;
+        }
+    }
+
+    public static ServerHelper getInstance() {
         if(uniqueInstance == null) {
             uniqueInstance = new ServerHelper(context.getApplicationContext());
         }
@@ -124,15 +131,15 @@ public class ServerHelper {
                 if(!response.has("error")) {
                     Profile result = null;
                     try {
-                        DatabaseHelper.getInstance(context).setToken(response.getString("token"));
+                        DatabaseHelper.getInstance().setToken(response.getString("token"));
                         result = new Profile(response.getInt("id"), firstName, lastName, username, email, 0, 0, avatar, response.getInt("rank"), new Date());
                     } catch(JSONException e) {
                         e.printStackTrace();
                     }
                     if(result != null) {
-                        DatabaseHelper.getInstance(context).storeProfile(result);
-                        DatabaseHelper.getInstance(context).setOwnerId(result.getId());
-                        DatabaseHelper.getInstance(context).setLastEnteredUsername(result.getUsername());
+                        DatabaseHelper.getInstance().storeProfile(result);
+                        DatabaseHelper.getInstance().setOwnerId(result.getId());
+                        DatabaseHelper.getInstance().setLastEnteredUsername(result.getUsername());
                         responseListener.onResponse(result);
                     }
                 } else {
@@ -144,7 +151,7 @@ public class ServerHelper {
                 }
             }
         }, errorListener);
-        VolleyQueue.getInstance(context).addToRequestQueue(createProfile);
+        VolleyQueue.getInstance().addToRequestQueue(createProfile);
     }
 
     /**
@@ -173,15 +180,15 @@ public class ServerHelper {
                 if(!response.has("error")) {
                     Profile result = null;
                     try {
-                        DatabaseHelper.getInstance(context).setToken(response.getString("token"));
+                        DatabaseHelper.getInstance().setToken(response.getString("token"));
                         result = extractProfile(response);
                         result.setUsername(username);
                     } catch(JSONException e) {
                         e.printStackTrace();
                     }
                     if(result != null) {
-                        DatabaseHelper.getInstance(context).storeProfile(result);
-                        DatabaseHelper.getInstance(context).setOwnerId(result.getId());
+                        DatabaseHelper.getInstance().storeProfile(result);
+                        DatabaseHelper.getInstance().setOwnerId(result.getId());
                         responseListener.onResponse(result);
                     }
                 } else {
@@ -193,7 +200,7 @@ public class ServerHelper {
                 }
             }
         }, errorListener);
-        VolleyQueue.getInstance(context).addToRequestQueue(login);
+        VolleyQueue.getInstance().addToRequestQueue(login);
     }
 
     /**
@@ -207,18 +214,18 @@ public class ServerHelper {
      * @param forceUpdate if true, a request will be sent to the server, if false, will only send a request if the local data is more then 10 minutes old
      */
     public void getProfile(final ResponseFunc<Profile> responseListener, final Response.ErrorListener errorListener, boolean forceUpdate) {
-        if(DatabaseHelper.getInstance(context).getOwnerId() <= 0) {
+        if(DatabaseHelper.getInstance().getOwnerId() <= 0) {
             errorListener.onErrorResponse(new VolleyError("owner"));
             return;
         }
-        Profile stored = DatabaseHelper.getInstance(context).getProfile(DatabaseHelper.getInstance(context).getOwnerId());
+        Profile stored = DatabaseHelper.getInstance().getProfile(DatabaseHelper.getInstance().getOwnerId());
         if(!forceUpdate && minutesAgo(stored.getLastUpdate()) < 10) {
             responseListener.onResponse(stored);
         } else {
             JSONObject request = new JSONObject();
             try {
                 request.put("id", stored.getId());
-                request.put("token", DatabaseHelper.getInstance(context).getToken());
+                request.put("token", DatabaseHelper.getInstance().getToken());
             } catch (JSONException e) {
                 e.printStackTrace();
             }
@@ -229,7 +236,7 @@ public class ServerHelper {
                         Profile result;
                         result = extractProfile(response);
                         if(result != null) {
-                            DatabaseHelper.getInstance(context).storeProfile(result);
+                            DatabaseHelper.getInstance().storeProfile(result);
                             responseListener.onResponse(result);
                         }
                     } else {
@@ -241,7 +248,7 @@ public class ServerHelper {
                     }
                 }
             }, errorListener);
-            VolleyQueue.getInstance(context).addToRequestQueue(getProfile);
+            VolleyQueue.getInstance().addToRequestQueue(getProfile);
         }
     }
 
@@ -256,8 +263,8 @@ public class ServerHelper {
      * @param forceUpdate if true, a request will be sent to the server, if false, will only send a request if the local data is more then 10 minutes old
      */
     public void getOtherProfile(final int id, final ResponseFunc<Profile> responseListener, final Response.ErrorListener errorListener, boolean forceUpdate) {
-        Profile stored = DatabaseHelper.getInstance(context).getProfile(id);
-        if(!forceUpdate && minutesAgo(stored.getLastUpdate()) < 10) {
+        Profile stored = DatabaseHelper.getInstance().getProfile(id);
+        if(!forceUpdate && stored != null && minutesAgo(stored.getLastUpdate()) < 10) {
             responseListener.onResponse(stored);
         } else {
             JSONObject request = new JSONObject();
@@ -274,7 +281,7 @@ public class ServerHelper {
                         result = extractProfile(response);
                         result.setId(id);
                         if(result != null) {
-                            DatabaseHelper.getInstance(context).storeProfile(result);
+                            DatabaseHelper.getInstance().storeProfile(result);
                             responseListener.onResponse(result);
                         }
                     } else {
@@ -286,7 +293,7 @@ public class ServerHelper {
                     }
                 }
             }, errorListener);
-            VolleyQueue.getInstance(context).addToRequestQueue(getOtherProfile);
+            VolleyQueue.getInstance().addToRequestQueue(getOtherProfile);
         }
     }
 
@@ -301,8 +308,8 @@ public class ServerHelper {
      * @param forceUpdate if true, a request will be sent to the server, if false, will only send a request if the local data is more then 10 minutes old
      */
     public void getLeaderboardById(final int id, final ResponseFunc<ArrayList<Profile>> responseListener, final Response.ErrorListener errorListener,  boolean forceUpdate) {
-        Profile fromStored = DatabaseHelper.getInstance(context).getProfile(id);
-        ArrayList<Profile> stored = DatabaseHelper.getInstance(context).getLeaderboardByRank(fromStored.getRank());
+        Profile fromStored = DatabaseHelper.getInstance().getProfile(id);
+        ArrayList<Profile> stored = DatabaseHelper.getInstance().getLeaderboardByRank(fromStored.getRank());
         boolean update = false;
         if(!forceUpdate && fromStored != null && minutesAgo(fromStored.getLastUpdate()) < 10 && stored != null) {
             for(Profile p : stored)
@@ -336,12 +343,12 @@ public class ServerHelper {
                     }
                     if(result != null) {
                         for(Profile p:result)
-                            DatabaseHelper.getInstance(context).storeProfile(p);
+                            DatabaseHelper.getInstance().storeProfile(p);
                         responseListener.onResponse(result);
                     }
                 }
             }, errorListener);
-            VolleyQueue.getInstance(context).addToRequestQueue(getLeaderBoardById);
+            VolleyQueue.getInstance().addToRequestQueue(getLeaderBoardById);
         }
     }
 
@@ -356,7 +363,7 @@ public class ServerHelper {
      * @param forceUpdate if true, a request will be sent to the server, if false, will only send a request if the local data is more then 10 minutes old
      */
     public void getLeaderboardByRank(int rank, final ResponseFunc<ArrayList<Profile>> responseListener, final Response.ErrorListener errorListener, boolean forceUpdate) {
-        ArrayList<Profile> stored = DatabaseHelper.getInstance(context).getLeaderboardByRank(rank);
+        ArrayList<Profile> stored = DatabaseHelper.getInstance().getLeaderboardByRank(rank);
         boolean update = false;
         if(!forceUpdate && stored != null) {
             for(Profile p : stored)
@@ -390,12 +397,12 @@ public class ServerHelper {
                     }
                     if(result != null) {
                         for(Profile p:result)
-                            DatabaseHelper.getInstance(context).storeProfile(p);
+                            DatabaseHelper.getInstance().storeProfile(p);
                         responseListener.onResponse(result);
                     }
                 }
             }, errorListener);
-            VolleyQueue.getInstance(context).addToRequestQueue(getLeaderBoardByRank);
+            VolleyQueue.getInstance().addToRequestQueue(getLeaderBoardByRank);
         }
     }
 
@@ -411,7 +418,7 @@ public class ServerHelper {
     public void deleteProfile(String password, final Response.ErrorListener errorListener) {
         JSONObject request = new JSONObject();
         try {
-            request.put("id", DatabaseHelper.getInstance(context).getOwnerId());
+            request.put("id", DatabaseHelper.getInstance().getOwnerId());
             request.put("password", password);
         } catch (JSONException e) {
             e.printStackTrace();
@@ -428,7 +435,7 @@ public class ServerHelper {
                 }
             }
         }, errorListener);
-        VolleyQueue.getInstance(context).addToRequestQueue(deleteProfile);
+        VolleyQueue.getInstance().addToRequestQueue(deleteProfile);
     }
 
     /**
@@ -443,10 +450,10 @@ public class ServerHelper {
     public void updateMoneyAndExperience(final int money, final int experience, final Response.ErrorListener errorListener) {
         JSONObject request = new JSONObject();
         try {
-            request.put("id", DatabaseHelper.getInstance(context).getOwnerId());
+            request.put("id", DatabaseHelper.getInstance().getOwnerId());
             request.put("money", money);
             request.put("experience", experience);
-            request.put("token", DatabaseHelper.getInstance(context).getToken());
+            request.put("token", DatabaseHelper.getInstance().getToken());
         } catch (JSONException e) {
             e.printStackTrace();
         }
@@ -456,12 +463,12 @@ public class ServerHelper {
                 if(!response.has("error")) {
                     Profile result = null;
                     try {
-                        result = new Profile(DatabaseHelper.getInstance(context).getOwnerId(), null, null, null, null, money, experience, null, response.getInt("rank"), new Date());
+                        result = new Profile(DatabaseHelper.getInstance().getOwnerId(), null, null, null, null, money, experience, null, response.getInt("rank"), new Date());
                     } catch(JSONException e) {
                         e.printStackTrace();
                     }
                     if(result != null) {
-                        DatabaseHelper.getInstance(context).updateProfile(result);
+                        DatabaseHelper.getInstance().updateProfile(result);
                         errorListener.onErrorResponse(new VolleyError("none"));
                     }
                 } else {
@@ -473,7 +480,7 @@ public class ServerHelper {
                 }
             }
         }, errorListener);
-        VolleyQueue.getInstance(context).addToRequestQueue(updateMXP);
+        VolleyQueue.getInstance().addToRequestQueue(updateMXP);
     }
 
     /**
@@ -494,12 +501,13 @@ public class ServerHelper {
     public void updateProfileSettings(final String firstname, final String lastname, final String username, final String email, final String avatar, String password, String new_password, final Response.ErrorListener errorListener) {
         JSONObject request = new JSONObject();
         try {
-            request.put("id", DatabaseHelper.getInstance(context).getOwnerId());
+            request.put("id", DatabaseHelper.getInstance().getOwnerId());
             request.put("firstname", firstname);
             request.put("lastname", lastname);
             request.put("username", username);
             request.put("email", email);
             request.put("avatar", avatar);
+            request.put("gcm_reg_id", ((StApp) context).getGcmRegistrationId());
             request.put("password", password);
             request.put("new_password", new_password);
         } catch (JSONException e) {
@@ -511,7 +519,7 @@ public class ServerHelper {
                 if(response.has("error")) {
                     try {
                         if(response.getString("error").equals("none")) {
-                            DatabaseHelper.getInstance(context).updateProfile(new Profile(DatabaseHelper.getInstance(context).getOwnerId(), firstname, lastname, username, email, -1, -1, avatar, -1, null));
+                            DatabaseHelper.getInstance().updateProfile(new Profile(DatabaseHelper.getInstance().getOwnerId(), firstname, lastname, username, email, -1, -1, avatar, -1, null));
                         }
                         errorListener.onErrorResponse(new VolleyError(response.getString("error")));
                     } catch(JSONException e) {
@@ -520,7 +528,7 @@ public class ServerHelper {
                 }
             }
         }, errorListener);
-        VolleyQueue.getInstance(context).addToRequestQueue(updateProf);
+        VolleyQueue.getInstance().addToRequestQueue(updateProf);
     }
 
     /**
@@ -539,13 +547,14 @@ public class ServerHelper {
     public void updateProfileSettings(final String firstname, final String lastname, final String username, final String email, final String avatar, final Response.ErrorListener errorListener) {
         JSONObject request = new JSONObject();
         try {
-            request.put("id", DatabaseHelper.getInstance(context).getOwnerId());
+            request.put("id", DatabaseHelper.getInstance().getOwnerId());
             request.put("firstname", firstname);
             request.put("lastname", lastname);
             request.put("username", username);
             request.put("email", email);
             request.put("avatar", avatar);
-            request.put("token", DatabaseHelper.getInstance(context).getToken());
+            request.put("gcm_reg_id", ((StApp) context).getGcmRegistrationId());
+            request.put("token", DatabaseHelper.getInstance().getToken());
         } catch (JSONException e) {
             e.printStackTrace();
         }
@@ -555,7 +564,7 @@ public class ServerHelper {
                 if(response.has("error")) {
                     try {
                         if(response.getString("error").equals("none")) {
-                            DatabaseHelper.getInstance(context).updateProfile(new Profile(DatabaseHelper.getInstance(context).getOwnerId(), firstname, lastname, username, email, -1, -1, avatar, -1, null));
+                            DatabaseHelper.getInstance().updateProfile(new Profile(DatabaseHelper.getInstance().getOwnerId(), firstname, lastname, username, email, -1, -1, avatar, -1, null));
                         }
                         errorListener.onErrorResponse(new VolleyError(response.getString("error")));
                     } catch(JSONException e) {
@@ -564,15 +573,15 @@ public class ServerHelper {
                 }
             }
         }, errorListener);
-        VolleyQueue.getInstance(context).addToRequestQueue(updateProf);
+        VolleyQueue.getInstance().addToRequestQueue(updateProf);
     }
 
     public void uploadLogs(ArrayList<IdLog> logs, final ResponseFunc<Integer> responseListener, final Response.ErrorListener errorListener) {
         JSONObject request = new JSONObject();
         JSONArray requestArray = new JSONArray();
         try {
-            request.put("id", DatabaseHelper.getInstance(context).getOwnerId());
-            request.put("token", DatabaseHelper.getInstance(context).getToken());
+            request.put("id", DatabaseHelper.getInstance().getOwnerId());
+            request.put("token", DatabaseHelper.getInstance().getToken());
             for(IdLog l : logs) {
                 requestArray.put(l.toJSONObject());
             }
@@ -594,14 +603,14 @@ public class ServerHelper {
                 }
             }
         }, errorListener);
-        VolleyQueue.getInstance(context).addToRequestQueue(uploadLogs);
+        VolleyQueue.getInstance().addToRequestQueue(uploadLogs);
     }
 
     public void downloadLogs(int lastId, final Response.ErrorListener errorListener) {
         JSONObject request = new JSONObject();
         try {
-            request.put("id", DatabaseHelper.getInstance(context).getOwnerId());
-            request.put("token", DatabaseHelper.getInstance(context).getToken());
+            request.put("id", DatabaseHelper.getInstance().getOwnerId());
+            request.put("token", DatabaseHelper.getInstance().getToken());
             request.put("lastId", lastId);
         } catch (JSONException e) {
             e.printStackTrace();
@@ -623,29 +632,29 @@ public class ServerHelper {
                     e.printStackTrace();
                 }
                 if(result != null) {
-                    DatabaseHelper.getInstance(context).storeLogs(result);
+                    DatabaseHelper.getInstance().storeLogs(result);
                     errorListener.onErrorResponse(new VolleyError("none"));
                 }
 
             }
         }, errorListener);
-        VolleyQueue.getInstance(context).addToRequestQueue(downloadLogs);
+        VolleyQueue.getInstance().addToRequestQueue(downloadLogs);
     }
 
     public void sendMessage(GCMMessage message, final Response.ErrorListener errorListener) {
         JSONObject request = new JSONObject();
         JSONArray requestArray = new JSONArray();
         try {
-            request.put("id", DatabaseHelper.getInstance(context).getOwnerId());
-            request.put("token", DatabaseHelper.getInstance(context).getToken());
-            for(int i : message.getRecievers()) {
+            request.put("id", DatabaseHelper.getInstance().getOwnerId());
+            request.put("token", DatabaseHelper.getInstance().getToken());
+            for(int i : message.getReceivers()) {
                 requestArray.put(i);
             }
             request.put("receiver_ids", requestArray);
             request.put("challenge_id", message.getChallengeId());
             request.put("message", message.getMessage());
             request.put("message_type", message.getMessageType());
-            request.put("sender_id", DatabaseHelper.getInstance(context).getOwnerId());
+            request.put("sender_id", DatabaseHelper.getInstance().getOwnerId());
         } catch (JSONException e) {
             e.printStackTrace();
         }
@@ -661,7 +670,7 @@ public class ServerHelper {
                 }
             }
         }, errorListener);
-        VolleyQueue.getInstance(context).addToRequestQueue(uploadLogs);
+        VolleyQueue.getInstance().addToRequestQueue(uploadLogs);
     }
     public void getProgressOfOther(int id, final Response.ErrorListener errorListener, final VolleyCallback callback) {
 
@@ -708,7 +717,7 @@ public class ServerHelper {
             }
         }
             , errorListener);
-        VolleyQueue.getInstance(context).addToRequestQueue(getProgressOfOther);
+        VolleyQueue.getInstance().addToRequestQueue(getProgressOfOther);
     }
     public interface VolleyCallback{
         void getResult(float result);

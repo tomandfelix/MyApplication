@@ -22,6 +22,7 @@ import java.util.concurrent.TimeUnit;
  */
 public class DatabaseHelper extends SQLiteOpenHelper{
     private static DatabaseHelper uniqueInstance = null;
+    private static Context context;
     private static final int DATABASE_VERSION = 1;
     public static final DateFormat df = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss.SSS");
     private static int lastPendingUploadIndex = 0;
@@ -66,11 +67,18 @@ public class DatabaseHelper extends SQLiteOpenHelper{
     public static final String LOG_ACH_SCORE = "achieved_score";
     public static final String LOG_ACH_SCORE_PERC = "achieved_score_percent";
 
-    public static DatabaseHelper getInstance(Context context) {
+    public static DatabaseHelper getInstance() {
         if(uniqueInstance == null) {
             uniqueInstance = new DatabaseHelper(context.getApplicationContext());
         }
         return uniqueInstance;
+    }
+
+    public static void init(Context context) {
+        if(uniqueInstance == null) {
+            uniqueInstance = new DatabaseHelper(context.getApplicationContext());
+            DatabaseHelper.context = context;
+        }
     }
 
     private DatabaseHelper(Context context) {

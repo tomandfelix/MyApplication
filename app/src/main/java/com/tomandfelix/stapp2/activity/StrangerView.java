@@ -27,7 +27,7 @@ public class StrangerView extends ServiceActivity {
         }
 
         int strangerId = getIntent().getIntExtra("strangerId", -1);
-        ServerHelper.getInstance(this).getOtherProfile(strangerId,
+        ServerHelper.getInstance().getOtherProfile(strangerId,
                 new ServerHelper.ResponseFunc<Profile>() {
                     @Override
                     public void onResponse(Profile response) {
@@ -58,7 +58,7 @@ public class StrangerView extends ServiceActivity {
         username.setText(profile.getUsername());
         avatar.setImageResource(avatarID);
 
-        ServerHelper.getInstance(this).getProgressOfOther(profile.getId(),new Response.ErrorListener() {
+        ServerHelper.getInstance().getProgressOfOther(profile.getId(),new Response.ErrorListener() {
             @Override
             public void onErrorResponse(VolleyError volleyError) {
                 Log.e("VolleyError","getProgressOfOther");

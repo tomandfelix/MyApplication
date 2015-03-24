@@ -8,27 +8,28 @@ import org.json.JSONObject;
  */
 
 public class GCMMessage {
+    public static final int TEST_TOAST = -1;
     public static final int REQUEST = 0;
     public static final int ACCEPTED = 1;
     public static final int COMMUNICATION = 2;
     public static final int RESULT = 3;
 
-    private int[] recievers;
+    private int[] receivers;
     private int challengeId;
     private int messageType;
     private int senderId;
     private String message;
 
-    public GCMMessage(int[] recievers, int challengeId, int messageType, int senderId, String message) {
-        this.recievers = recievers;
+    public GCMMessage(int[] receivers, int challengeId, int messageType, int senderId, String message) {
+        this.receivers = receivers;
         this.challengeId = challengeId;
         this.messageType = messageType;
         this.senderId = senderId;
         this.message = message;
     }
 
-    public int[] getRecievers() {
-        return recievers;
+    public int[] getReceivers() {
+        return receivers;
     }
 
     public int getChallengeId() {
