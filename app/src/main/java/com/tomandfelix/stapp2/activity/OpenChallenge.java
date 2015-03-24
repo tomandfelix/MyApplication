@@ -58,6 +58,7 @@ public class OpenChallenge extends ActionBarActivity {
             @Override
             public void onErrorResponse(VolleyError volleyError) {
                 Log.e("error", "list of opponents");
+                //TODO
             }
         }, new ServerHelper.VolleyCallback() {
             @Override
@@ -115,7 +116,6 @@ public class OpenChallenge extends ActionBarActivity {
 
                 int avatarID = getResources().getIdentifier("avatar_" + p.getAvatar() +"_128", "drawable", getPackageName());
 
-                rank.setTextColor(normalColor);
                 username.setTextColor(normalColor);
 
                 if(rank != null) {rank.setText(Integer.toString(p.getRank()));}
