@@ -661,4 +661,54 @@ public class ServerHelper {
         }, errorListener);
         VolleyQueue.getInstance(context).addToRequestQueue(uploadLogs);
     }
+    public void getProgressOfOther(int id, final Response.ErrorListener errorListener, final VolleyCallback callback) {
+
+        JSONObject request = new JSONObject();
+        try {
+            request.put("id", id);
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+        final JsonArrayRequest getProgressOfOther = new JsonArrayRequest(Request.Method.POST, "http://eng.studev.groept.be/thesis/a14_stapp2/getProgressOfOther.php", request, new Response.Listener<JSONArray>() {
+            @Override
+            public void onResponse(JSONArray response) {
+                try {
+                    if(!response.isNull(0) && !response.getJSONObject(0).getString("action").equals("end_day")){
+                        ArrayList<Integer> achieved_score = new ArrayList<>();
+                        ArrayList<Integer> time = new ArrayList<>();
+                        float divider = 0;
+                        float upper = 0 ;
+                        for(int i = 0; i < response.length();i++) {
+                            Log.d("response",response.get(i).toString());
+                            if(response.getJSONObject(i).getString("action").equals("achieved_score_percent")){
+                                achieved_score.add(response.getJSONObject(i).getInt("DATA"));
+                            }else{
+                                time.add(response.getJSONObject(i).getInt("DATA"));
+                            }
+                        }
+                        if(achieved_score.size() > 0 && time.size() > 0 ) {
+                            for (int i = 0; i < achieved_score.size(); i++) {
+                                upper += ((float) achieved_score.get(i)) * time.get(i);
+                                divider += ((float) time.get(i));
+                            }
+                            float result = upper / divider ;
+                            callback.getResult(result);
+                            Log.d("end result", result + "");
+                        }else{
+                            Log.e("error", "one of the two arrays is empty");
+                        }
+                    }else{
+                        callback.getResult(0);
+                    }
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                }
+            }
+        }
+            , errorListener);
+        VolleyQueue.getInstance(context).addToRequestQueue(getProgressOfOther);
+    }
+    public interface VolleyCallback{
+        void getResult(float result);
+    }
 }

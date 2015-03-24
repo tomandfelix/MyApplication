@@ -62,9 +62,9 @@ public class ChallengeStranger extends ServiceActivity {
         rank.setText( profile.getRank() + "");
         username.setText(profile.getUsername());
         avatar.setImageResource(avatarID);
-        challengeTitle.setText( challenge.getName());
-        challengeDescription.setText(challenge.getDescription() + "\n" + "duration : " + challenge.getDuration() + " seconds");
-        getSupportActionBar().setTitle("challenge " + profile.getUsername());
+//        challengeTitle.setText( challenge.getName());
+//        challengeDescription.setText(challenge.getDescription() + "\n" + "duration : " + challenge.getDuration() + " seconds");
+//        getSupportActionBar().setTitle("challenge " + profile.getUsername());
     }
     public void toChallenge(View view){
         int[] ids =  new int[1];
