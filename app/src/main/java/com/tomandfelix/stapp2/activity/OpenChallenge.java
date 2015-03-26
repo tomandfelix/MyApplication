@@ -73,7 +73,7 @@ public class OpenChallenge extends ServiceActivity {
             public void onErrorResponse(VolleyError volleyError) {
                 Log.e("OpenChallenge", volleyError.getMessage());
             }
-        });
+        }, false);
     }
 
     private void updateButtons() {

@@ -576,6 +576,15 @@ public class ServerHelper {
         VolleyQueue.getInstance().addToRequestQueue(updateProf);
     }
 
+    /**
+     * Uploads the given logs to the server with the credentials of the currently logged in user
+     * @param logs The logs to upload
+     * @param responseListener The function that is called with the result, on success, this should be the highest id in the set of logs
+     * @param errorListener The function that is called upon error, possible errors:
+     *                      * 'token' The token does not match the one from the server
+     *                      * 'input' There was some input missing
+     *                      * 'database' Something went wrong with the database
+     */
     public void uploadLogs(ArrayList<IdLog> logs, final ResponseFunc<Integer> responseListener, final Response.ErrorListener errorListener) {
         JSONObject request = new JSONObject();
         JSONArray requestArray = new JSONArray();
@@ -606,6 +615,15 @@ public class ServerHelper {
         VolleyQueue.getInstance().addToRequestQueue(uploadLogs);
     }
 
+    /**
+     * Downloads logs from the server, all the logs of the currently logged in user with an id higher then lastId will be fetched
+     * @param lastId The id
+     * @param errorListener The function that is called upon error AND completion, Possible errors:
+     *                      * 'none' Acknowledgement of update
+     *                      * 'token' The token does not match the one from the server
+     *                      * 'input' There was some input missing
+     *                      * 'database' Something went wrong with the database
+     */
     public void downloadLogs(int lastId, final Response.ErrorListener errorListener) {
         JSONObject request = new JSONObject();
         try {
@@ -641,6 +659,15 @@ public class ServerHelper {
         VolleyQueue.getInstance().addToRequestQueue(downloadLogs);
     }
 
+    /**
+     * Sends a GCM message to a set of users
+     * @param message The message object, this contains the message and receiver and sender ids
+     * @param errorListener The function that is called upon error AND completion, Possible errors:
+     *                      * 'none' Acknowledgement of update
+     *                      * 'token' The token does not match the one from the server
+     *                      * 'input' There was some input missing
+     *                      * 'database' Something went wrong with the database
+     */
     public void sendMessage(GCMMessage message, final Response.ErrorListener errorListener) {
         JSONObject request = new JSONObject();
         JSONArray requestArray = new JSONArray();
@@ -672,6 +699,15 @@ public class ServerHelper {
         }, errorListener);
         VolleyQueue.getInstance().addToRequestQueue(uploadLogs);
     }
+
+    /**
+     * Gets the average sedentary index of the specified person
+     * @param id The id of the person
+     * @param responseListener The function that is called with the result
+     * @param errorListener The function that is called upon error, Possible errors:
+     *                      * 'input' There was some input missing
+     *                      * 'database' Something went wrong with the database
+     */
     public void getProgressOfOther(int id, final ResponseFunc<Float> responseListener, final Response.ErrorListener errorListener) {
 
         JSONObject request = new JSONObject();
@@ -719,38 +755,63 @@ public class ServerHelper {
             , errorListener);
         VolleyQueue.getInstance().addToRequestQueue(getProgressOfOther);
     }
-    public void getProfilesByIds(final int[] ids, final ResponseFunc<ArrayList<Profile>> responseListener, final Response.ErrorListener errorListener) {
 
-        JSONObject request = new JSONObject();
-        JSONArray requestArray = new JSONArray();
-        try {
-            for(int i : ids) {
-                requestArray.put(i);
+    /**
+     * Fetches the specified profiles from the database and stores them locally
+     * @param ids the ids of the profiles to fetch
+     * @param responseListener The function that is called upon success, the argument for this function will be the ArrayList of profiles
+     * @param errorListener The function that is called upon error, Possible errors:
+     *                      * 'input' There was some input missing
+     *                      * 'database' Something went wrong with the database
+     * @param forceUpdate if true, a request will be sent to the server, if false, will only send a request if the local data is more then 10 minutes old
+     */
+    public void getProfilesByIds(final int[] ids, final ResponseFunc<ArrayList<Profile>> responseListener, final Response.ErrorListener errorListener, boolean forceUpdate) {
+        ArrayList<Profile> stored = DatabaseHelper.getInstance().getProfilesByIds(ids);
+        boolean update = false;
+        if(!forceUpdate && stored != null) {
+            for(Profile p : stored) {
+                update = update || minutesAgo(p.getLastUpdate()) >= 10;
             }
-            request.put("ids",requestArray);
-        } catch (JSONException e) {
-            e.printStackTrace();
-        }
-        JsonArrayRequest getProfilesByIds = new JsonArrayRequest(Request.Method.POST, "http://eng.studev.groept.be/thesis/a14_stapp2/getProfilesByIds.php", request, new Response.Listener<JSONArray>() {
-            @Override
-            public void onResponse(JSONArray response) {
-                if(!response.isNull(0)){
-                    ArrayList<Profile> results = new ArrayList<>();
-                    for(int i = 0 ; i < response.length(); i++){
-                        Profile profile = null;
-                        try {
-                            profile = extractProfile(response.getJSONObject(i));
-                        } catch (JSONException e) {
-                            e.printStackTrace();
-                        }
-                        results.add(profile);
-                    }
-                    responseListener.onResponse(results);
+        } else update = true;
+
+        if(!update)
+            responseListener.onResponse(stored);
+        else {
+            JSONObject request = new JSONObject();
+            JSONArray requestArray = new JSONArray();
+            try {
+                for (int i : ids) {
+                    requestArray.put(i);
                 }
-
+                request.put("ids", requestArray);
+            } catch (JSONException e) {
+                e.printStackTrace();
             }
-        }, errorListener);
-        VolleyQueue.getInstance().addToRequestQueue(getProfilesByIds);
+            JsonArrayRequest getProfilesByIds = new JsonArrayRequest(Request.Method.POST, "http://eng.studev.groept.be/thesis/a14_stapp2/getProfilesByIds.php", request, new Response.Listener<JSONArray>() {
+                @Override
+                public void onResponse(JSONArray response) {
+                    ArrayList<Profile> result = null;
+                    try {
+                        if(!response.getJSONObject(0).has("error")) {
+                            result = new ArrayList<>();
+                            for(int i = 0; i < response.length(); i++) {
+                                result.add(extractProfile(response.getJSONObject(i)));
+                            }
+                        } else {
+                            errorListener.onErrorResponse(new VolleyError(response.getJSONObject(0).getString("error")));
+                        }
+                    } catch (JSONException e) {
+                        e.printStackTrace();
+                    }
+                    if(result != null) {
+                        for(Profile p : result)
+                            DatabaseHelper.getInstance().storeProfile(p);
+                        responseListener.onResponse(result);
+                    }
 
+                }
+            }, errorListener);
+            VolleyQueue.getInstance().addToRequestQueue(getProfilesByIds);
+        }
     }
 }

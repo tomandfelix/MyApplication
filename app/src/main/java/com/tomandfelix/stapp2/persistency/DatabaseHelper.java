@@ -11,6 +11,7 @@ import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.concurrent.TimeUnit;
@@ -435,7 +436,7 @@ public class DatabaseHelper extends SQLiteOpenHelper{
     }
 
     public ArrayList<Profile> getLeaderboardByRank(int rank) {
-        ArrayList<Profile> prof= null;
+        ArrayList<Profile> prof = null;
         rank -= (rank % 10) == 0 ? 10 : rank % 10;
         String query = "SELECT " + KEY_ID + ", " + KEY_FIRSTNAME + ", " + KEY_LASTNAME + ", " + KEY_USERNAME + ", " + KEY_EMAIL + ", " + KEY_MONEY + ", " + KEY_EXPERIENCE + ", " + KEY_AVATAR + ", " + KEY_RANK + ", " + KEY_UPDATED + " FROM " + TABLE_PROFILES + " ORDER BY " + KEY_RANK + " ASC LIMIT ?, 10";
         Cursor cursor = db.rawQuery(query, new String[]{Integer.toString(rank)});
@@ -447,6 +448,23 @@ public class DatabaseHelper extends SQLiteOpenHelper{
         }
         if (cursor != null) cursor.close();
         return prof == null ? null : prof.size() == 10 ? prof : null;
+    }
+
+    public ArrayList<Profile> getProfilesByIds(int[] ids) {
+        ArrayList<Profile> prof = null;
+        String idString = Arrays.toString(ids);
+        idString = idString.substring(1, idString.length() - 1);
+        Log.d("getProfilesByIds", "'" + idString + "'");
+        String query = "SELECT " + KEY_ID + ", " + KEY_FIRSTNAME + ", " + KEY_LASTNAME + ", " + KEY_USERNAME + ", " + KEY_EMAIL + ", " + KEY_MONEY + ", " + KEY_EXPERIENCE + ", " + KEY_AVATAR + ", " + KEY_RANK + ", " + KEY_UPDATED + " FROM " + TABLE_PROFILES + " WHERE " + KEY_ID + " IN (" + idString + ")";
+        Cursor cursor = db.rawQuery(query, null);
+        if(cursor != null && cursor.getCount() == ids.length) {
+            prof = new ArrayList<>(ids.length);
+            while(cursor.moveToNext()) {
+                prof.add(new Profile(cursor.getInt(0), cursor.getString(1), cursor.getString(2), cursor.getString(3), cursor.getString(4), cursor.getInt(5), cursor.getInt(6), cursor.getString(7), cursor.getInt(8), stringToDate(cursor.getString(9))));
+            }
+        }
+        if (cursor != null) cursor.close();
+        return prof == null ? null : prof.size() == ids.length ? prof : null;
     }
 
     //--------------------------------------------------------SETTINGS--------------------------------------------------------------------------

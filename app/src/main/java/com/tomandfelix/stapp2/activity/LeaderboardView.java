@@ -43,6 +43,7 @@ public class LeaderboardView extends DrawerActivity {
         setContentView(R.layout.activity_leaderboard);
         super.onCreate(savedInstanceState);
         leaderboardList = (ListView) findViewById(R.id.leaderboard_list);
+        getLeaderboard();
     }
 
     private void getLeaderboard() {
