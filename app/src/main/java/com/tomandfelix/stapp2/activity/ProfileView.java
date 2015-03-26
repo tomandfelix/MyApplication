@@ -239,21 +239,6 @@ public class ProfileView extends DrawerActivity {
         }
     }
 
-    private static class ProfileHandler extends Handler {
-        private final WeakReference<ProfileView> mProfileView;
-
-        public ProfileHandler(ProfileView aProfileView) {
-            mProfileView = new WeakReference<>(aProfileView);
-        }
-
-        @Override
-        public void handleMessage(Message msg) {
-            if(mProfileView.get() != null) {
-                mProfileView.get().updateState(msg.what);
-            }
-        }
-    }
-
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
         if (requestCode == 1) {
@@ -309,5 +294,20 @@ public class ProfileView extends DrawerActivity {
             }
         });
         return result;
+    }
+
+    private static class ProfileHandler extends Handler {
+        private final WeakReference<ProfileView> mProfileView;
+
+        public ProfileHandler(ProfileView aProfileView) {
+            mProfileView = new WeakReference<>(aProfileView);
+        }
+
+        @Override
+        public void handleMessage(Message msg) {
+            if(mProfileView.get() != null) {
+                mProfileView.get().updateState(msg.what);
+            }
+        }
     }
 }

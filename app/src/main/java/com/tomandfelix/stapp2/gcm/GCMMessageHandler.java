@@ -30,6 +30,7 @@ import android.widget.Toast;
 import org.json.JSONArray;
 import org.json.JSONException;
 
+import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -50,7 +51,7 @@ public class GCMMessageHandler extends IntentService {
         // TODO Auto-generated method stub
         super.onCreate();
         if(handler == null) {
-            handler = new MessageHandler();
+            handler = new MessageHandler(this);
         }
         if(mBuilder == null) {
             mBuilder = new NotificationCompat.Builder(GCMMessageHandler.this);
@@ -98,10 +99,16 @@ public class GCMMessageHandler extends IntentService {
         GCMBroadCastReceiver.completeWakefulIntent(intent);
     }
 
-    private class MessageHandler extends Handler{
+    private static class MessageHandler extends Handler{
+        private final WeakReference<GCMMessageHandler> mGCMMessageHandler;
+
+        public MessageHandler(GCMMessageHandler aMessageHandler) {
+            mGCMMessageHandler = new WeakReference<>(aMessageHandler);
+        }
+
         @Override
         public void handleMessage(Message msg) {
-            if(msg.obj instanceof GCMMessage) {
+            if(mGCMMessageHandler.get() != null && msg.obj instanceof GCMMessage) {
                 GCMMessage message = (GCMMessage) msg.obj;
                 if (msg.what == MSG_RECEIVED) {
                     if (message.getMessageType() == GCMMessage.REQUEST) {
@@ -122,15 +129,15 @@ public class GCMMessageHandler extends IntentService {
                         } else {
                             PendingIntent pendingIntent;
                             mBuilder.setContentText("You have a new challenge");
-                            Intent intent = new Intent(GCMMessageHandler.this, OpenChallenge.class);
+                            Intent intent = new Intent(mGCMMessageHandler.get(), OpenChallenge.class);
                             intent.putExtra("challenge_index", challenges.size() - 1);
                             if(Build.VERSION.SDK_INT >= 16) {
-                                TaskStackBuilder stackBuilder = TaskStackBuilder.create(GCMMessageHandler.this);
+                                TaskStackBuilder stackBuilder = TaskStackBuilder.create(mGCMMessageHandler.get());
                                 stackBuilder.addParentStack(OpenChallenge.class);
                                 stackBuilder.addNextIntent(intent);
                                 pendingIntent = stackBuilder.getPendingIntent(0, PendingIntent.FLAG_UPDATE_CURRENT);
                             } else {
-                                pendingIntent = PendingIntent.getActivity(GCMMessageHandler.this, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT);
+                                pendingIntent = PendingIntent.getActivity(mGCMMessageHandler.get(), 0, intent, PendingIntent.FLAG_UPDATE_CURRENT);
                             }
                             mBuilder.setContentIntent(pendingIntent);
                             notificationManager.notify(1, mBuilder.build());
@@ -139,7 +146,10 @@ public class GCMMessageHandler extends IntentService {
                         synchronized (challenges) {
                             for (Challenge c : challenges) {
                                 if (message.getChallengeId() == c.getId()) {
-                                    c.setState(Challenge.ACCEPTED);
+                                    c.incrementAccepted();
+                                    if(c.getAccepted() == c.getOpponents().length) {
+                                        c.setState(Challenge.ACCEPTED);
+                                    }
                                 }
                             }
                         }
@@ -155,7 +165,7 @@ public class GCMMessageHandler extends IntentService {
                             @Override
                             public void onResponse(Profile response) {
                                 mBuilder.setContentText(response.getUsername() + " declined one of your challenges");
-                                PendingIntent pendingIntent = PendingIntent.getActivity(GCMMessageHandler.this, 0, new Intent(), 0);
+                                PendingIntent pendingIntent = PendingIntent.getActivity(mGCMMessageHandler.get(), 0, new Intent(), 0);
                                 mBuilder.setContentIntent(pendingIntent);
                                 notificationManager.notify(1, mBuilder.build());
                             }

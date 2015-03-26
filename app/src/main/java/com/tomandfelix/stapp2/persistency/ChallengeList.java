@@ -26,7 +26,7 @@ public class ChallengeList {
     }
 
     private static void createChallengesList() {
-        challenges.add(new Challenge(0, "Quick test", "Stand longer than your opponent", 2, 2,30,new Challenge.Validator(){
+        Challenge.Validator standMostIn30secs = new Challenge.Validator(){
             @Override
             public void run() {
                 if (challenge.getState() == Challenge.STARTED) {
@@ -48,19 +48,19 @@ public class ChallengeList {
 
             private void calcResult() {
                 if (challenge.getResults().size() == challenge.getOpponents().length + 1) {
-                    long otherMilliseconds = 0;
+                    long maxOtherMilliseconds = 0;
                     long myMilliseconds = 0;
                     for(GCMMessage m : challenge.getResults()) {
                         if(m.getSenderId() == -1) {
                             myMilliseconds = Long.parseLong(m.getMessage());
                         } else {
-                            otherMilliseconds = Long.parseLong(m.getMessage());
+                            maxOtherMilliseconds = Math.max(Long.parseLong(m.getMessage()), maxOtherMilliseconds);
                         }
                     }
-                    if (myMilliseconds > otherMilliseconds) {
+                    if (myMilliseconds > maxOtherMilliseconds) {
                         StApp.makeToast("You won, big time!");
                         challenge.setStateMessage("You won, big time!");
-                    } else if (myMilliseconds == otherMilliseconds) {
+                    } else if (myMilliseconds == maxOtherMilliseconds) {
                         StApp.makeToast("It's a Tie, how did you pull this off?");
                         challenge.setStateMessage("It's a Tie, how did you pull this off?");
                     } else {
@@ -73,6 +73,8 @@ public class ChallengeList {
                     }
                 }
             }
-        }));
+        };
+        challenges.add(new Challenge(0, "Quick test", "Stand longer than your opponent", 2, 2,30, standMostIn30secs));
+        challenges.add(new Challenge(1, "Group challenge", "Stand longer than your opponent", 3, 5,30, standMostIn30secs));
     }
 }

@@ -15,6 +15,7 @@ import java.util.List;
  * Created by Flixse on 27/01/2015.
  */
 public class Challenge extends Quest {
+    private int accepted;
     private int minAmount;
     private int maxAmount;
     private int duration;
@@ -55,9 +56,18 @@ public class Challenge extends Quest {
                 }
             }
         }
+        this.accepted = 0;
         this.state = -1;
         this.opponents = opponents;
         this.results = Collections.synchronizedList(new ArrayList<GCMMessage>());
+    }
+
+    public int getAccepted() {
+        return accepted;
+    }
+
+    public void incrementAccepted() {
+        accepted++;
     }
 
     public synchronized int getMinAmount() {
@@ -130,7 +140,12 @@ public class Challenge extends Quest {
                 setState(Challenge.REQ_SENT);
                 break;
             case GCMMessage.ACCEPTED:
-                setState(Challenge.ACCEPTED);
+                incrementAccepted();
+                if(getAccepted() == getOpponents().length) {
+                    setState(ACCEPTED);
+                } else {
+                    setState(REQ_SENT);
+                }
                 break;
             case GCMMessage.DECLINED:
                 GCMMessageHandler.challenges.remove(this);
