@@ -25,7 +25,7 @@ public class ChallengeList {
     }
 
     private static void createChallengesList() {
-        challenges.add(new Challenge(1, "testChallenge1", "you have 30 seconds time to stand more than your opponent", 2, 2,30,new Challenge.Validator(){
+        challenges.add(new Challenge(0, "Quick test", "Stand longer than your opponent", 2, 2,30,new Challenge.Validator(){
             @Override
             public void run() {
                 if (challenge.getState() == Challenge.STARTED) {
@@ -33,11 +33,11 @@ public class ChallengeList {
                     Date start = new Date(now - 30 * 1000);
                     Date end = new Date(now);
                     long result = Algorithms.millisecondsStood(start, end);
-                    Log.i("TestChallenge", Long.toString(result));
+                    Log.i("Quick test", Long.toString(result));
                     challenge.getResults().add(challenge.sendMessage(GCMMessage.RESULT, Long.toString(result)));
                     challenge.setState(Challenge.DONE);
                     calcResult();
-                } else if(challenge.getState() == Challenge.DONE) {
+                } else if(challenge.getState() == Challenge.WAITING) {
                     calcResult();
                 }
             }
@@ -55,15 +55,15 @@ public class ChallengeList {
                     }
                     if (myMilliseconds > otherMilliseconds) {
                         StApp.makeToast("You won, big time!");
-                        Log.d("StApp", "You won, big time!");
+                        challenge.setStateMessage("You won, big time!");
                     } else if (myMilliseconds == otherMilliseconds) {
                         StApp.makeToast("It's a Tie, how did you pull this off?");
-                        Log.d("StApp", "It's a Tie, how did you pull this off?");
+                        challenge.setStateMessage("It's a Tie, how did you pull this off?");
                     } else {
                         StApp.makeToast("You had one thing to do, ONE! (you lost)");
-                        Log.d("StApp", "You had one thing to do, ONE! (you lost)");
+                        challenge.setStateMessage("You had one thing to do, ONE! (you lost)");
                     }
-                    GCMMessageHandler.challenges.remove(challenge);
+                    challenge.setState(Challenge.DONE);
                 }
             }
         }));

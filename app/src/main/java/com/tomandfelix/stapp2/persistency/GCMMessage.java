@@ -11,8 +11,9 @@ public class GCMMessage {
     public static final int TEST_TOAST = -1;
     public static final int REQUEST = 0;
     public static final int ACCEPTED = 1;
-    public static final int COMMUNICATION = 2;
-    public static final int RESULT = 3;
+    public static final int DECLINED = 2;
+    public static final int COMMUNICATION = 3;
+    public static final int RESULT = 4;
 
     private int[] receivers;
     private int challengeId;
@@ -46,5 +47,18 @@ public class GCMMessage {
 
     public String getMessage() {
         return message;
+    }
+
+    public String toString() {
+        String result = "challengeId: " + challengeId;
+        result += " messageType: " + messageType;
+        result += " message: '" + message + "'";
+        result += " sender: " + senderId;
+        result += " receiver_ids: ";
+        for(int i = 0; i < receivers.length - 1; i++) {
+            result += receivers[i] + ", ";
+        }
+        result += receivers[receivers.length - 1];
+        return result;
     }
 }

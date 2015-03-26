@@ -672,7 +672,7 @@ public class ServerHelper {
         }, errorListener);
         VolleyQueue.getInstance().addToRequestQueue(uploadLogs);
     }
-    public void getProgressOfOther(int id, final Response.ErrorListener errorListener, final VolleyCallback callback) {
+    public void getProgressOfOther(int id, final ResponseFunc<Float> responseListener, final Response.ErrorListener errorListener) {
 
         JSONObject request = new JSONObject();
         try {
@@ -703,14 +703,13 @@ public class ServerHelper {
                                 divider += ((float) time.get(i));
                             }
                             float result = upper / divider ;
-                            callback.getResult(result);
-                            callback.getResultArray(null);
+                            responseListener.onResponse(result);
                             Log.d("end result", result + "");
                         }else{
                             Log.e("error", "one of the two arrays is empty");
                         }
                     }else{
-                        callback.getResult(0);
+                        errorListener.onErrorResponse(new VolleyError("data"));
                     }
                 } catch (JSONException e) {
                     e.printStackTrace();
@@ -720,7 +719,7 @@ public class ServerHelper {
             , errorListener);
         VolleyQueue.getInstance().addToRequestQueue(getProgressOfOther);
     }
-    public void getProfilesByIds(final int[] ids,final Response.ErrorListener errorListener,final VolleyCallback callback) {
+    public void getProfilesByIds(final int[] ids, final ResponseFunc<ArrayList<Profile>> responseListener, final Response.ErrorListener errorListener) {
 
         JSONObject request = new JSONObject();
         JSONArray requestArray = new JSONArray();
@@ -732,7 +731,6 @@ public class ServerHelper {
         } catch (JSONException e) {
             e.printStackTrace();
         }
-        Log.d("getProfilesByIds", request.toString());
         JsonArrayRequest getProfilesByIds = new JsonArrayRequest(Request.Method.POST, "http://eng.studev.groept.be/thesis/a14_stapp2/getProfilesByIds.php", request, new Response.Listener<JSONArray>() {
             @Override
             public void onResponse(JSONArray response) {
@@ -746,18 +744,13 @@ public class ServerHelper {
                             e.printStackTrace();
                         }
                         results.add(profile);
-                        callback.getResultArray(results);
-                        callback.getResult(0);
                     }
+                    responseListener.onResponse(results);
                 }
 
             }
         }, errorListener);
         VolleyQueue.getInstance().addToRequestQueue(getProfilesByIds);
 
-    }
-    public interface VolleyCallback{
-        void getResult(float result);
-        void getResultArray(ArrayList<Profile> result);
     }
 }

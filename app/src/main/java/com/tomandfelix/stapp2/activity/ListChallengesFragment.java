@@ -33,7 +33,6 @@ public class ListChallengesFragment extends ListFragment {
     }
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-        Log.d("ListChallengesFragment", "onCreateView");
         View view = new ListView(getActivity());
         container.addView(view);
         return view;
@@ -41,17 +40,17 @@ public class ListChallengesFragment extends ListFragment {
 
     @Override
     public void onActivityCreated(Bundle savedInstanceState){
-        Log.d("ListChallengesFragment", "onActivityCreated");
         super.onActivityCreated(savedInstanceState);
         ChallengeListAdapter challengeAdapter = new ChallengeListAdapter(getActivity(), R.layout.list_item_challenge, list);
         this.setListAdapter(challengeAdapter);
         this.getListView().setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                Log.i("QuestList", list.get(position).toString());
+                Log.i("ChallengesList", list.get(position).toString());
                 Intent intent = new Intent(getActivity(), ChallengeLeaderboard.class);
-                intent.setFlags(Intent.FLAG_ACTIVITY_NO_ANIMATION);
+                intent.putExtra("challengeID", position);
                 startActivity(intent);
+                getActivity().overridePendingTransition(R.anim.enter_right, R.anim.leave_left);
             }
         });
     }

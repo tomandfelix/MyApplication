@@ -13,7 +13,7 @@
 
         <LinearLayout
             android:layout_width="match_parent"
-            android:layout_height="200dp">
+            android:layout_height="100dp">
 
             <ListView
                 android:id="@+id/open_challenge_list_view"
@@ -22,43 +22,71 @@
                 android:dividerHeight="1dp"
                 android:divider="@color/divider"/>
         </LinearLayout>
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="2dp"
+            android:background="@color/divider"
+            android:layout_marginTop="10dp"
+            android:layout_marginBottom="10dp"/>
         <TextView
             android:id="@+id/open_challenge_title"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:text="Challenge title"
-            android:textSize="20dp"/>
+            android:textSize="20sp"/>
         <TextView
             android:id="@+id/open_challenge_description"
             android:layout_width="match_parent"
-            android:layout_height="0dp"
-            android:layout_weight="1"
-            android:layout_below="@id/open_challenge_title"
+            android:layout_height="wrap_content"
             android:text="description of challenge"
-            android:textSize="15dp"/>
+            android:textSize="15sp"/>
+        <RelativeLayout
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="1">
+
+            <com.gc.materialdesign.views.ProgressBarDeterminate
+                android:id="@+id/open_challenge_progress"
+                android:layout_width="fill_parent"
+                android:layout_height="10dp"
+                android:background="@color/primaryColor"
+                android:gravity="center_vertical"
+                android:layout_marginTop="10dp"/>
+            <TextView
+                android:id="@+id/open_challenge_result"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_below="@id/open_challenge_progress"
+                android:layout_alignParentBottom="true"
+                android:gravity="center_vertical"
+                android:textSize="15sp"/>
+        </RelativeLayout>
         <LinearLayout
+            android:id="@+id/open_challenge_buttons"
             android:orientation="horizontal"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:gravity="bottom">
 
             <com.gc.materialdesign.views.ButtonRectangle
-                android:id="@+id/open_challenge_decline_button"
+                android:id="@+id/open_challenge_negative_btn"
                 android:layout_width="0dp"
-                android:layout_height="@dimen/raised_button_height"
                 android:layout_weight="1"
-                android:text="Decline"
-                android:onClick="declineChallenge"
-                android:background="@color/primaryColor"/>
+                android:layout_height="@dimen/raised_button_height"
+                android:layout_gravity="center_vertical"
+                android:background="@color/primaryColor"
+                android:text="NegativeButton"
+                android:onClick="onNegativeButton"/>
 
             <com.gc.materialdesign.views.ButtonRectangle
-                android:id="@+id/open_challenge_start_button"
+                android:id="@+id/open_challenge_positive_btn"
                 android:layout_width="0dp"
-                android:layout_height="@dimen/raised_button_height"
                 android:layout_weight="1"
-                android:text="Start"
-                android:onClick="startChallenge"
-                android:background="@color/primaryColor"/>
+                android:layout_height="@dimen/raised_button_height"
+                android:layout_gravity="center_vertical"
+                android:background="@color/primaryColor"
+                android:text="PositiveButton"
+                android:onClick="onPositiveButton"/>
         </LinearLayout>
     </LinearLayout>
     <include layout="@layout/drawer"/>

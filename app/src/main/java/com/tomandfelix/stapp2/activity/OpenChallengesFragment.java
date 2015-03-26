@@ -48,13 +48,10 @@ public class OpenChallengesFragment extends ListFragment {
         this.getListView().setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                if(GCMMessageHandler.challenges.get(position).getState() == Challenge.REQ_REC) {
-                    GCMMessageHandler.challenges.get(position).sendMessage(GCMMessage.ACCEPTED, "");
-                    Intent i = new Intent(getActivity(), OpenChallenge.class);
-                    i.putExtra("challenge_id",GCMMessageHandler.challenges.get(position).getId());
-                    i.putExtra("opponent_ids", GCMMessageHandler.challenges.get(position).getOpponents());
-                    startActivity(i);
-                }
+                Intent intent = new Intent(getActivity(), OpenChallenge.class);
+                intent.putExtra("challenge_index", position);
+                startActivity(intent);
+                getActivity().overridePendingTransition(R.anim.enter_right, R.anim.leave_left);
             }
         });
     }

@@ -98,6 +98,7 @@ public class StApp  extends Application {
         super.onCreate();
         singleton = this;
         DatabaseHelper.init(this);
+        DatabaseHelper.getInstance().openDB();
         ServerHelper.init(this);
         VolleyQueue.init(this);
         ChallengeList.init();

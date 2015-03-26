@@ -52,12 +52,13 @@ public class GCMMessageHandler extends IntentService {
         } catch (JSONException e) {
             e.printStackTrace();
         }
-        Log.i("GCM", "Received : (" + gcm.getMessageType(intent) +")  "+extras.getString("message"));
         GCMMessage message = new GCMMessage(recIds,
                 Integer.parseInt(extras.getString("challenge_id")),
                 Integer.parseInt(extras.getString("message_type")),
                 Integer.parseInt(extras.getString("sender_id")),
                 extras.getString("message"));
+        Log.d("GCM", "Received : " + message.toString());
+
         if(message.getMessageType() == GCMMessage.TEST_TOAST) {
             handler.post(new Runnable() {
                 public void run() {
@@ -67,45 +68,6 @@ public class GCMMessageHandler extends IntentService {
         } else {
             handler.obtainMessage(MSG_RECEIVED, message).sendToTarget();
         }
-//        else if(message.getMessageType() == GCMMessage.REQUEST) {
-//            challenges.add(new Challenge(), message.getReceivers());
-//            ((StApp) getApplication()).addRequest(message);
-//        } else if(message.getMessageType() == GCMMessage.RESULT) {
-//            Log.d("GCMMessageHandler", "in RESULT");
-//            if(((StApp) getApplication()).getResults().size() > 0) {
-//                Log.d("GCMMessageHandler", "My result is present");
-//                long myMilliseconds = Long.parseLong(((StApp) getApplication()).getResults().get(0).getMessage());
-//                long otherMilliseconds = Long.parseLong(message.getMessage());
-//                if(myMilliseconds > otherMilliseconds) {
-//                    handler.post(new Runnable() {
-//                        public void run() {
-//                            Toast.makeText(getApplicationContext(), "You won, big time!", Toast.LENGTH_LONG).show();
-//                        }
-//                    });
-//                    Log.d("StApp", "You won, big time!");
-//                } else if (myMilliseconds == otherMilliseconds) {
-//                    handler.post(new Runnable() {
-//                        public void run() {
-//                            Toast.makeText(getApplicationContext(), "It's a Tie, how did you pull this off?", Toast.LENGTH_LONG).show();
-//                        }
-//                    });
-//                    Log.d("StApp", "It's a Tie, how did you pull this off?");
-//                } else {
-//                    handler.post(new Runnable() {
-//                        public void run() {
-//                            Toast.makeText(getApplicationContext(), "You had one thing to do, ONE! (you lost)", Toast.LENGTH_LONG).show();
-//                        }
-//                    });
-//                    Log.d("StApp", "You had one thing to do, ONE! (you lost)");
-//                }
-//            } else {
-//                Log.d("RESULT_MSG", "adding result");
-//                ((StApp) getApplication()).addResult(message);
-//            }
-//        } else if(message.getMessageType() == GCMMessage.ACCEPTED) {
-//            ((StApp) getApplication()).addRequest(message);
-//            OpenChallengesFragment.handler.postDelayed(StApp.getChallenge().getValidator(), 30000);
-//        }
         GCMBroadCastReceiver.completeWakefulIntent(intent);
     }
 
@@ -132,8 +94,15 @@ public class GCMMessageHandler extends IntentService {
                         synchronized (challenges) {
                             for (Challenge c : challenges) {
                                 if (message.getChallengeId() == c.getId()) {
-                                    c.setState(Challenge.STARTED);
-                                    handler.postDelayed(c.getValidator(), c.getDuration() * 1000);
+                                    c.setState(Challenge.ACCEPTED);
+                                }
+                            }
+                        }
+                    } else if (message.getMessageType() == GCMMessage.DECLINED) {
+                        synchronized (challenges) {
+                            for(Challenge c : challenges) {
+                                if(message.getChallengeId() == c.getId()) {
+                                    challenges.remove(c);
                                 }
                             }
                         }
@@ -142,26 +111,9 @@ public class GCMMessageHandler extends IntentService {
                             for (Challenge c : challenges) {
                                 if (message.getChallengeId() == c.getId()) {
                                     c.addResult(message);
-                                    handler.post(c.getValidator());
-                                }
-                            }
-                        }
-                    }
-                } else if (msg.what == MSG_SENT) {
-                    if (message.getMessageType() == GCMMessage.REQUEST) {
-                        synchronized (challenges) {
-                            for(Challenge c : challenges) {
-                                if(message.getChallengeId() == c.getId()) {
-                                    c.setState(Challenge.REQ_SENT);
-                                }
-                            }
-                        }
-                    } else if (message.getMessageType() == GCMMessage.ACCEPTED) {
-                        synchronized (challenges) {
-                            for (Challenge c : challenges) {
-                                if (message.getChallengeId() == c.getId()) {
-                                    c.setState(Challenge.STARTED);
-                                    handler.postDelayed(c.getValidator(), c.getDuration() * 1000);
+                                    if(c.getState() == Challenge.DONE) {
+                                        handler.post(c.getValidator());
+                                    }
                                 }
                             }
                         }
@@ -169,5 +121,5 @@ public class GCMMessageHandler extends IntentService {
                 }
             }
         }
-    };
+    }
 }

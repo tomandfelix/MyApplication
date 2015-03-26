@@ -11,11 +11,12 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
+import android.widget.CheckBox;
+import android.widget.CompoundButton;
 import android.widget.EditText;
 import android.widget.ListView;
 import android.widget.TextView;
 
-import com.gc.materialdesign.views.CheckBox;
 import com.tomandfelix.stapp2.R;
 import com.tomandfelix.stapp2.persistency.DatabaseHelper;
 
@@ -35,19 +36,17 @@ public class SettingsView extends DrawerActivity {
         settings[1] = new Setting("Sensor", DatabaseHelper.getInstance().getSensor());
         settings[2] = new Setting("Account settings", DatabaseHelper.getInstance().getOwner().getUsername());
         settings[3] = new Setting("Mobile data", "Allow communications over mobile data", DatabaseHelper.getInstance().uploadOn3G(),
-                new CheckBox.OnCheckListener() {
+                new CompoundButton.OnCheckedChangeListener() {
                     @Override
-                    public void onCheck(boolean b) {
-                        Log.d("Settings", "Upload3G=" + b);
-                        DatabaseHelper.getInstance().setUploadOn3G(b);
+                    public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+                        DatabaseHelper.getInstance().setUploadOn3G(isChecked);
                     }
                 });
         settings[4] = new Setting("Notifications", null, DatabaseHelper.getInstance().getNotification(),
-                new CheckBox.OnCheckListener() {
+                new CompoundButton.OnCheckedChangeListener() {
                     @Override
-                    public void onCheck(boolean b) {
-                        Log.d("Settings", "Notification=" + b);
-                        DatabaseHelper.getInstance().setNotification(b);
+                    public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+                        DatabaseHelper.getInstance().setNotification(isChecked);
                     }
                 });
         settings[5] = new Setting("Logout", null);
@@ -80,9 +79,9 @@ public class SettingsView extends DrawerActivity {
         private String title;
         private String subTitle;
         private boolean checked;
-        private CheckBox.OnCheckListener listener;
+        private CompoundButton.OnCheckedChangeListener listener;
 
-        private Setting(String title, String subTitle, boolean checked, CheckBox.OnCheckListener listener) {
+        private Setting(String title, String subTitle, boolean checked, CompoundButton.OnCheckedChangeListener listener) {
             this.title = title;
             this.subTitle = subTitle;
             this.checked = checked;
@@ -122,15 +121,10 @@ public class SettingsView extends DrawerActivity {
                     subTitle.setVisibility(View.GONE);
                 }
                 if(s.listener != null) {
-                    final CheckBox checkBox = (CheckBox) convertView.findViewById(R.id.settings_checkBox);
+                    CheckBox checkBox = (CheckBox) convertView.findViewById(R.id.settings_checkBox);
                     checkBox.setVisibility(View.VISIBLE);
-                    checkBox.post(new Runnable() {
-                        @Override
-                        public void run() {
-                            checkBox.setChecked(s.checked);
-                        }
-                    });
-                    checkBox.setOncheckListener(s.listener);
+                    checkBox.setChecked(s.checked);
+                    checkBox.setOnCheckedChangeListener(s.listener);
                 } else {
                     convertView.findViewById(R.id.settings_checkBox).setVisibility(View.INVISIBLE);
                 }

@@ -60,25 +60,20 @@ public class StrangerView extends ServiceActivity {
         username.setText(profile.getUsername());
         avatar.setImageResource(avatarID);
 
-        ServerHelper.getInstance().getProgressOfOther(profile.getId(),new Response.ErrorListener() {
+        ServerHelper.getInstance().getProgressOfOther(profile.getId(), new ServerHelper.ResponseFunc<Float>() {
             @Override
-            public void onErrorResponse(VolleyError volleyError) {
-                Log.e("VolleyError","getProgressOfOther");
-            }
-        },new ServerHelper.VolleyCallback() {
-            @Override
-            public void getResult(float result) {
-                if(result > 0f) {
-                    float roundedFloat = (float) Math.round(result);
+            public void onResponse(Float response) {
+                if(response > 0) {
+                    float roundedFloat = (float) Math.round(response);
                     progress.setText(profile.getUsername() + " has a behaviour of " + roundedFloat + "%");
                 }else{
                     progress.setText(profile.getUsername() + " has not been active in the past 2 weeks");
                 }
             }
-
+        }, new Response.ErrorListener() {
             @Override
-            public void getResultArray(ArrayList<Profile> result) {
-
+            public void onErrorResponse(VolleyError volleyError) {
+                Log.e("VolleyError","getProgressOfOther");
             }
         });
     }

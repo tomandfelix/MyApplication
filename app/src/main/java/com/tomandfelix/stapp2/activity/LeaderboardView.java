@@ -5,12 +5,15 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
+import android.text.InputType;
+import android.text.method.PasswordTransformationMethod;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
+import android.widget.EditText;
 import android.widget.HeaderViewListAdapter;
 import android.widget.ImageView;
 import android.widget.ListView;
@@ -40,6 +43,9 @@ public class LeaderboardView extends DrawerActivity {
         setContentView(R.layout.activity_leaderboard);
         super.onCreate(savedInstanceState);
         leaderboardList = (ListView) findViewById(R.id.leaderboard_list);
+    }
+
+    private void getLeaderboard() {
         ServerHelper.getInstance().getLeaderboardById(DatabaseHelper.getInstance().getOwnerId(),
                 new ServerHelper.ResponseFunc<ArrayList<Profile>>() {
                     @Override
@@ -50,17 +56,46 @@ public class LeaderboardView extends DrawerActivity {
                 }, new Response.ErrorListener() {
                     @Override
                     public void onErrorResponse(VolleyError volleyError) {
-                        final AlertDialog alertDialog = new AlertDialog.Builder(LeaderboardView.this).create();
-                        alertDialog.setMessage("It seems like an error occured, please logout and try again");
-                        alertDialog.setButton("Dismiss", new DialogInterface.OnClickListener() {
-                            @Override
-                            public void onClick(DialogInterface dialog, int which) {
-                                alertDialog.dismiss();
-                            }
-                        });
-                        alertDialog.show();
+                        askForPassword();
                     }
                 }, false);
+    }
+
+    private void askForPassword() {
+        AlertDialog.Builder alert = new AlertDialog.Builder(this);
+        alert.setMessage("It seems like an error occured, Please enter your password again").setTitle("Password");
+        final EditText input = new EditText(this);
+        input.setInputType(InputType.TYPE_TEXT_VARIATION_PASSWORD);
+        input.setTransformationMethod(PasswordTransformationMethod.getInstance());
+        alert.setView(input);
+        DialogInterface.OnClickListener listener = new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                switch(which) {
+                    case DialogInterface.BUTTON_POSITIVE:
+                        String password = input.getText().toString();
+                        ServerHelper.getInstance().login(DatabaseHelper.getInstance().getOwner().getUsername(), password,
+                                new ServerHelper.ResponseFunc<Profile>() {
+                                    @Override
+                                    public void onResponse(Profile response) {
+                                        app.setProfile(response);
+                                        getLeaderboard();
+                                    }
+                                }, new Response.ErrorListener() {
+                                    @Override
+                                    public void onErrorResponse(VolleyError volleyError) {
+                                        if(volleyError.getMessage().equals("wrong")) {
+                                            askForPassword();
+                                        }
+                                    }
+                                });
+                        break;
+                }
+            }
+        };
+        alert.setPositiveButton("CONFIRM", listener);
+        alert.setNegativeButton("CANCEL", listener);
+        alert.show();
     }
 
     private void setupList() {

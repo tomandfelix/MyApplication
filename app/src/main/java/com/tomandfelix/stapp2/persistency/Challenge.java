@@ -8,6 +8,7 @@ import com.tomandfelix.stapp2.gcm.GCMMessageHandler;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Date;
 import java.util.List;
 
 /**
@@ -21,11 +22,14 @@ public class Challenge extends Quest {
     private int state;
     private int[] opponents;
     private List<GCMMessage> results;
+    private Date startTime;
+    private String stateMessage;
     public static final int REQ_SENT = 0;
     public static final int REQ_REC = 1;
     public static final int ACCEPTED = 2;
     public static final int STARTED = 3;
-    public static final int DONE = 4;
+    public static final int WAITING = 4;
+    public static final int DONE = 5;
 
     public Challenge(int id, String name, String description, int minAmount, int maxAmount, int duration, Validator validator){
         super(id, name, description);
@@ -92,15 +96,44 @@ public class Challenge extends Quest {
         return results;
     }
 
+    public synchronized Date getStartTime() {return startTime;}
+
+    public synchronized String getStateMessage() {
+        return stateMessage;
+    }
+
+    public synchronized void setStateMessage(String newStateMessage) {
+        this.stateMessage = newStateMessage;
+    }
+
+    public synchronized void startChallenge() {
+        this.startTime = new Date();
+        GCMMessageHandler.handler.postDelayed(getValidator(), getDuration() * 1000);
+        setState(STARTED);
+    }
+
     public GCMMessage sendMessage(int messageType, String message) {
-        GCMMessage msg = new GCMMessage(opponents, id, messageType, -1, message);
+        final GCMMessage msg = new GCMMessage(opponents, id, messageType, -1, message);
         ServerHelper.getInstance().sendMessage(msg, new Response.ErrorListener() {
             @Override
             public void onErrorResponse(VolleyError volleyError) {
-                Log.e("Challenge", volleyError.getMessage());
+                if(volleyError.getMessage().equals("none")) {
+                    Log.d("Challenge", "Sent: " + msg.toString());
+                } else {
+                    Log.e("Challenge", volleyError.getMessage());
+                }
             }
         });
-        GCMMessageHandler.handler.obtainMessage(GCMMessageHandler.MSG_SENT, msg).sendToTarget();
+        switch(messageType) {
+            case GCMMessage.REQUEST:
+                setState(Challenge.REQ_SENT);
+                break;
+            case GCMMessage.ACCEPTED:
+                setState(Challenge.ACCEPTED);
+                break;
+            case GCMMessage.DECLINED:
+                GCMMessageHandler.challenges.remove(this);
+        }
         return msg;
     }
 

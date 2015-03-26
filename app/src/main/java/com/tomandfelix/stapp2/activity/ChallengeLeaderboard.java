@@ -5,13 +5,12 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
-import android.support.v7.widget.Toolbar;
-import android.util.Log;
-import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
+import android.widget.CheckBox;
+import android.widget.CompoundButton;
 import android.widget.HeaderViewListAdapter;
 import android.widget.ImageView;
 import android.widget.ListView;
@@ -19,8 +18,13 @@ import android.widget.TextView;
 
 import com.android.volley.Response;
 import com.android.volley.VolleyError;
+import com.gc.materialdesign.views.ButtonRectangle;
 import com.tomandfelix.stapp2.R;
+import com.tomandfelix.stapp2.gcm.GCMMessageHandler;
+import com.tomandfelix.stapp2.persistency.Challenge;
+import com.tomandfelix.stapp2.persistency.ChallengeList;
 import com.tomandfelix.stapp2.persistency.DatabaseHelper;
+import com.tomandfelix.stapp2.persistency.GCMMessage;
 import com.tomandfelix.stapp2.persistency.Profile;
 import com.tomandfelix.stapp2.persistency.ServerHelper;
 
@@ -28,25 +32,31 @@ import java.util.ArrayList;
 
 public class ChallengeLeaderboard extends ServiceActivity {
     private ListView leaderboardList;
+    private ButtonRectangle confirmBtn;
     private ChallengeLeaderboardAdapter adapter;
     private ArrayList<Profile> list;
+    private ArrayList<Boolean> checked;
+    private int count = 0;
+    private int challengeID;
+
     @Override
     public void onCreate(Bundle savedInstanceState) {
-        Log.d("onCreate", "LeaderBoardView");
         setContentView(R.layout.activity_challenge_leaderboard);
         super.onCreate(savedInstanceState);
-        Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
-        if (toolbar != null) {
-            setSupportActionBar(toolbar);
-            getSupportActionBar().setDisplayHomeAsUpEnabled(true);
-        }
+        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
 
+        challengeID = getIntent().getExtras().getInt("challengeID", 0);
+        confirmBtn = (ButtonRectangle) findViewById(R.id.challenge_leaderboard_confirm);
+
+        checked = new ArrayList<>();
         leaderboardList = (ListView) findViewById(R.id.leaderboard_list);
         ServerHelper.getInstance().getLeaderboardById(DatabaseHelper.getInstance().getOwnerId(),
                 new ServerHelper.ResponseFunc<ArrayList<Profile>>() {
                     @Override
                     public void onResponse(ArrayList<Profile> response) {
                         list = response;
+                        for(int i = 0; i < response.size(); i++)
+                            checked.add(false);
                         setupList();
                     }
                 }, new Response.ErrorListener() {
@@ -63,10 +73,11 @@ public class ChallengeLeaderboard extends ServiceActivity {
                         alertDialog.show();
                     }
                 }, false);
+        checkCount();
     }
 
     private void setupList() {
-        adapter = new ChallengeLeaderboardAdapter(ChallengeLeaderboard.this, R.layout.list_item_leaderboard, list);
+        adapter = new ChallengeLeaderboardAdapter(ChallengeLeaderboard.this, R.layout.list_item_challenge_leaderboard, list);
         View header = getLayoutInflater().inflate(R.layout.list_head_foot_leaderboard, leaderboardList, false);
         TextView head = (TextView) header.findViewById(R.id.head_foot_text);
         head.setText("Load 10 higher ranks");
@@ -87,6 +98,8 @@ public class ChallengeLeaderboard extends ServiceActivity {
                                 @Override
                                 public void onResponse(ArrayList<Profile> response) {
                                     list.addAll(0, response);
+                                    for(int i = 0; i < response.size(); i++)
+                                        checked.add(0, false);
                                     ((ArrayAdapter) ((HeaderViewListAdapter) leaderboardList.getAdapter()).getWrappedAdapter()).notifyDataSetChanged();
                                 }
                             }, null, false);
@@ -96,20 +109,54 @@ public class ChallengeLeaderboard extends ServiceActivity {
                                 @Override
                                 public void onResponse(ArrayList<Profile> response) {
                                     list.addAll(response);
+                                    for(int i = 0; i < response.size(); i++)
+                                        checked.add(false);
                                     ((ArrayAdapter) ((HeaderViewListAdapter) leaderboardList.getAdapter()).getWrappedAdapter()).notifyDataSetChanged();
                                 }
                             }, null, false);
-                } else  if(position > 0 && position <= list.size()) {
-                    int destId = list.get(position - 1).getId();
-                    if(destId != DatabaseHelper.getInstance().getOwnerId()) {
-                        Intent intent = new Intent(ChallengeLeaderboard.this, ChallengeStranger.class);
-                        intent.putExtra("strangerId", destId);
-                        startActivity(intent);
-                        overridePendingTransition(R.anim.enter_right, R.anim.leave_left);
-                    }
                 }
             }
         });
+    }
+
+    public void onConfirm(View v) {
+        int count = 0;
+        for(boolean c : checked) {
+            if(c) {
+                count++;
+            }
+        }
+        int[] ids = new int[count];
+        count = 0;
+        for(int i = 0; i < list.size(); i++) {
+            if(checked.get(i)) {
+                ids[count++] = list.get(i).getId();
+            }
+        }
+        Challenge challenge = new Challenge(challengeID, ids);
+        GCMMessageHandler.challenges.add(challenge);
+        challenge.sendMessage(GCMMessage.REQUEST, "");
+        Intent intent = new Intent(this, OpenChallenge.class);
+        intent.putExtra("challenge_index", GCMMessageHandler.challenges.indexOf(challenge));
+        intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+        startActivity(intent);
+        overridePendingTransition(R.anim.enter_right, R.anim.leave_left);
+        finish();
+    }
+
+    public void checkCount() {
+        int min = ChallengeList.challenges.get(challengeID).getMinAmount();
+        int max = ChallengeList.challenges.get(challengeID).getMaxAmount();
+        if((count + 1) < min) {
+            confirmBtn.setText("Choose " + (min - (count + 1)) + " more " + (min - (count + 1) > 1 ? "opponents" : "opponent"));
+            confirmBtn.setEnabled(false);
+        } else if((count + 1) > max) {
+            confirmBtn.setText("Remove " + ((count + 1) - max) + ((count + 1) - max > 1 ? " opponents" : " opponent"));
+            confirmBtn.setEnabled(false);
+        } else {
+            confirmBtn.setText("Confirm");
+            confirmBtn.setEnabled(true);
+        }
     }
 
     private class ChallengeLeaderboardAdapter extends ArrayAdapter<Profile> {
@@ -125,10 +172,9 @@ public class ChallengeLeaderboard extends ServiceActivity {
         }
 
         @Override
-        public View getView(int position, View convertView, ViewGroup parent) {
+        public View getView(final int position, View convertView, ViewGroup parent) {
             if(convertView == null) {
-                LayoutInflater inflater = (LayoutInflater) getContext().getSystemService(LAYOUT_INFLATER_SERVICE);
-                convertView = inflater.inflate(itemLayoutId, parent, false);
+                convertView = getLayoutInflater().inflate(itemLayoutId, parent, false);
             }
             Profile p = data.get(position);
 
@@ -137,6 +183,7 @@ public class ChallengeLeaderboard extends ServiceActivity {
                 ImageView avatar = (ImageView) convertView.findViewById(R.id.leaderboard_avatar);
                 TextView username = (TextView) convertView.findViewById(R.id.leaderboard_username);
                 TextView experience = (TextView) convertView.findViewById(R.id.leaderboard_experience);
+                CheckBox checkBox = (CheckBox) convertView.findViewById(R.id.opponent_checkbox);
 
 
                 int avatarID = getResources().getIdentifier("avatar_" + p.getAvatar() +"_128", "drawable", getPackageName());
@@ -144,17 +191,38 @@ public class ChallengeLeaderboard extends ServiceActivity {
                     rank.setTextColor(accentColor);
                     username.setTextColor(accentColor);
                     experience.setTextColor(accentColor);
+                    checkBox.setVisibility(View.INVISIBLE);
                 } else {
                     rank.setTextColor(normalColor);
                     username.setTextColor(normalColor);
                     experience.setTextColor(normalColor);
+                    checkBox.setVisibility(View.VISIBLE);
                 }
+                checkBox.setChecked(checked.get(position));
+                checkBox.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+                    @Override
+                    public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+                        checked.set(position, isChecked);
+                        if(isChecked) {
+                            count++;
+                            checkCount();
+                        } else {
+                            count--;
+                            checkCount();
+                        }
+                    }
+                });
                 if(rank != null) {rank.setText(Integer.toString(p.getRank()));}
                 if(avatar != null) {avatar.setImageResource(avatarID);}
                 if(username != null) {username.setText(p.getUsername());}
                 if(experience != null) {experience.setText(Integer.toString(p.getExperience()));}
             }
             return convertView;
+        }
+
+        @Override
+        public boolean isEnabled(int position) {
+            return false;
         }
     }
 }
