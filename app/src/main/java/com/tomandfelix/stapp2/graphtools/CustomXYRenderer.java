@@ -62,7 +62,7 @@ public class CustomXYRenderer extends XYSeriesRenderer<CustomXYFormatter> {
         Path increasePath = null;
         Path levelPath = null;
         Path decreasePath = null;
-        ArrayList<Pair<PointF, Integer>> points = new ArrayList<Pair<PointF, Integer>>(series.size());
+        ArrayList<Pair<PointF, Integer>> points = new ArrayList<>(series.size());
         for (int i = 0; i < series.size(); i++) {
             Number y = series.getY(i);
             Number x = series.getX(i);

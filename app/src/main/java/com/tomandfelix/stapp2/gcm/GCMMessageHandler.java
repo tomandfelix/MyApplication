@@ -1,6 +1,8 @@
 package com.tomandfelix.stapp2.gcm;
 
 import com.google.android.gms.gcm.GoogleCloudMessaging;
+import com.tomandfelix.stapp2.activity.OpenChallenge;
+import com.tomandfelix.stapp2.activity.OpenChallengesFragment;
 import com.tomandfelix.stapp2.persistency.Challenge;
 import com.tomandfelix.stapp2.persistency.DatabaseHelper;
 import com.tomandfelix.stapp2.persistency.GCMMessage;
@@ -22,7 +24,6 @@ import java.util.List;
 
 public class GCMMessageHandler extends IntentService {
     public static final int MSG_RECEIVED = 0;
-    public static final int MSG_SENT = 1;
     public static final List<Challenge> challenges = Collections.synchronizedList(new ArrayList<Challenge>());
     public static Handler handler = new MessageHandler();
 
@@ -111,13 +112,19 @@ public class GCMMessageHandler extends IntentService {
                             for (Challenge c : challenges) {
                                 if (message.getChallengeId() == c.getId()) {
                                     c.addResult(message);
-                                    if(c.getState() == Challenge.DONE) {
+                                    if(c.getState() == Challenge.WAITING) {
                                         handler.post(c.getValidator());
                                     }
                                 }
                             }
                         }
                     }
+                }
+                if(OpenChallenge.getHandler() != null) {
+                    OpenChallenge.getHandler().obtainMessage(OpenChallenge.MSG_REFRESH).sendToTarget();
+                }
+                if(OpenChallengesFragment.getAdapter() != null) {
+                    OpenChallengesFragment.getAdapter().notifyDataSetChanged();
                 }
             }
         }

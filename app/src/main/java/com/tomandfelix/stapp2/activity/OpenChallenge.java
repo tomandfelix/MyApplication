@@ -2,9 +2,9 @@ package com.tomandfelix.stapp2.activity;
 
 import android.content.Context;
 import android.content.Intent;
-import android.support.v7.app.ActionBarActivity;
+import android.os.Handler;
 import android.os.Bundle;
-import android.support.v7.widget.Toolbar;
+import android.os.Message;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -29,6 +29,7 @@ import java.util.ArrayList;
 import java.util.Date;
 
 public class OpenChallenge extends ServiceActivity {
+    private static Handler handler;
     private ListView openChallengeList;
     private OpenChallengeListAdapter adapter;
     private ArrayList<Profile> mProfileList = new ArrayList<>();
@@ -38,6 +39,7 @@ public class OpenChallenge extends ServiceActivity {
     private ButtonRectangle positiveButton;
     private ProgressBarDeterminate progress;
     private TextView resultView;
+    public static final int MSG_REFRESH = 1;
     private static final String START = "Start";
     private static final String WAITING = "Waiting";
     private static final String ACCEPT = "Accept";
@@ -45,9 +47,10 @@ public class OpenChallenge extends ServiceActivity {
     private static final String DISMISS = "Dismiss";
 
     @Override
-    public void onCreate(Bundle savedInstanceState) {
+    protected void onCreate(Bundle savedInstanceState) {
         setContentView(R.layout.activity_open_challenge);
         super.onCreate(savedInstanceState);
+
         openChallengeList = (ListView) findViewById(R.id.open_challenge_list_view);
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
 
@@ -60,13 +63,13 @@ public class OpenChallenge extends ServiceActivity {
         Intent intent = getIntent();
         int challengeIndex = intent.getIntExtra("challenge_index", 0);
         challenge = GCMMessageHandler.challenges.get(challengeIndex);
-        updateButtons();
+        updateChallengeViews();
 
         ServerHelper.getInstance().getProfilesByIds(challenge.getOpponents(), new ServerHelper.ResponseFunc<ArrayList<Profile>>() {
             @Override
             public void onResponse(ArrayList<Profile> response) {
                 mProfileList = response;
-                updateVisual();
+                updateProfileViews();
             }
         }, new Response.ErrorListener() {
             @Override
@@ -76,7 +79,25 @@ public class OpenChallenge extends ServiceActivity {
         }, false);
     }
 
-    private void updateButtons() {
+    public static Handler getHandler() {
+        return handler;
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        handler = new OpenHandler();
+        updateChallengeViews();
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        handler.removeCallbacksAndMessages(null);
+        handler = null;
+    }
+
+    private void updateChallengeViews() {
         switch(challenge.getState()) {
             case Challenge.REQ_SENT:
                 buttons.setVisibility(View.VISIBLE);
@@ -159,7 +180,7 @@ public class OpenChallenge extends ServiceActivity {
                 finish();
                 break;
         }
-        updateButtons();
+        updateChallengeViews();
     }
 
     public void onNegativeButton(View v) {
@@ -169,10 +190,10 @@ public class OpenChallenge extends ServiceActivity {
                 finish();
                 break;
         }
-        updateButtons();
+        updateChallengeViews();
     }
 
-    private void updateVisual() {
+    private void updateProfileViews() {
         adapter = new OpenChallengeListAdapter(OpenChallenge.this, R.layout.list_item_open_challenge, mProfileList);
         openChallengeList.setAdapter(adapter);
 
@@ -220,6 +241,15 @@ public class OpenChallenge extends ServiceActivity {
         @Override
         public boolean isEnabled(int position) {
             return false;
+        }
+    }
+
+    private class OpenHandler extends Handler {
+        @Override
+        public void handleMessage(Message msg) {
+            if(msg.what == MSG_REFRESH) {
+                updateChallengeViews();
+            }
         }
     }
 }

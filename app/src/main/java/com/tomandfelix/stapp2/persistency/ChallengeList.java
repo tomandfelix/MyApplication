@@ -4,6 +4,7 @@ import android.util.Log;
 
 import com.android.volley.Response;
 import com.android.volley.VolleyError;
+import com.tomandfelix.stapp2.activity.OpenChallenge;
 import com.tomandfelix.stapp2.application.StApp;
 import com.tomandfelix.stapp2.gcm.GCMMessageHandler;
 import com.tomandfelix.stapp2.tools.Algorithms;
@@ -35,7 +36,10 @@ public class ChallengeList {
                     long result = Algorithms.millisecondsStood(start, end);
                     Log.i("Quick test", Long.toString(result));
                     challenge.getResults().add(challenge.sendMessage(GCMMessage.RESULT, Long.toString(result)));
-                    challenge.setState(Challenge.DONE);
+                    challenge.setState(Challenge.WAITING);
+                    if(OpenChallenge.getHandler() != null) {
+                        OpenChallenge.getHandler().obtainMessage(OpenChallenge.MSG_REFRESH).sendToTarget();
+                    }
                     calcResult();
                 } else if(challenge.getState() == Challenge.WAITING) {
                     calcResult();
@@ -64,6 +68,9 @@ public class ChallengeList {
                         challenge.setStateMessage("You had one thing to do, ONE! (you lost)");
                     }
                     challenge.setState(Challenge.DONE);
+                    if(OpenChallenge.getHandler() != null) {
+                        OpenChallenge.getHandler().obtainMessage(OpenChallenge.MSG_REFRESH).sendToTarget();
+                    }
                 }
             }
         }));

@@ -1913,7 +1913,7 @@ public abstract class ShimmerObject {
     public static BiMap<String,String> generateBiMapSensorIDtoSensorName(int shimmerVersion){
         BiMap<String, String> sensorBitmaptoName =null;
         if (shimmerVersion != SHIMMER_2R){
-            final Map<String, String> tempSensorBMtoName = new HashMap<String, String>();
+            final Map<String, String> tempSensorBMtoName = new HashMap<>();
             tempSensorBMtoName.put(Integer.toString(SENSOR_GYRO), "Gyroscope");
             tempSensorBMtoName.put(Integer.toString(SENSOR_MAG), "Magnetometer");
             tempSensorBMtoName.put(Integer.toString(SENSOR_GSR), "GSR");
@@ -1939,7 +1939,7 @@ public abstract class ShimmerObject {
             tempSensorBMtoName.put(Integer.toString(SENSOR_EXG2_16BIT), "EXG2 16Bit");
             sensorBitmaptoName = ImmutableBiMap.copyOf(Collections.unmodifiableMap(tempSensorBMtoName));
         } else {
-            final Map<String, String> tempSensorBMtoName = new HashMap<String, String>();
+            final Map<String, String> tempSensorBMtoName = new HashMap<>();
             tempSensorBMtoName.put(Integer.toString(SENSOR_ACCEL), "Accelerometer");
             tempSensorBMtoName.put(Integer.toString(SENSOR_GYRO), "Gyroscope");
             tempSensorBMtoName.put(Integer.toString(SENSOR_MAG), "Magnetometer");
@@ -1970,7 +1970,7 @@ public abstract class ShimmerObject {
     public void generateBiMapSensorIDtoSensorName(){
         if (mShimmerVersion != -1){
             if (mShimmerVersion != SHIMMER_2R){
-                final Map<String, String> tempSensorBMtoName = new HashMap<String, String>();
+                final Map<String, String> tempSensorBMtoName = new HashMap<>();
                 tempSensorBMtoName.put(Integer.toString(SENSOR_BMP180), "Pressure");
                 tempSensorBMtoName.put(Integer.toString(SENSOR_GYRO), "Gyroscope");
                 tempSensorBMtoName.put(Integer.toString(SENSOR_MAG), "Magnetometer");
@@ -1996,7 +1996,7 @@ public abstract class ShimmerObject {
 
 
             } else {
-                final Map<String, String> tempSensorBMtoName = new HashMap<String, String>();
+                final Map<String, String> tempSensorBMtoName = new HashMap<>();
                 tempSensorBMtoName.put(Integer.toString(SENSOR_ACCEL), "Accelerometer");
                 tempSensorBMtoName.put(Integer.toString(SENSOR_GYRO), "Gyroscope");
                 tempSensorBMtoName.put(Integer.toString(SENSOR_MAG), "Magnetometer");
@@ -2025,7 +2025,7 @@ public abstract class ShimmerObject {
 
 
     public String[] getListofEnabledSensorSignals(){
-        List<String> listofSignals = new ArrayList<String>();
+        List<String> listofSignals = new ArrayList<>();
         String[] enabledSignals;
         if (mShimmerVersion!=SHIMMER_3){
             listofSignals.add("Timestamp");
@@ -2692,132 +2692,114 @@ public abstract class ShimmerObject {
         // e.g. if any axis of the accelerometer is being transmitted, then it will
         // recognise that the accelerometer is being sampled
         int enabledSensors = 0;
-        for (int i=0;i<channels.length;i++)
-        {
-            if (mShimmerVersion==SHIMMER_3){
-                if (channels[i]==Configuration.Shimmer3.Channel.XAAccel || channels[i]==Configuration.Shimmer3.Channel.YAAccel || channels[i]==Configuration.Shimmer3.Channel.ZAAccel){
+        for (byte channel : channels) {
+            if (mShimmerVersion == SHIMMER_3) {
+                if (channel == Configuration.Shimmer3.Channel.XAAccel || channel == Configuration.Shimmer3.Channel.YAAccel || channel == Configuration.Shimmer3.Channel.ZAAccel) {
                     enabledSensors = enabledSensors | SENSOR_ACCEL;
                 }
-                if (channels[i]==Configuration.Shimmer3.Channel.XDAccel || channels[i]==Configuration.Shimmer3.Channel.YDAccel||channels[i]==Configuration.Shimmer3.Channel.ZDAccel){
+                if (channel == Configuration.Shimmer3.Channel.XDAccel || channel == Configuration.Shimmer3.Channel.YDAccel || channel == Configuration.Shimmer3.Channel.ZDAccel) {
                     enabledSensors = enabledSensors | SENSOR_DACCEL;
                 }
-                if (channels[i]==Configuration.Shimmer3.Channel.XGyro || channels[i]==Configuration.Shimmer3.Channel.YGyro||channels[i]==Configuration.Shimmer3.Channel.ZGyro){
+                if (channel == Configuration.Shimmer3.Channel.XGyro || channel == Configuration.Shimmer3.Channel.YGyro || channel == Configuration.Shimmer3.Channel.ZGyro) {
                     enabledSensors = enabledSensors | SENSOR_GYRO;
                 }
-                if (channels[i]==Configuration.Shimmer3.Channel.XMag || channels[i]==Configuration.Shimmer3.Channel.YMag||channels[i]==Configuration.Shimmer3.Channel.ZMag){
+                if (channel == Configuration.Shimmer3.Channel.XMag || channel == Configuration.Shimmer3.Channel.YMag || channel == Configuration.Shimmer3.Channel.ZMag) {
                     enabledSensors = enabledSensors | SENSOR_MAG;
                 }
-                if (channels[i]==Configuration.Shimmer3.Channel.VBatt){
+                if (channel == Configuration.Shimmer3.Channel.VBatt) {
                     enabledSensors = enabledSensors | SENSOR_BATT;
                 }
-                if (channels[i]==Configuration.Shimmer3.Channel.ExtAdc7){
+                if (channel == Configuration.Shimmer3.Channel.ExtAdc7) {
                     enabledSensors = enabledSensors | SENSOR_EXT_ADC_A7;
                 }
-                if (channels[i]==Configuration.Shimmer3.Channel.ExtAdc6){
+                if (channel == Configuration.Shimmer3.Channel.ExtAdc6) {
                     enabledSensors = enabledSensors | SENSOR_EXT_ADC_A6;
                 }
-                if (channels[i]==Configuration.Shimmer3.Channel.ExtAdc15){
+                if (channel == Configuration.Shimmer3.Channel.ExtAdc15) {
                     enabledSensors = enabledSensors | SENSOR_EXT_ADC_A15;
                 }
-                if (channels[i]==Configuration.Shimmer3.Channel.IntAdc1){
+                if (channel == Configuration.Shimmer3.Channel.IntAdc1) {
                     enabledSensors = enabledSensors | SENSOR_INT_ADC_A1;
                 }
-                if (channels[i]==Configuration.Shimmer3.Channel.IntAdc12){
+                if (channel == Configuration.Shimmer3.Channel.IntAdc12) {
                     enabledSensors = enabledSensors | SENSOR_INT_ADC_A12;
                 }
-                if (channels[i]==Configuration.Shimmer3.Channel.IntAdc13){
+                if (channel == Configuration.Shimmer3.Channel.IntAdc13) {
                     enabledSensors = enabledSensors | SENSOR_INT_ADC_A13;
                 }
-                if (channels[i]==Configuration.Shimmer3.Channel.IntAdc14){
+                if (channel == Configuration.Shimmer3.Channel.IntAdc14) {
                     enabledSensors = enabledSensors | SENSOR_INT_ADC_A14;
                 }
-                if (channels[i]==Configuration.Shimmer3.Channel.Pressure){
+                if (channel == Configuration.Shimmer3.Channel.Pressure) {
                     enabledSensors = enabledSensors | SENSOR_BMP180;
                 }
-                if (channels[i]==Configuration.Shimmer3.Channel.Temperature){
+                if (channel == Configuration.Shimmer3.Channel.Temperature) {
                     enabledSensors = enabledSensors | SENSOR_BMP180;
                 }
-                if (channels[i]==Configuration.Shimmer3.Channel.GsrRaw){
+                if (channel == Configuration.Shimmer3.Channel.GsrRaw) {
                     enabledSensors = enabledSensors | SENSOR_GSR;
                 }
-                if (channels[i]==Configuration.Shimmer3.Channel.EXG_ADS1292R_1_STATUS){
+                if (channel == Configuration.Shimmer3.Channel.EXG_ADS1292R_1_STATUS) {
                     //enabledSensors = enabledSensors | SENSOR_EXG1_24BIT;
                 }
-                if (channels[i]==Configuration.Shimmer3.Channel.EXG_ADS1292R_1_CH1_24BIT){
+                if (channel == Configuration.Shimmer3.Channel.EXG_ADS1292R_1_CH1_24BIT) {
                     enabledSensors = enabledSensors | SENSOR_EXG1_24BIT;
                 }
-                if (channels[i]==Configuration.Shimmer3.Channel.EXG_ADS1292R_1_CH2_24BIT){
+                if (channel == Configuration.Shimmer3.Channel.EXG_ADS1292R_1_CH2_24BIT) {
                     enabledSensors = enabledSensors | SENSOR_EXG1_24BIT;
                 }
-                if (channels[i]==Configuration.Shimmer3.Channel.EXG_ADS1292R_1_CH1_16BIT){
+                if (channel == Configuration.Shimmer3.Channel.EXG_ADS1292R_1_CH1_16BIT) {
                     enabledSensors = enabledSensors | SENSOR_EXG1_16BIT;
                 }
-                if (channels[i]==Configuration.Shimmer3.Channel.EXG_ADS1292R_1_CH2_16BIT){
+                if (channel == Configuration.Shimmer3.Channel.EXG_ADS1292R_1_CH2_16BIT) {
                     enabledSensors = enabledSensors | SENSOR_EXG1_16BIT;
                 }
-                if (channels[i]==Configuration.Shimmer3.Channel.EXG_ADS1292R_2_STATUS){
+                if (channel == Configuration.Shimmer3.Channel.EXG_ADS1292R_2_STATUS) {
                     //enabledSensors = enabledSensors | SENSOR_EXG2_24BIT;
                 }
-                if (channels[i]==Configuration.Shimmer3.Channel.EXG_ADS1292R_2_CH1_24BIT){
+                if (channel == Configuration.Shimmer3.Channel.EXG_ADS1292R_2_CH1_24BIT) {
                     enabledSensors = enabledSensors | SENSOR_EXG2_24BIT;
                 }
-                if (channels[i]==Configuration.Shimmer3.Channel.EXG_ADS1292R_2_CH2_24BIT){
+                if (channel == Configuration.Shimmer3.Channel.EXG_ADS1292R_2_CH2_24BIT) {
                     enabledSensors = enabledSensors | SENSOR_EXG2_24BIT;
                 }
-                if (channels[i]==Configuration.Shimmer3.Channel.EXG_ADS1292R_2_CH1_16BIT){
+                if (channel == Configuration.Shimmer3.Channel.EXG_ADS1292R_2_CH1_16BIT) {
                     enabledSensors = enabledSensors | SENSOR_EXG2_16BIT;
                 }
-                if (channels[i]==Configuration.Shimmer3.Channel.EXG_ADS1292R_2_CH2_16BIT){
+                if (channel == Configuration.Shimmer3.Channel.EXG_ADS1292R_2_CH2_16BIT) {
                     enabledSensors = enabledSensors | SENSOR_EXG2_16BIT;
                 }
-                if ((channels[i] == Configuration.Shimmer3.Channel.BridgeAmpHigh) || (channels[i] == Configuration.Shimmer3.Channel.BridgeAmpLow))
-                {
+                if ((channel == Configuration.Shimmer3.Channel.BridgeAmpHigh) || (channel == Configuration.Shimmer3.Channel.BridgeAmpLow)) {
                     enabledSensors = enabledSensors | SENSOR_BRIDGE_AMP;
                 }
 
-            } else if(mShimmerVersion==SHIMMER_2R){
-                if (channels[i]==Configuration.Shimmer2.Channel.XAccel || channels[i]==Configuration.Shimmer2.Channel.YAccel||channels[i]==Configuration.Shimmer2.Channel.ZAccel){
+            } else if (mShimmerVersion == SHIMMER_2R) {
+                if (channel == Configuration.Shimmer2.Channel.XAccel || channel == Configuration.Shimmer2.Channel.YAccel || channel == Configuration.Shimmer2.Channel.ZAccel) {
                     enabledSensors = enabledSensors | SENSOR_ACCEL;
                 }
-                if (channels[i]==Configuration.Shimmer2.Channel.XGyro || channels[i]==Configuration.Shimmer2.Channel.YGyro ||channels[i]==Configuration.Shimmer2.Channel.ZGyro){
+                if (channel == Configuration.Shimmer2.Channel.XGyro || channel == Configuration.Shimmer2.Channel.YGyro || channel == Configuration.Shimmer2.Channel.ZGyro) {
                     enabledSensors = enabledSensors | SENSOR_GYRO;
                 }
-                if (channels[i]==Configuration.Shimmer2.Channel.XMag || channels[i]==Configuration.Shimmer2.Channel.XMag ||channels[i]==Configuration.Shimmer2.Channel.XMag){
+                if (channel == Configuration.Shimmer2.Channel.XMag || channel == Configuration.Shimmer2.Channel.XMag || channel == Configuration.Shimmer2.Channel.XMag) {
                     enabledSensors = enabledSensors | SENSOR_MAG;
                 }
-                if ((channels[i] == Configuration.Shimmer2.Channel.EcgLaLl) || (channels[i] == Configuration.Shimmer2.Channel.EcgRaLl))
-                {
+                if ((channel == Configuration.Shimmer2.Channel.EcgLaLl) || (channel == Configuration.Shimmer2.Channel.EcgRaLl)) {
                     enabledSensors = enabledSensors | SENSOR_ECG;
-                }
-                else if (channels[i] == Configuration.Shimmer2.Channel.Emg)
-                {
+                } else if (channel == Configuration.Shimmer2.Channel.Emg) {
                     enabledSensors = enabledSensors | SENSOR_EMG;
-                }
-                else if (channels[i] == Configuration.Shimmer2.Channel.AnExA0 && getPMux()==0)
-                {
+                } else if (channel == Configuration.Shimmer2.Channel.AnExA0 && getPMux() == 0) {
                     enabledSensors = enabledSensors | SENSOR_EXP_BOARD_A0;
-                }
-                else if (channels[i] == Configuration.Shimmer2.Channel.AnExA7 && getPMux()==0)
-                {
+                } else if (channel == Configuration.Shimmer2.Channel.AnExA7 && getPMux() == 0) {
                     enabledSensors = enabledSensors | SENSOR_EXP_BOARD_A7;
-                }
-                else if ((channels[i] == Configuration.Shimmer2.Channel.BridgeAmpHigh) || (channels[i] == Configuration.Shimmer2.Channel.BridgeAmpLow))
-                {
+                } else if ((channel == Configuration.Shimmer2.Channel.BridgeAmpHigh) || (channel == Configuration.Shimmer2.Channel.BridgeAmpLow)) {
                     enabledSensors = enabledSensors | SENSOR_BRIDGE_AMP;
-                }
-                else if ((channels[i] == Configuration.Shimmer2.Channel.GsrRaw) || (channels[i] == Configuration.Shimmer2.Channel.GsrRes))
-                {
+                } else if ((channel == Configuration.Shimmer2.Channel.GsrRaw) || (channel == Configuration.Shimmer2.Channel.GsrRes)) {
                     enabledSensors = enabledSensors | SENSOR_GSR;
-                }
-                else if (channels[i] == Configuration.Shimmer2.Channel.HeartRate)
-                {
+                } else if (channel == Configuration.Shimmer2.Channel.HeartRate) {
                     enabledSensors = enabledSensors | SENSOR_HEART;
-                }   else if (channels[i] == Configuration.Shimmer2.Channel.AnExA0 && getPMux()==1)
-                {
+                } else if (channel == Configuration.Shimmer2.Channel.AnExA0 && getPMux() == 1) {
                     enabledSensors = enabledSensors | SENSOR_BATT;
-                }
-                else if (channels[i] == Configuration.Shimmer2.Channel.AnExA7 && getPMux()==1)
-                {
+                } else if (channel == Configuration.Shimmer2.Channel.AnExA7 && getPMux() == 1) {
                     enabledSensors = enabledSensors | SENSOR_BATT;
                 }
             }
@@ -2896,7 +2878,7 @@ public abstract class ShimmerObject {
 
 
     public List<String> getListofEnabledSensors(){
-        List<String> listofSensors = new ArrayList<String>();
+        List<String> listofSensors = new ArrayList<>();
         if (mShimmerVersion==SHIMMER_3){
             if (((mEnabledSensors & 0xFF)& SENSOR_ACCEL) > 0){
                 listofSensors.add("Low Noise Accelerometer");
@@ -2983,7 +2965,7 @@ public abstract class ShimmerObject {
      * @return list string array of properties
      */
     public List<String[]> getListofEnabledSensorSignalsandFormats(){
-        List<String[]> listofSignals = new ArrayList<String[]>();
+        List<String[]> listofSignals = new ArrayList<>();
 
         if (mShimmerVersion!=SHIMMER_3){
             String[] channel = new String[]{mMyName,"Timestamp","CAL","mSecs"};
@@ -3537,7 +3519,7 @@ public abstract class ShimmerObject {
 
     public void addExtraSignalProperty(String [] property){
         if (mExtraSignalProperties==null){
-            mExtraSignalProperties = new ArrayList<String[]>();
+            mExtraSignalProperties = new ArrayList<>();
         }
         mExtraSignalProperties.add(property);
     }

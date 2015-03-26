@@ -27,7 +27,8 @@ public class AccountSettings extends ServiceActivity {
     private ImageView avatar;
     private GridView avatarGrid;
     private EditText username, firstname, lastname, email, password;
-    String newAvatar = null;
+    private String newAvatar = null;
+    private TypedArray avatars;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -64,7 +65,7 @@ public class AccountSettings extends ServiceActivity {
             }
         });
 
-        TypedArray avatars = getResources().obtainTypedArray(R.array.avatars);
+        avatars = getResources().obtainTypedArray(R.array.avatars);
         AvatarGridAdapter avatarGridAdapter = new AvatarGridAdapter(this, R.layout.grid_item_avatar, avatars);
         avatarGrid.setAdapter(avatarGridAdapter);
         avatarGrid.setOnItemClickListener(new AdapterView.OnItemClickListener() {
@@ -75,6 +76,12 @@ public class AccountSettings extends ServiceActivity {
                 avatar.setImageResource(avatarID);
             }
         });
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        avatars.recycle();
     }
 
     public void onCancel(View v) {

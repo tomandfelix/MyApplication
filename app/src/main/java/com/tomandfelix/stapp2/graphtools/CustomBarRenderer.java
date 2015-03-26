@@ -163,12 +163,16 @@ public class CustomBarRenderer extends XYSeriesRenderer<CustomBarFormatter> {
                 //Log.d("BAR", "width=" + width + " <" + leftX + "|" + b.intX + "|" + (leftX + width) + "> " + b.intY);
                 if (b.barGroup.width >= 2) {
                     Paint paint;
-                    if(b.level.equals("High")) {
-                        paint = formatter.getHighPaint();
-                    } else if(b.level.equals("Mid")) {
-                        paint = formatter.getMidPaint();
-                    } else {
-                        paint = formatter.getLowPaint();
+                    switch (b.level) {
+                        case "High":
+                            paint = formatter.getHighPaint();
+                            break;
+                        case "Mid":
+                            paint = formatter.getMidPaint();
+                            break;
+                        default:
+                            paint = formatter.getLowPaint();
+                            break;
                     }
                     canvas.drawRect(leftX, b.intY, leftX + width, b.barGroup.plotArea.bottom, paint);
                 }

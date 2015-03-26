@@ -1,7 +1,5 @@
 package com.tomandfelix.stapp2.tools;
 
-import android.content.Context;
-
 import com.tomandfelix.stapp2.persistency.DBLog;
 import com.tomandfelix.stapp2.persistency.DatabaseHelper;
 

@@ -454,7 +454,6 @@ public class DatabaseHelper extends SQLiteOpenHelper{
         ArrayList<Profile> prof = null;
         String idString = Arrays.toString(ids);
         idString = idString.substring(1, idString.length() - 1);
-        Log.d("getProfilesByIds", "'" + idString + "'");
         String query = "SELECT " + KEY_ID + ", " + KEY_FIRSTNAME + ", " + KEY_LASTNAME + ", " + KEY_USERNAME + ", " + KEY_EMAIL + ", " + KEY_MONEY + ", " + KEY_EXPERIENCE + ", " + KEY_AVATAR + ", " + KEY_RANK + ", " + KEY_UPDATED + " FROM " + TABLE_PROFILES + " WHERE " + KEY_ID + " IN (" + idString + ")";
         Cursor cursor = db.rawQuery(query, null);
         if(cursor != null && cursor.getCount() == ids.length) {
@@ -591,6 +590,7 @@ public class DatabaseHelper extends SQLiteOpenHelper{
             cursor.moveToFirst();
             result = cursor.getString(0);
         }
+        if (cursor != null) cursor.close();
         return result;
     }
 }

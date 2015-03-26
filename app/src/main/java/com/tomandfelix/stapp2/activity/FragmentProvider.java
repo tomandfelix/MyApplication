@@ -23,6 +23,7 @@ import com.tomandfelix.stapp2.persistency.DatabaseHelper;
 public class FragmentProvider extends Fragment {
     private int position;
     private OnFragmentInteractionListener mListener;
+    private TypedArray avatars;
 
     public interface OnFragmentInteractionListener {
         public void onFragmentInteraction(String message);
@@ -62,7 +63,7 @@ public class FragmentProvider extends Fragment {
                 break;
             case 2:
                 layoutView = inflater.inflate(R.layout.fragment_register, container, false);
-                TypedArray avatars = getResources().obtainTypedArray(R.array.avatars);
+                avatars = getResources().obtainTypedArray(R.array.avatars);
                 Log.i("register", Integer.toString(avatars.length()));
                 GridView avatarGridView = (GridView) layoutView.findViewById(R.id.new_avatar_grid);
                 AvatarGridAdapter avatarGridAdapter = new AvatarGridAdapter(getActivity(), R.layout.grid_item_avatar, avatars);
@@ -89,5 +90,11 @@ public class FragmentProvider extends Fragment {
                 break;
         }
         return layoutView;
+    }
+
+    @Override
+    public void onDestroy() {
+        super.onDestroy();
+        if(avatars != null) avatars.recycle();
     }
 }

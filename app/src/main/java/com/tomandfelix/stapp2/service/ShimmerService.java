@@ -49,7 +49,6 @@ import java.util.List;
 
 import com.android.volley.Response;
 import com.android.volley.VolleyError;
-import com.tomandfelix.stapp2.driver.Shimmer;
 import com.tomandfelix.stapp2.driver.*;
 import com.tomandfelix.stapp2.persistency.DatabaseHelper;
 import com.tomandfelix.stapp2.persistency.IdLog;

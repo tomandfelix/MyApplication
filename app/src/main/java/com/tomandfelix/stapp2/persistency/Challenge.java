@@ -82,6 +82,7 @@ public class Challenge extends Quest {
 
     public synchronized void setState(int newState) {
         this.state = newState;
+        Log.e("Challenge", "STATE=" + newState);
     }
 
     public synchronized int[] getOpponents() {

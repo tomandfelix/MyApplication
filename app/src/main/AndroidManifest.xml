@@ -102,13 +102,6 @@
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value="com.tomandfelix.stapp2.activity.ChallengeView" />
         </activity>
-        <activity
-            android:name=".activity.ChallengeStranger"
-            android:label="@string/title_activity_challenge_stranger" >
-            <meta-data
-                android:name="android.support.PARENT_ACTIVITY"
-                android:value="com.tomandfelix.stapp2.activity.ChallengeLeaderboard" />
-        </activity>
 
         <activity
             android:name=".activity.ChallengeView"

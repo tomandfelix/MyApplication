@@ -103,7 +103,7 @@ public abstract class ShimmerBluetooth extends ShimmerObject {
     protected IOThread mIOThread;
     protected boolean mContinousSync=false;                                       // This is to select whether to continuously check the data packets 
     protected boolean mSetupDevice=false;
-    protected Stack<Byte> byteStack = new Stack<Byte>();
+    protected Stack<Byte> byteStack = new Stack<>();
     protected double mLowBattLimit=3.4;
     protected int numBytesToReadFromExpBoard=0;
 
@@ -128,7 +128,7 @@ public abstract class ShimmerBluetooth extends ShimmerObject {
     protected boolean mInitialized = false;
     protected abstract byte[] readBytes(int numberofBytes);
     protected abstract byte readByte();
-    protected List<byte []> mListofInstructions = new  ArrayList<byte[]>();
+    protected List<byte []> mListofInstructions = new  ArrayList<>();
     private final int ACK_TIMER_DURATION = 2; 									// Duration to wait for an ack packet (seconds)
     protected Timer mTimer;														// Timer variable used when waiting for an ack or response packet
     protected boolean mDummy=false;
@@ -903,7 +903,7 @@ public abstract class ShimmerBluetooth extends ShimmerObject {
                             } catch (InterruptedException e) {
                                 e.printStackTrace();
                             }
-                            List<Byte> buffer = new  ArrayList<Byte>();
+                            List<Byte> buffer = new  ArrayList<>();
                             if (!(mShimmerVersion==SHIMMER_3))
                             {
                                 for (int i = 0; i < 5; i++)
@@ -2219,23 +2219,25 @@ public abstract class ShimmerBluetooth extends ShimmerObject {
           	        mHandler.sendMessage(msg);*/
             }
         }
-        if (sensor.equals("Accelerometer")) {
-            mListofInstructions.add(new byte[]{GET_ACCEL_CALIBRATION_COMMAND});
-        }
-        else if (sensor.equals("Gyroscope")) {
-            mListofInstructions.add(new byte[]{GET_GYRO_CALIBRATION_COMMAND});
-        }
-        else if (sensor.equals("Magnetometer")) {
-            mListofInstructions.add(new byte[]{GET_MAG_CALIBRATION_COMMAND});
-        }
-        else if (sensor.equals("All")){
-            mListofInstructions.add(new byte[]{GET_ALL_CALIBRATION_COMMAND});
-        }
-        else if (sensor.equals("ECG")){
-            mListofInstructions.add(new byte[]{GET_ECG_CALIBRATION_COMMAND});
-        }
-        else if (sensor.equals("EMG")){
-            mListofInstructions.add(new byte[]{GET_EMG_CALIBRATION_COMMAND});
+        switch (sensor) {
+            case "Accelerometer":
+                mListofInstructions.add(new byte[]{GET_ACCEL_CALIBRATION_COMMAND});
+                break;
+            case "Gyroscope":
+                mListofInstructions.add(new byte[]{GET_GYRO_CALIBRATION_COMMAND});
+                break;
+            case "Magnetometer":
+                mListofInstructions.add(new byte[]{GET_MAG_CALIBRATION_COMMAND});
+                break;
+            case "All":
+                mListofInstructions.add(new byte[]{GET_ALL_CALIBRATION_COMMAND});
+                break;
+            case "ECG":
+                mListofInstructions.add(new byte[]{GET_ECG_CALIBRATION_COMMAND});
+                break;
+            case "EMG":
+                mListofInstructions.add(new byte[]{GET_EMG_CALIBRATION_COMMAND});
+                break;
         }
 
     }

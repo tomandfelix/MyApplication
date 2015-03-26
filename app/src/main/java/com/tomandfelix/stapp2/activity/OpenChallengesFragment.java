@@ -19,7 +19,6 @@ import com.android.volley.VolleyError;
 import com.tomandfelix.stapp2.R;
 import com.tomandfelix.stapp2.gcm.GCMMessageHandler;
 import com.tomandfelix.stapp2.persistency.Challenge;
-import com.tomandfelix.stapp2.persistency.GCMMessage;
 import com.tomandfelix.stapp2.persistency.Profile;
 import com.tomandfelix.stapp2.persistency.ServerHelper;
 
@@ -29,6 +28,17 @@ import java.util.List;
  * Created by Flixse on 19/03/2015.
  */
 public class OpenChallengesFragment extends ListFragment {
+    private static RequestAdapter requestAdapter;
+
+    public static ArrayAdapter getAdapter() {
+        return requestAdapter;
+    }
+
+    @Override
+    public void onDestroy() {
+        super.onDestroy();
+        requestAdapter = null;
+    }
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
@@ -42,7 +52,7 @@ public class OpenChallengesFragment extends ListFragment {
     public void onActivityCreated(Bundle savedInstanceState){
         Log.d("ListChallengesFragment", "onActivityCreated");
         super.onActivityCreated(savedInstanceState);
-        RequestAdapter requestAdapter = new RequestAdapter(getActivity(), R.layout.list_item_request, GCMMessageHandler.challenges);
+        requestAdapter = new RequestAdapter(getActivity(), R.layout.list_item_request, GCMMessageHandler.challenges);
 
         this.setListAdapter(requestAdapter);
         this.getListView().setOnItemClickListener(new AdapterView.OnItemClickListener() {

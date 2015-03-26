@@ -66,11 +66,11 @@ public class Logging {
     private double rmsY = 0.0;
     private double lengthXYZ = 0.0;
     private double meanLength = 0.0;
-    private ArrayList<Double> tempList = new ArrayList<Double>();
-    private ArrayList<Double> accYList = new ArrayList<Double>();
-    private ArrayList<Double> accZList = new ArrayList<Double>();
-    private ArrayList<Double> accXList = new ArrayList<Double>();
-    private ArrayList<Double> lengthList = new ArrayList<Double>();
+    private ArrayList<Double> tempList = new ArrayList<>();
+    private ArrayList<Double> accYList = new ArrayList<>();
+    private ArrayList<Double> accZList = new ArrayList<>();
+    private ArrayList<Double> accXList = new ArrayList<>();
+    private ArrayList<Double> lengthList = new ArrayList<>();
 
     private static final double ppmax = 100.0;
     private static final double k = 1.5;
