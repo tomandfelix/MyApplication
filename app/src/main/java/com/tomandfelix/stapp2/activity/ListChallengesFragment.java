@@ -85,7 +85,7 @@ public class ListChallengesFragment extends ListFragment {
                 TextView people = (TextView) convertView.findViewById(R.id.challenge_list_people);
 
                 name.setText(c.getName());
-                people.setText(Integer.toString(c.getMaxAmount()));
+                people.setText(c.getMinAmount() == c.getMaxAmount() ? Integer.toString(c.getMinAmount()) : c.getMinAmount() + " - " + c.getMaxAmount());
             }
             return convertView;
         }

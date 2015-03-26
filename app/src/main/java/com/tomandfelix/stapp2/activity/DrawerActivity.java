@@ -49,6 +49,20 @@ public abstract class DrawerActivity extends ServiceActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
+        if(this instanceof ProfileView) {
+            index = PROFILE;
+        } else if(this instanceof LeaderboardView) {
+            index = LEADERBOARD;
+        } else if(this instanceof GraphView) {
+            index = GRAPHS;
+        } else if(this instanceof SoloQuestList) {
+            index = SOLO_QUEST;
+        } else if(this instanceof ChallengeView) {
+            index = CHALLENGE;
+        } else if(this instanceof SettingsView) {
+            index = SETTINGS;
+        }
+
         backgroundColor = getResources().getColor(R.color.background);
         selectedBackgroundColor = getResources().getColor(R.color.drawerSelected);
         textColor = getResources().getColor(R.color.secondaryText);
@@ -73,7 +87,6 @@ public abstract class DrawerActivity extends ServiceActivity {
     protected void onPostCreate(Bundle savedInstanceState) {
         super.onPostCreate(savedInstanceState);
         drawerToggle.syncState();
-        leftDrawerList.setSelection(index);
     }
 
     @Override
@@ -86,7 +99,6 @@ public abstract class DrawerActivity extends ServiceActivity {
     }
 
     private void loadActivity(int newIndex) {
-        index = newIndex;
         Class destination;
         switch(newIndex) {
             case PROFILE:
@@ -108,7 +120,6 @@ public abstract class DrawerActivity extends ServiceActivity {
                 destination = SettingsView.class;
                 break;
             default:
-                index = PROFILE;
                 destination = ProfileView.class;
                 break;
         }

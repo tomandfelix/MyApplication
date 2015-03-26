@@ -30,6 +30,12 @@ import java.util.List;
 public class OpenChallengesFragment extends ListFragment {
     private static RequestAdapter requestAdapter;
 
+    public static boolean hasAdapter() {
+        return visible;
+    }
+
+    private static boolean visible;
+
     public static ArrayAdapter getAdapter() {
         return requestAdapter;
     }
@@ -38,6 +44,21 @@ public class OpenChallengesFragment extends ListFragment {
     public void onDestroy() {
         super.onDestroy();
         requestAdapter = null;
+    }
+
+    @Override
+    public void onPause() {
+        super.onPause();
+        visible = false;
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+        visible = true;
+        if(requestAdapter != null) {
+            requestAdapter.notifyDataSetChanged();
+        }
     }
 
     @Override
@@ -52,7 +73,7 @@ public class OpenChallengesFragment extends ListFragment {
     public void onActivityCreated(Bundle savedInstanceState){
         Log.d("ListChallengesFragment", "onActivityCreated");
         super.onActivityCreated(savedInstanceState);
-        requestAdapter = new RequestAdapter(getActivity(), R.layout.list_item_request, GCMMessageHandler.challenges);
+        requestAdapter = new RequestAdapter(getActivity(), R.layout.list_item_challenge, GCMMessageHandler.challenges);
 
         this.setListAdapter(requestAdapter);
         this.getListView().setOnItemClickListener(new AdapterView.OnItemClickListener() {
@@ -92,22 +113,11 @@ public class OpenChallengesFragment extends ListFragment {
             Challenge solution = data.get(position);
 
             if(solution != null) {
-                TextView title = (TextView) convertView.findViewById(R.id.request_title);
-                final TextView challenger = (TextView) convertView.findViewById(R.id.request_challenger);
+                TextView title = (TextView) convertView.findViewById(R.id.challenge_list_name);
+                TextView amount = (TextView) convertView.findViewById(R.id.challenge_list_people);
 
                 title.setText(solution.getName());
-                ServerHelper.getInstance().getOtherProfile(solution.getOpponents()[0],
-                        new ServerHelper.ResponseFunc<Profile>() {
-                            @Override
-                            public void onResponse(Profile response) {
-                                challenger.setText(response.getUsername());
-                            }
-                        }, new Response.ErrorListener() {
-                            @Override
-                            public void onErrorResponse(VolleyError volleyError) {
-                                Log.e("OpenChallengesFragment", volleyError.getMessage());
-                            }
-                        }, false);
+                amount.setText(solution.getMinAmount() == solution.getMaxAmount() ? Integer.toString(solution.getMinAmount()) : solution.getMinAmount() + " - " + solution.getMaxAmount());
             }
             return convertView;
         }

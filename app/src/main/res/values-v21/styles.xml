@@ -4,5 +4,6 @@
         <item name="colorPrimaryDark">@color/primaryColorDark</item>
         <item name="android:statusBarColor">@color/primaryColorDark</item>
         <item name="android:textColor">@color/secondaryText</item>
+        <item name="colorControlActivated">@color/primaryColor</item>
     </style>
 </resources>

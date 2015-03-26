@@ -1,9 +1,11 @@
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:orientation="horizontal"
     android:layout_width="match_parent"
-    android:layout_height="66dp"
+    android:layout_height="wrap_content"
     android:paddingTop="7dp"
-    android:paddingBottom="7dp">
+    android:paddingBottom="7dp"
+    android:paddingLeft="@dimen/activity_margin"
+    android:paddingRight="@dimen/activity_margin">
 
 
     <TextView
@@ -12,29 +14,27 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_alignParentTop="true"
-        android:layout_marginTop="3dp"
-        android:layout_marginLeft="@dimen/activity_margin"
+        android:layout_alignParentLeft="true"
         android:text="Challenge name123456789"/>
+
     <ImageView
         android:id="@+id/challenge_list_people_icon"
         android:layout_width="25dp"
         android:layout_height="25dp"
         android:layout_below="@id/challenge_list_name"
-        android:layout_marginTop="3dp"
+        android:layout_marginTop="7dp"
         android:layout_alignParentLeft="true"
-        android:layout_marginLeft="@dimen/activity_margin"
         android:src="@drawable/icon_people"/>
+
     <TextView
         android:id="@+id/challenge_list_people"
         android:textSize="20sp"
-        android:layout_width="120dp"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_below="@id/challenge_list_name"
-        android:layout_marginTop="3dp"
+        android:layout_alignTop="@+id/challenge_list_people_icon"
+        android:layout_alignBottom="@+id/challenge_list_people_icon"
+        android:gravity="center_vertical"
         android:layout_toRightOf="@id/challenge_list_people_icon"
-        android:layout_marginLeft="5dp"
+        android:layout_marginLeft="7dp"
         android:text="2"/>
-
-
-
 </RelativeLayout>

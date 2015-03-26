@@ -115,6 +115,7 @@
         </activity>
         <activity
             android:name=".activity.OpenChallenge"
+            android:parentActivityName=".activity.ChallengeView"
             android:label="@string/title_activity_open_challenge" >
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
