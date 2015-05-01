@@ -52,10 +52,12 @@ import com.tomandfelix.stapp2.persistency.DBLog;
 import com.tomandfelix.stapp2.persistency.DatabaseHelper;
 import com.tomandfelix.stapp2.driver.FormatCluster;
 import com.tomandfelix.stapp2.driver.ObjectCluster;
+import com.tomandfelix.stapp2.service.ShimmerService;
 
 
 public class Logging {
     private static Logging uniqueInstance;
+    private static ShimmerService service;
     private static final long _30mn_to_ms = 30 * 60 * 1000;
     private static final long _24h_to_ms = 24 * 60 * 60 * 1000;
 
@@ -78,7 +80,6 @@ public class Logging {
     private double S[] = { 219.2, 98.4, 98.6, 1089.4, 1951.5 };
     private double gmeans[][] = { { 77.2, -113.9, -85.7, 823.4, 3917.8 },
             { -17.1, -382.8, 14.4, 4134.7, 5058.4 } };
-    private static Handler handler = null;
     public static final int STATE_DAY_STARTED = 0;
     public static final int STATE_DAY_STOPPED = 1;
     public static final int STATE_CONNECTING = 2;
@@ -95,30 +96,16 @@ public class Logging {
     private boolean dayStarted = false;
     private boolean overtimeLogged = false;
 
-    public static Logging getInstance() {
+    public static Logging getInstance(ShimmerService mService) {
         if (uniqueInstance == null) {
             uniqueInstance = new Logging();
+            service = mService;
         }
         return uniqueInstance;
     }
 
-    public static Handler getHandler() {
-        return handler;
-    }
-
-    public static void setHandler(Handler newHandler) {
-        handler = newHandler;
-        if(newHandler == null) {
-            Log.i("Logging", "handler unset");
-        } else {
-            Log.i("Logging", "handler set");
-        }
-    }
-
     private void sendUpdate() {
-        if(handler != null) {
-            handler.obtainMessage(getState()).sendToTarget();
-        }
+        service.sendToApp(getState());
     }
 
     public int getState() {

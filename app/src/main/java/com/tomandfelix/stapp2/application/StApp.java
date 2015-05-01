@@ -7,31 +7,29 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.ServiceConnection;
 import android.os.AsyncTask;
+import android.os.Bundle;
 import android.os.Handler;
 import android.os.IBinder;
+import android.os.Message;
+import android.os.Messenger;
+import android.os.RemoteException;
 import android.util.Log;
 import android.widget.Toast;
 
 import com.android.volley.Response;
 import com.android.volley.VolleyError;
 import com.tomandfelix.stapp2.gcm.GCMMessageHandler;
-import com.tomandfelix.stapp2.persistency.Challenge;
 import com.tomandfelix.stapp2.persistency.ChallengeList;
 import com.tomandfelix.stapp2.persistency.DatabaseHelper;
-import com.tomandfelix.stapp2.persistency.GCMMessage;
 import com.tomandfelix.stapp2.persistency.Profile;
 import com.tomandfelix.stapp2.persistency.ServerHelper;
-import com.tomandfelix.stapp2.persistency.Solo;
 import com.tomandfelix.stapp2.persistency.VolleyQueue;
 import com.tomandfelix.stapp2.service.ShimmerService;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.GooglePlayServicesUtil;
 import com.google.android.gms.gcm.GoogleCloudMessaging;
-import com.tomandfelix.stapp2.tools.Algorithms;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Date;
 
 /**
  * Created by Tom on 11/03/2015.
@@ -39,21 +37,73 @@ import java.util.Date;
 public class StApp  extends Application {
     private Profile mProfile;
     private static StApp singleton;
-    private ShimmerService mService;
+    private Messenger toService = null;
     private String PROJECT_NUMBER = "413268601960";
     private String gcmRegistrationId = null;
     private int playServicesResultCode;
-    private static Handler handler = new Handler();
+    private static Handler gcmHandler = new Handler();
+    private static Handler handler = null;
+
+    private static class ServiceHandler extends Handler {
+        @Override
+        public void handleMessage(Message msg) {
+            if(handler != null) {
+                Message copy = Message.obtain();
+                copy.copyFrom(msg);
+                handler.sendMessage(copy);
+            }
+        }
+    }
+    private final Messenger fromService = new Messenger(new ServiceHandler());
     private ServiceConnection mServiceConnection = new ServiceConnection() {
 
         public void onServiceConnected(ComponentName className, IBinder service) {
-            mService = ((ShimmerService.LocalBinder) service).getService();
+            Log.d("StApp", "registering messenger");
+            toService = new Messenger(service);
+            Message msg = Message.obtain(null, ShimmerService.REGISTER_MESSENGER);
+            msg.replyTo = fromService;
+            sendToService(msg);
         }
 
         public void onServiceDisconnected(ComponentName arg0) {
-            mService = null;
+            toService = null;
         }
     };
+
+    public static Handler getHandler() {
+        return handler;
+    }
+
+    public static void setHandler(Handler newHandler) {
+        handler = newHandler;
+        if(newHandler == null) {
+            Log.i("StApp", "handler unset");
+        } else {
+            Log.i("StApp", "handler set");
+        }
+    }
+
+    public void commandService(int command) {
+        sendToService(Message.obtain(null, command));
+    }
+
+    public void commandServiceConnect(String address) {
+        Message msg = Message.obtain(null, ShimmerService.CONNECT);
+        Bundle bundle = new Bundle();
+        bundle.putString("address", address);
+        msg.setData(bundle);
+        sendToService(msg);
+    }
+
+    private void sendToService(Message msg) {
+        if(toService != null) {
+            try {
+                toService.send(msg);
+            } catch (RemoteException e) {
+                toService = null;
+            }
+        }
+    }
 
     public static void makeToast(String text) {
         Toast.makeText(singleton, text, Toast.LENGTH_LONG).show();
@@ -81,10 +131,6 @@ public class StApp  extends Application {
         return false;
     }
 
-    public ShimmerService getService() {
-        return mService;
-    }
-
     public String getGcmRegistrationId() {
         return gcmRegistrationId;
     }
@@ -107,7 +153,6 @@ public class StApp  extends Application {
             startService(new Intent(this, ShimmerService.class));
         }
         bindService(new Intent(this, ShimmerService.class), mServiceConnection, Context.BIND_AUTO_CREATE);
-
         handleGCM();
     }
 
@@ -133,7 +178,7 @@ public class StApp  extends Application {
                         }
                     } catch (IOException ex) {
                         Log.e("GCM :", ex.getMessage());
-                        handler.postDelayed(new Runnable() {
+                        gcmHandler.postDelayed(new Runnable() {
                             @Override
                             public void run() {
                                 handleGCM();

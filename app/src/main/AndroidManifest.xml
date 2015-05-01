@@ -42,7 +42,9 @@
 
         <service
             android:name=".service.ShimmerService"
-            android:enabled="true">
+            android:enabled="true"
+            android:process=":Sensor"
+            android:icon="@drawable/stapp_icon_launcher2">
         </service>
 
         <activity

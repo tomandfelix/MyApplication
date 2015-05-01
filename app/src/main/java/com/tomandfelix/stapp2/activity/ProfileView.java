@@ -30,6 +30,7 @@ import com.tomandfelix.stapp2.R;
 import com.tomandfelix.stapp2.persistency.DatabaseHelper;
 import com.tomandfelix.stapp2.persistency.Profile;
 import com.tomandfelix.stapp2.persistency.ServerHelper;
+import com.tomandfelix.stapp2.service.ShimmerService;
 import com.tomandfelix.stapp2.tools.Logging;
 
 import java.lang.ref.WeakReference;
@@ -92,7 +93,7 @@ public class ProfileView extends DrawerActivity {
         }
 
         statusIcon = (ImageView) findViewById(R.id.profile_status_icon);
-        updateState(Logging.getInstance().getState());
+        app.commandService(ShimmerService.REQUEST_STATE);
     }
 
     private void askForPassword() {
@@ -135,17 +136,17 @@ public class ProfileView extends DrawerActivity {
     @Override
     protected void onResume() {
         super.onResume();
-        if(Logging.getHandler() != loggingMessageHandler) {
-            Logging.setHandler(loggingMessageHandler);
+        if(app.getHandler() != loggingMessageHandler) {
+            app.setHandler(loggingMessageHandler);
         }
-        updateState(Logging.getInstance().getState());
+        app.commandService(ShimmerService.REQUEST_STATE);
     }
 
     @Override
     protected void onPause() {
         super.onPause();
-        if(Logging.getHandler() == loggingMessageHandler) {
-            Logging.setHandler(null);
+        if(app.getHandler() == loggingMessageHandler) {
+            app.setHandler(null);
         }
     }
 
@@ -159,11 +160,11 @@ public class ProfileView extends DrawerActivity {
 
     public void onPauseResume(View view) {
         if(pauseButton.getText().equals(PAUSE)) {
-            app.getService().disconnectShimmer();
+            app.commandService(ShimmerService.DISCONNECT);
         } else {
             String sensor = DatabaseHelper.getInstance().getSensor();
             if (sensor != null && !sensor.equals("")) {
-                app.getService().connectShimmer(sensor, "Device");
+                app.commandServiceConnect(sensor);
             }
         }
     }
@@ -177,13 +178,13 @@ public class ProfileView extends DrawerActivity {
             } else if(DatabaseHelper.getInstance().getSensor() == null || DatabaseHelper.getInstance().getSensor().equals("")) {
                 createSensorDialog().show();
             } else {
-                Logging.getInstance().logStartDay();
+                app.commandService(ShimmerService.LOG_START_DAY);
                 String sensor = DatabaseHelper.getInstance().getSensor();
-                app.getService().connectShimmer(sensor, "Device");
+                app.commandServiceConnect(sensor);
             }
         } else {
-            app.getService().disconnectShimmer();
-            Logging.getInstance().logAchievedScore();
+            app.commandService(ShimmerService.DISCONNECT);
+            app.commandService(ShimmerService.LOG_ACHIEVED_SCORE);
         }
     }
 

@@ -49,6 +49,7 @@ import java.util.List;
 
 import com.android.volley.Response;
 import com.android.volley.VolleyError;
+import com.tomandfelix.stapp2.application.StApp;
 import com.tomandfelix.stapp2.driver.*;
 import com.tomandfelix.stapp2.persistency.DatabaseHelper;
 import com.tomandfelix.stapp2.persistency.IdLog;
@@ -61,13 +62,17 @@ import android.content.Intent;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.os.Binder;
+import android.os.Bundle;
 import android.os.Handler;
 import android.os.IBinder;
 import android.os.Looper;
 import android.os.Message;
+import android.os.Messenger;
+import android.os.RemoteException;
 import android.util.Log;
 
 public class ShimmerService extends Service {
+    private static ShimmerService uniqueInstance;
     private static final String TAG = "MyService";
     private static final boolean mEnableLogging=true;
     private final IBinder mBinder = new LocalBinder();
@@ -77,6 +82,61 @@ public class ShimmerService extends Service {
     private Handler uploadHandler;
     private Runnable uploadCheck;
     private int uploadFrequency;
+    public static final int REGISTER_MESSENGER = 0;
+    public static final int UPLOAD_DATA = 1;
+    public static final int DOWNLOAD_DATA = 2;
+    public static final int CONNECT = 3;
+    public static final int DISCONNECT = 4;
+    public static final int REQUEST_STATE = 5;
+    public static final int LOG_START_DAY = 6;
+    public static final int LOG_ACHIEVED_SCORE = 7;
+
+    private static Messenger toApp;
+    private static class AppHandler extends Handler {
+        @Override
+        public void handleMessage(Message msg) {
+            switch(msg.what) {
+                case REGISTER_MESSENGER:
+                    Log.d("ShimmerService", "received messenger");
+                    toApp = msg.replyTo;
+                    break;
+                case UPLOAD_DATA:
+                    uniqueInstance.uploadData();
+                    break;
+                case DOWNLOAD_DATA:
+                    uniqueInstance.downloadData();
+                    break;
+                case CONNECT:
+                    uniqueInstance.connectShimmer(msg.getData().getString("address"), "Device");
+                    break;
+                case DISCONNECT:
+                    uniqueInstance.disconnectShimmer();
+                    break;
+                case REQUEST_STATE:
+                    uniqueInstance.sendToApp(Logging.getInstance(uniqueInstance).getState());
+                    break;
+                case LOG_START_DAY:
+                    Logging.getInstance(uniqueInstance).logStartDay();
+                    break;
+                case LOG_ACHIEVED_SCORE:
+                    Logging.getInstance(uniqueInstance).logAchievedScore();
+                    break;
+                default:
+                    super.handleMessage(msg);
+            }
+        }
+    }
+    private final Messenger mMessenger = new Messenger(new AppHandler());
+
+    public void sendToApp(int state) {
+        if(toApp != null) {
+            try {
+                toApp.send(Message.obtain(null, state));
+            } catch (RemoteException e) {
+                toApp = null;
+            }
+        }
+    }
 
     public void tryReconnect() {
         if(address.equals("")) {
@@ -104,11 +164,12 @@ public class ShimmerService extends Service {
 
     @Override
     public IBinder onBind(Intent intent) {
-        return mBinder;
+        return mMessenger.getBinder();
     }
 
     @Override
     public void onCreate() {
+        uniqueInstance = this;
         uploadFrequency = DatabaseHelper.getInstance().getUploadFrequency();
         uploadHandler = new Handler();
         uploadCheck = new Runnable() {
@@ -124,7 +185,7 @@ public class ShimmerService extends Service {
         }
     }
 
-    public void uploadData() {
+    private void uploadData() {
         NetworkInfo wifi = ((ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE)).getNetworkInfo(ConnectivityManager.TYPE_WIFI);
         if (wifi.isConnected() || DatabaseHelper.getInstance().uploadOn3G()) {
             ArrayList<IdLog> logs = DatabaseHelper.getInstance().getLogsToUpload();
@@ -151,7 +212,7 @@ public class ShimmerService extends Service {
                     }
                 });
             } else {
-                int state = Logging.getInstance().getState();
+                int state = Logging.getInstance(this).getState();
                 if(state == Logging.STATE_CONNECTING || state == Logging.STATE_DISCONNECTED || state == Logging.STATE_DAY_STOPPED) {
                     stopUploadTask();
                 }
@@ -159,7 +220,7 @@ public class ShimmerService extends Service {
         }
     }
 
-    public void downloadData() {
+    private void downloadData() {
         IdLog last = DatabaseHelper.getInstance().getLastLog();
         ServerHelper.getInstance().downloadLogs(last == null ? 0 : last.getId(), new Response.ErrorListener() {
             @Override
@@ -237,7 +298,7 @@ public class ShimmerService extends Service {
 
     public void connectShimmer(String bluetoothAddress,String selectedDevice) {
         Log.d("Shimmer","net Connection");
-        Logging.getInstance().logConnecting();
+        Logging.getInstance(this).logConnecting();
         address = bluetoothAddress;
         Shimmer shimmerDevice=new Shimmer(this, mHandler,selectedDevice,false);
         mMultiShimmer.remove(bluetoothAddress);
@@ -249,7 +310,7 @@ public class ShimmerService extends Service {
 
     public void disconnectShimmer() {
         address = "";
-        Logging.getInstance().logDisconnect();
+        Logging.getInstance(this).logDisconnect();
         stopStreamingAllDevices();
     }
 
@@ -280,7 +341,7 @@ public class ShimmerService extends Service {
                         if ((msg.obj instanceof ObjectCluster)) {    // within each msg an object can be include, objectclusters are used to represent the data structure of the shimmer device
                             ObjectCluster objectCluster = (ObjectCluster) msg.obj;
                             if (mEnableLogging) {
-                                Logging.getInstance().logData(objectCluster);
+                                Logging.getInstance(mShimmerService.get()).logData(objectCluster);
                             }
                         }
                         break;
@@ -289,10 +350,10 @@ public class ShimmerService extends Service {
                         if (msg.getData().getString(Shimmer.TOAST).equals("Device connection was lost") ||
                                 msg.getData().getString(Shimmer.TOAST).contains("stopped streaming") ||
                                 msg.getData().getString(Shimmer.TOAST).contains("Killing Connection")) {
-                            Logging.getInstance().logDisconnect();
+                            Logging.getInstance(mShimmerService.get()).logDisconnect();
                             mShimmerService.get().tryReconnect();
                         } else if (msg.getData().getString(Shimmer.TOAST).contains("is now Streaming")) {
-                            Logging.getInstance().logConnect();
+                            Logging.getInstance(mShimmerService.get()).logConnect();
                             mShimmerService.get().startUploadTask();
                             mShimmerService.get().retryAmount = 0;
                         } else if (msg.getData().getString(Shimmer.TOAST).contains("is ready for Streaming")) {

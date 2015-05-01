@@ -23,6 +23,7 @@ import com.tomandfelix.stapp2.persistency.Profile;
 import com.tomandfelix.stapp2.persistency.ServerHelper;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.GooglePlayServicesUtil;
+import com.tomandfelix.stapp2.service.ShimmerService;
 
 /**
  * Created by Tom on 3/11/2014.
@@ -55,8 +56,8 @@ public class FragmentViewer extends FragmentActivity implements FragmentProvider
                         Intent intent = new Intent(FragmentViewer.this, ProfileView.class);
                         intent.putExtra("profile", response);
                         startActivity(intent);
-                        ((StApp) getApplication()).getService().uploadData();
-                        ((StApp) getApplication()).getService().downloadData();
+                        ((StApp) getApplication()).commandService(ShimmerService.UPLOAD_DATA);
+                        ((StApp) getApplication()).commandService(ShimmerService.DOWNLOAD_DATA);
                         finish();
                     }
                 }
@@ -122,8 +123,8 @@ public class FragmentViewer extends FragmentActivity implements FragmentProvider
                     intent.putExtra("profile", response);
                     startActivity(intent);
                     overridePendingTransition(R.anim.enter_top, R.anim.leave_bottom);
-                    ((StApp) getApplication()).getService().uploadData();
-                    ((StApp) getApplication()).getService().downloadData();
+                    ((StApp) getApplication()).commandService(ShimmerService.UPLOAD_DATA);
+                    ((StApp) getApplication()).commandService(ShimmerService.DOWNLOAD_DATA);
                     finish();
                 }
             }
