@@ -181,6 +181,7 @@ public class Logging {
 
     public void logDisconnect() {
         connecting = false;
+        Log.d("logDisconnect", "running");
         if(DatabaseHelper.getInstance().isConnected()) {
             Date now = new Date();
             connTimeSinceCurr += now.getTime() - last.getDatetime().getTime();
@@ -188,7 +189,7 @@ public class Logging {
             DatabaseHelper.getInstance().addLog(last);
             connected = false;
             sendUpdate();
-        } else if(getState() == STATE_CONNECTING) {
+        } else {
             sendUpdate();
         }
     }
