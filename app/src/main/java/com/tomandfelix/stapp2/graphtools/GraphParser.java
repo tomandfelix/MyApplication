@@ -113,9 +113,20 @@ public abstract class GraphParser {
         }
     }
 
+    private static boolean checkLogs(ArrayList<DBLog> logs) {
+        for(DBLog log : logs) {
+            switch(log.getAction()) {
+                case DatabaseHelper.LOG_STAND:
+                case DatabaseHelper.LOG_SIT:
+                    return true;
+            }
+        }
+        return false;
+    }
+
     public static DailyGraphData formatDailyData(ArrayList<DBLog> dayLogs, ArrayList<DBLog> connectionLogs) {
         DailyGraphData result = null;
-        if(dayLogs != null && dayLogs.size() > 0 && connectionLogs !=null && connectionLogs.size() > 0) {
+        if(dayLogs != null && dayLogs.size() > 0 && checkLogs(dayLogs) && connectionLogs != null && connectionLogs.size() > 0) {
             result = new DailyGraphData();
             if(!dayLogs.get(dayLogs.size() - 1).getAction().equals(DatabaseHelper.LOG_DISCONNECT)) {
                 DBLog now = new DBLog(DatabaseHelper.LOG_DISCONNECT, new Date(), 0);

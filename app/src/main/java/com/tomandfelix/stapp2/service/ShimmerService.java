@@ -49,7 +49,6 @@ import java.util.List;
 
 import com.android.volley.Response;
 import com.android.volley.VolleyError;
-import com.tomandfelix.stapp2.application.StApp;
 import com.tomandfelix.stapp2.driver.*;
 import com.tomandfelix.stapp2.persistency.DatabaseHelper;
 import com.tomandfelix.stapp2.persistency.IdLog;
@@ -61,8 +60,6 @@ import android.content.Context;
 import android.content.Intent;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
-import android.os.Binder;
-import android.os.Bundle;
 import android.os.Handler;
 import android.os.IBinder;
 import android.os.Looper;
@@ -75,7 +72,6 @@ public class ShimmerService extends Service {
     private static ShimmerService uniqueInstance;
     private static final String TAG = "MyService";
     private static final boolean mEnableLogging=true;
-    private final IBinder mBinder = new LocalBinder();
     public HashMap<String, Object> mMultiShimmer = new HashMap<>(7);
     private static String address = "";
     private int retryAmount = 0;
@@ -158,10 +154,6 @@ public class ShimmerService extends Service {
         }
     }
 
-    public String getAddress() {
-        return address;
-    }
-
     @Override
     public IBinder onBind(Intent intent) {
         return mMessenger.getBinder();
@@ -191,7 +183,6 @@ public class ShimmerService extends Service {
             ArrayList<IdLog> logs = DatabaseHelper.getInstance().getLogsToUpload();
             if(logs != null) {
                 Log.d("uploadData", "uploading records " + logs.get(0).getId() + "->" + logs.get(logs.size() - 1).getId());
-//                for (IdLog log : logs) Log.d("uploadData", log.toString());
                 final boolean more = logs.size() == 1000;
                 ServerHelper.getInstance().uploadLogs(logs, new ServerHelper.ResponseFunc<Integer>() {
                     @Override
@@ -225,8 +216,11 @@ public class ShimmerService extends Service {
         ServerHelper.getInstance().downloadLogs(last == null ? 0 : last.getId(), new Response.ErrorListener() {
             @Override
             public void onErrorResponse(VolleyError volleyError) {
-                if(!volleyError.getMessage().equals("none")) {
-                    Log.e("uploadData", volleyError.getMessage());
+                if(volleyError.getMessage().equals("none")) {
+                    Logging.getInstance(ShimmerService.this).checkDB();
+                    uploadData();
+                } else {
+                    Log.e("downloadData", volleyError.getMessage());
                 }
             }
         });
@@ -241,13 +235,6 @@ public class ShimmerService extends Service {
     private void stopUploadTask() {
         Log.d("uploadTask", "STOP");
         uploadHandler.removeCallbacks(uploadCheck);
-    }
-
-    public class LocalBinder extends Binder {
-        public ShimmerService getService() {
-            // Return this instance of LocalService so clients can call public methods
-            return ShimmerService.this;
-        }
     }
 
     @Override

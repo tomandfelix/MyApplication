@@ -208,6 +208,7 @@ public class Logging {
             } else {
                 achievedScore = getIncreasingScore(connTimeSinceCurr, currentActivity.getData());
             }
+            overtimeLogged = false;
 
             double achievedScorePercentage;
             DBLog first = DatabaseHelper.getInstance().getFirstRecordOfDay();
@@ -375,6 +376,75 @@ public class Logging {
             // TODO Auto-generated catch block
             e.printStackTrace();
             Log.d("Shimmer", "Error logging");
+        }
+    }
+
+    public void checkDB() {
+        last = DatabaseHelper.getInstance().getLastLog();
+        dayStarted = DatabaseHelper.getInstance().dayStarted() != null;
+        connected = DatabaseHelper.getInstance().isConnected();
+        if(dayStarted) {
+            currentActivity = DatabaseHelper.getInstance().getLastSitStand();
+            if(connected) {
+                DatabaseHelper.getInstance().addLog(new DBLog(DatabaseHelper.LOG_DISCONNECT, last.getDatetime(), -1));
+            }
+            if(currentActivity != null) {
+                ArrayList<DBLog> between = DatabaseHelper.getInstance().getLogsBetween(currentActivity.getDatetime(), last.getDatetime());
+                if(between == null) between = new ArrayList<>();
+                between.add(last);
+                DBLog temp = currentActivity;
+                overtimeLogged = false;
+                connTimeSinceCurr = 0;
+                for (DBLog log : between) {
+                    switch (log.getAction()) {
+                        case DatabaseHelper.LOG_DISCONNECT:
+                            connTimeSinceCurr += log.getDatetime().getTime() - temp.getDatetime().getTime();
+                            break;
+                        case DatabaseHelper.LOG_CONNECT:
+                            temp = log;
+                            break;
+                        case DatabaseHelper.LOG_OVERTIME:
+                            connTimeSinceCurr += log.getDatetime().getTime() - temp.getDatetime().getTime();
+                            temp = log;
+                            overtimeLogged = true;
+                            break;
+                    }
+                }
+            }
+
+            double achievedScore;
+            if (last.getAction().equals(DatabaseHelper.LOG_START_DAY) || currentActivity == null) {
+                achievedScore = 0;
+            } else if (overtimeLogged) {
+                achievedScore = getDecreasingScore(connTimeSinceCurr, currentActivity.getData());
+            } else {
+                achievedScore = getIncreasingScore(connTimeSinceCurr, currentActivity.getData());
+            }
+            overtimeLogged = false;
+
+            double achievedScorePercentage;
+            DBLog first = DatabaseHelper.getInstance().getFirstRecordOfDay();
+            if (first != null) {
+                long connectionTime = getConnectionTime(first, DatabaseHelper.getInstance().getTodaysConnectionLogs(), last.getDatetime());
+                double maxScoreToBeAchieved = getIncreasingScore(connectionTime, 0);
+                achievedScorePercentage = Math.round(achievedScore * 10000 / maxScoreToBeAchieved) / 100.0;
+                DatabaseHelper.getInstance().addLog(new DBLog(DatabaseHelper.LOG_ACH_SCORE, last.getDatetime(), achievedScore));
+                DatabaseHelper.getInstance().addLog(new DBLog(DatabaseHelper.LOG_ACH_SCORE_PERC, last.getDatetime(), achievedScorePercentage));
+                last = new DBLog(DatabaseHelper.LOG_STOP_DAY, last.getDatetime(), connectionTime);
+                DatabaseHelper.getInstance().addLog(last);
+                currentActivity = null;
+            } else {
+                DatabaseHelper.getInstance().addLog(new DBLog(DatabaseHelper.LOG_ACH_SCORE, last.getDatetime(), 0));
+                DatabaseHelper.getInstance().addLog(new DBLog(DatabaseHelper.LOG_ACH_SCORE_PERC, last.getDatetime(), 0));
+                last = new DBLog(DatabaseHelper.LOG_STOP_DAY, last.getDatetime(), 0);
+                DatabaseHelper.getInstance().addLog(last);
+                currentActivity = null;
+            }
+            dayStarted = false;
+            connected = false;
+            connecting = false;
+            overtimeLogged = false;
+            sendUpdate();
         }
     }
 }

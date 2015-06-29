@@ -320,6 +320,19 @@ public class DatabaseHelper extends SQLiteOpenHelper{
         return result;
     }
 
+    public DBLog getLastSitStand() {
+        Log.i("getLastSitStand", "running");
+        String query = "SELECT " + KEY_ACTION + ", " + KEY_DATETIME + ", " + KEY_DATA + " FROM " + TABLE_LOGS + " WHERE " + KEY_ACTION + " IN('" + LOG_SIT + "', '" + LOG_STAND + "') AND " + KEY_ID + " > (SELECT " + KEY_ID + " FROM " + TABLE_LOGS + " WHERE " + KEY_ACTION + " = '" + LOG_START_DAY + "' ORDER BY " + KEY_ID + " DESC LIMIT 1) ORDER BY " + KEY_ID + " DESC LIMIT 1";
+        Cursor cursor = db.rawQuery(query, null);
+        DBLog result = null;
+        if(cursor != null && cursor.getCount() > 0) {
+            cursor.moveToFirst();
+            result = new DBLog(cursor.getString(0), stringToDate(cursor.getString(1)), cursor.getDouble(2));
+        }
+        if(cursor != null) cursor.close();
+        return result;
+    }
+
     public boolean isConnected() {
         Log.i("isConnected", "checking");
         String query = "SELECT " + KEY_ACTION + " FROM " + TABLE_LOGS + " WHERE " + KEY_ACTION + " IN('" + LOG_CONNECT + "', '" + LOG_DISCONNECT + "') AND " + KEY_ID + " > (SELECT " + KEY_ID + " FROM " + TABLE_LOGS + " WHERE " + KEY_ACTION + " = '" + LOG_START_DAY + "' ORDER BY " + KEY_ID + " DESC LIMIT 1) ORDER BY " + KEY_ID + " DESC LIMIT 1";
