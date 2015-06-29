@@ -18,6 +18,7 @@ import android.widget.TextView;
 
 import com.tomandfelix.stapp2.R;
 import com.tomandfelix.stapp2.persistency.DatabaseHelper;
+import com.tomandfelix.stapp2.persistency.ServerHelper;
 
 public class SettingsView extends DrawerActivity {
     private ListView settingsList;
@@ -182,6 +183,7 @@ public class SettingsView extends DrawerActivity {
                         public void onClick(DialogInterface dialog, int which) {
                             switch (which) {
                                 case DialogInterface.BUTTON_POSITIVE:
+                                    ServerHelper.getInstance().logout();
                                     DatabaseHelper.getInstance().setToken("");
                                     index = INITIAL;
                                     Intent intent = new Intent(SettingsView.this, FragmentViewer.class);

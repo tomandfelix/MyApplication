@@ -203,6 +203,26 @@ public class ServerHelper {
         VolleyQueue.getInstance().addToRequestQueue(login);
     }
 
+    public void logout() {
+        JSONObject request = new JSONObject();
+        try {
+            request.put("id", DatabaseHelper.getInstance().getOwnerId());
+            request.put("token", DatabaseHelper.getInstance().getToken());
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+
+        JsonObjectRequest logout = new JsonObjectRequest(Request.Method.POST, "http://eng.studev.groept.be/thesis/a14_stapp2/logout.php", request, new Response.Listener<JSONObject>() {
+            @Override
+            public void onResponse(JSONObject jsonObject) {
+            }
+        }, new Response.ErrorListener() {
+            @Override
+            public void onErrorResponse(VolleyError volleyError) {}
+        });
+        VolleyQueue.getInstance().addToRequestQueue(logout);
+    }
+
     /**
      * Gets the profile of the person that is logged in from the server and updates it in the local database, only when the token is still up to date
      * @param responseListener The function that is called upon success, the argument for this function will be the profile
