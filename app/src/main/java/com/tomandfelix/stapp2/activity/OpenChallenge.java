@@ -155,7 +155,7 @@ public class OpenChallenge extends ServiceActivity {
                 buttons.setVisibility(View.VISIBLE);
                 progress.setVisibility(View.INVISIBLE);
                 resultView.setVisibility(View.VISIBLE);
-                resultView.setText(challenge.getMyStatus().getData().split("|")[1]);
+                resultView.setText(challenge.getMyStatus().getData().split("\\|")[1]);
                 negativeButton.setVisibility(View.GONE);
                 positiveButton.setVisibility(View.VISIBLE);
                 positiveButton.setText(DISMISS);

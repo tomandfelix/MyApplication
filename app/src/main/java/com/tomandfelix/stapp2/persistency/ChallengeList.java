@@ -68,10 +68,10 @@ public class ChallengeList {
                     challenge.getMyStatus().setData(challenge.getMyStatus().getData() + "|You won, big time!");
                 } else if(mine == maxOthers) {
                     StApp.makeToast("It's a Tie, how did you pull this off?");
-                    challenge.getMyStatus().setData(challenge.getMyStatus().getData() + "It's a Tie, how did you pull this off?");
+                    challenge.getMyStatus().setData(challenge.getMyStatus().getData() + "|It's a Tie, how did you pull this off?");
                 } else {
                     StApp.makeToast("You had one thing to do, ONE! (you lost)");
-                    challenge.getMyStatus().setData(challenge.getMyStatus().getData() + "You had one thing to do, ONE! (you lost)");
+                    challenge.getMyStatus().setData(challenge.getMyStatus().getData() + "|You had one thing to do, ONE! (you lost)");
                 }
                 if(OpenChallenge.getHandler() != null) {
                     OpenChallenge.getHandler().obtainMessage(OpenChallenge.MSG_REFRESH).sendToTarget();
