@@ -698,9 +698,9 @@ public class ServerHelper {
                 requestArray.put(i);
             }
             request.put("receiver_ids", requestArray);
-            request.put("challenge_id", message.getChallengeId());
-            request.put("message", message.getMessage());
-            request.put("message_type", message.getMessageType());
+            request.put("challenge_unique_id", message.getUniqueId());
+            request.put("message", message.getMessage() == null ? "" : message.getMessage());
+            request.put("message_type", message.getMessageType().name());
             request.put("sender_id", DatabaseHelper.getInstance().getOwnerId());
         } catch (JSONException e) {
             e.printStackTrace();

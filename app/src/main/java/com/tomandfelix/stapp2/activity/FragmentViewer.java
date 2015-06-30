@@ -131,7 +131,7 @@ public class FragmentViewer extends FragmentActivity implements FragmentProvider
         }, new Response.ErrorListener() {
             @Override
             public void onErrorResponse(VolleyError error) {
-                if(error.getMessage().equals("wrong")) {
+                if(error != null && error.getMessage() != null && error.getMessage().equals("wrong")) {
                     txtView.setText("No such profile exists, please try again");
                     password.setText(null);
                     v.setEnabled(true);

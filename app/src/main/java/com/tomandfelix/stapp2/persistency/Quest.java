@@ -1,12 +1,9 @@
 package com.tomandfelix.stapp2.persistency;
 
-import android.os.Parcel;
-import android.os.Parcelable;
-
 /**
  * Created by Flixse on 27/01/2015.
  */
-public class Quest implements Parcelable {
+public abstract class Quest {
     protected int id;
     protected String name;
     protected String description;
@@ -40,32 +37,4 @@ public class Quest implements Parcelable {
         info += (description == null ? "":" description:" + description);
         return info;
     }
-    @Override
-    public int describeContents() {
-        return 0;
-    }
-
-    @Override
-    public void writeToParcel(Parcel dest, int flags) {
-        dest.writeInt(id);
-        dest.writeString(name);
-        dest.writeString(description);
-    }
-
-    protected Quest(Parcel in) {
-        id = in.readInt();
-        name = in.readString();
-        description = in.readString();
-
-    }
-
-    public static final Parcelable.Creator<Quest> CREATOR = new Parcelable.Creator<Quest>() {
-        public Quest createFromParcel(Parcel in) {
-            return new Quest(in);
-        }
-
-        public Quest[] newArray(int size) {
-            return new Quest[size];
-        }
-    };
 }

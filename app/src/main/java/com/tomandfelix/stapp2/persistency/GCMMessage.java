@@ -1,29 +1,23 @@
 package com.tomandfelix.stapp2.persistency;
 
-import org.json.JSONException;
-import org.json.JSONObject;
-
 /**
  * Created by Tom on 19/03/2015.
  */
 
 public class GCMMessage {
-    public static final int TEST_TOAST = -1;
-    public static final int REQUEST = 0;
-    public static final int ACCEPTED = 1;
-    public static final int DECLINED = 2;
-    public static final int COMMUNICATION = 3;
-    public static final int RESULT = 4;
+    public enum MessageType {
+        TEST_TOAST, REQUEST, ACCEPT, DECLINE, COMMUNICATION, RESULT
+    }
 
     private int[] receivers;
-    private int challengeId;
-    private int messageType;
+    private String uniqueId;
+    private MessageType messageType;
     private int senderId;
     private String message;
 
-    public GCMMessage(int[] receivers, int challengeId, int messageType, int senderId, String message) {
+    public GCMMessage(int[] receivers, String uniqueId, MessageType messageType, int senderId, String message) {
         this.receivers = receivers;
-        this.challengeId = challengeId;
+        this.uniqueId = uniqueId;
         this.messageType = messageType;
         this.senderId = senderId;
         this.message = message;
@@ -33,11 +27,11 @@ public class GCMMessage {
         return receivers;
     }
 
-    public int getChallengeId() {
-        return challengeId;
+    public String getUniqueId() {
+        return uniqueId;
     }
 
-    public int getMessageType() {
+    public MessageType getMessageType() {
         return messageType;
     }
 
@@ -50,7 +44,7 @@ public class GCMMessage {
     }
 
     public String toString() {
-        String result = "challengeId: " + challengeId;
+        String result = "uniqueId: " + uniqueId;
         result += " messageType: " + messageType;
         result += " message: '" + message + "'";
         result += " sender: " + senderId;

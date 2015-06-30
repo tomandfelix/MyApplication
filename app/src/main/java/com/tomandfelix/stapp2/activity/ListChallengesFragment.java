@@ -29,7 +29,7 @@ public class ListChallengesFragment extends ListFragment {
     private List<Challenge> list;
     public ListChallengesFragment(){
         super();
-        list = ChallengeList.challenges;
+        list = new ArrayList<>(ChallengeList.challenges.values());
     }
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {

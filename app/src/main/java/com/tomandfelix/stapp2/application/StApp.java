@@ -21,6 +21,7 @@ import com.android.volley.VolleyError;
 import com.tomandfelix.stapp2.gcm.GCMMessageHandler;
 import com.tomandfelix.stapp2.persistency.ChallengeList;
 import com.tomandfelix.stapp2.persistency.DatabaseHelper;
+import com.tomandfelix.stapp2.persistency.LiveChallenge;
 import com.tomandfelix.stapp2.persistency.Profile;
 import com.tomandfelix.stapp2.persistency.ServerHelper;
 import com.tomandfelix.stapp2.persistency.VolleyQueue;
@@ -30,6 +31,9 @@ import com.google.android.gms.common.GooglePlayServicesUtil;
 import com.google.android.gms.gcm.GoogleCloudMessaging;
 
 import java.io.IOException;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * Created by Tom on 11/03/2015.
@@ -43,6 +47,8 @@ public class StApp  extends Application {
     private int playServicesResultCode;
     private static Handler gcmHandler = new Handler();
     private static Handler handler = null;
+    public static final Map<String, LiveChallenge> challenges = Collections.synchronizedMap(new HashMap<String, LiveChallenge>());
+
 
     private static class ServiceHandler extends Handler {
         @Override
@@ -147,7 +153,6 @@ public class StApp  extends Application {
         DatabaseHelper.getInstance().openDB();
         ServerHelper.init(this);
         VolleyQueue.init(this);
-        ChallengeList.init();
         new GCMMessageHandler();
         if(!isServiceRunning()) {
             startService(new Intent(this, ShimmerService.class));

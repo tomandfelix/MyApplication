@@ -25,7 +25,7 @@ public class DatabaseHelper extends SQLiteOpenHelper{
     private static DatabaseHelper uniqueInstance = null;
     private static Context context;
     private static final int DATABASE_VERSION = 1;
-    public static final DateFormat df = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss.SSS");
+    private static final DateFormat df = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss.SSS");
     private static int lastPendingUploadIndex = 0;
     SQLiteDatabase db;
     private static final String DATABASE_NAME = "data.db";
@@ -140,11 +140,11 @@ public class DatabaseHelper extends SQLiteOpenHelper{
         return Math.round(TimeUnit.MILLISECONDS.toSeconds(new Date().getTime() - input.getTime()));
     }
 
-    private String dateToString(Date date) {
+    public static String dateToString(Date date) {
         return df.format(date);
     }
 
-    private Date stringToDate(String dateString) {
+    public static Date stringToDate(String dateString) {
         try {
             return df.parse(dateString);
         } catch (ParseException e) {

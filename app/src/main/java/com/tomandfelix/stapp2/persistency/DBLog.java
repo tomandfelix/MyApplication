@@ -61,7 +61,7 @@ public class DBLog {
 
     @Override
     public String toString() {
-        return action + " " + DatabaseHelper.df.format(datetime) + " " + data;
+        return action + " " + DatabaseHelper.dateToString(datetime) + " " + data;
     }
 
     public JSONObject toJSONObject() throws JSONException {

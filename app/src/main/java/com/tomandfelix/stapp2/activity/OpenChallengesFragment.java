@@ -17,11 +17,14 @@ import android.widget.TextView;
 import com.android.volley.Response;
 import com.android.volley.VolleyError;
 import com.tomandfelix.stapp2.R;
+import com.tomandfelix.stapp2.application.StApp;
 import com.tomandfelix.stapp2.gcm.GCMMessageHandler;
 import com.tomandfelix.stapp2.persistency.Challenge;
+import com.tomandfelix.stapp2.persistency.LiveChallenge;
 import com.tomandfelix.stapp2.persistency.Profile;
 import com.tomandfelix.stapp2.persistency.ServerHelper;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -73,14 +76,14 @@ public class OpenChallengesFragment extends ListFragment {
     public void onActivityCreated(Bundle savedInstanceState){
         Log.d("ListChallengesFragment", "onActivityCreated");
         super.onActivityCreated(savedInstanceState);
-        requestAdapter = new RequestAdapter(getActivity(), R.layout.list_item_challenge, GCMMessageHandler.challenges);
+        requestAdapter = new RequestAdapter(getActivity(), R.layout.list_item_challenge, new ArrayList<>(StApp.challenges.values()));
 
         this.setListAdapter(requestAdapter);
         this.getListView().setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
                 Intent intent = new Intent(getActivity(), OpenChallenge.class);
-                intent.putExtra("challenge_index", position);
+                intent.putExtra("challenge_unique_index", requestAdapter.getItem(position).getUniqueId());
                 startActivity(intent);
                 getActivity().overridePendingTransition(R.anim.enter_right, R.anim.leave_left);
             }
@@ -93,11 +96,11 @@ public class OpenChallengesFragment extends ListFragment {
         outState.putString("DO NOT CRASH", "MKAY");
     }
 
-    private class RequestAdapter extends ArrayAdapter<Challenge> {
-        private List<Challenge> data;
+    private class RequestAdapter extends ArrayAdapter<LiveChallenge> {
+        private List<LiveChallenge> data;
         private int itemLayoutId;
 
-        public RequestAdapter(Context context, int itemLayoutId, List<Challenge> data) {
+        public RequestAdapter(Context context, int itemLayoutId, List<LiveChallenge> data) {
             super(context, itemLayoutId, data);
             this.data = data;
             this.itemLayoutId = itemLayoutId;
@@ -110,14 +113,14 @@ public class OpenChallengesFragment extends ListFragment {
                 convertView = inflater.inflate(itemLayoutId, parent, false);
             }
 
-            Challenge solution = data.get(position);
+            LiveChallenge solution = data.get(position);
 
             if(solution != null) {
                 TextView title = (TextView) convertView.findViewById(R.id.challenge_list_name);
                 TextView amount = (TextView) convertView.findViewById(R.id.challenge_list_people);
 
-                title.setText(solution.getName());
-                amount.setText(solution.getMinAmount() == solution.getMaxAmount() ? Integer.toString(solution.getMinAmount()) : solution.getMinAmount() + " - " + solution.getMaxAmount());
+                title.setText(solution.getChallenge().getName());
+                amount.setText(solution.getChallenge().getMinAmount() == solution.getChallenge().getMaxAmount() ? Integer.toString(solution.getChallenge().getMinAmount()) : solution.getChallenge().getMinAmount() + " - " + solution.getChallenge().getMaxAmount());
             }
             return convertView;
         }

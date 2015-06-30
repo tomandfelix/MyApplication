@@ -20,11 +20,13 @@ import com.android.volley.Response;
 import com.android.volley.VolleyError;
 import com.gc.materialdesign.views.ButtonRectangle;
 import com.tomandfelix.stapp2.R;
+import com.tomandfelix.stapp2.application.StApp;
 import com.tomandfelix.stapp2.gcm.GCMMessageHandler;
 import com.tomandfelix.stapp2.persistency.Challenge;
 import com.tomandfelix.stapp2.persistency.ChallengeList;
 import com.tomandfelix.stapp2.persistency.DatabaseHelper;
 import com.tomandfelix.stapp2.persistency.GCMMessage;
+import com.tomandfelix.stapp2.persistency.LiveChallenge;
 import com.tomandfelix.stapp2.persistency.Profile;
 import com.tomandfelix.stapp2.persistency.ServerHelper;
 
@@ -133,11 +135,11 @@ public class ChallengeLeaderboard extends ServiceActivity {
                 ids[count++] = list.get(i).getId();
             }
         }
-        Challenge challenge = new Challenge(challengeID, ids);
-        GCMMessageHandler.challenges.add(challenge);
-        challenge.sendMessage(GCMMessage.REQUEST, "");
+        LiveChallenge challenge = new LiveChallenge(challengeID, ids);
+        StApp.challenges.put(challenge.getUniqueId(), challenge);
+        challenge.request();
         Intent intent = new Intent(this, OpenChallenge.class);
-        intent.putExtra("challenge_index", GCMMessageHandler.challenges.indexOf(challenge));
+        intent.putExtra("challenge_unique_index", challenge.getUniqueId());
         intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
         startActivity(intent);
         overridePendingTransition(R.anim.enter_right, R.anim.leave_left);

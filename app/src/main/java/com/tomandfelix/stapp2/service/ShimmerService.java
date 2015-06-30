@@ -39,8 +39,6 @@
 
 package com.tomandfelix.stapp2.service;
 
-
-
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 
@@ -66,7 +64,7 @@ import android.os.RemoteException;
 import android.util.Log;
 
 public class ShimmerService extends Service {
-    private static final String TAG = "ShimmerService";
+    private static final String TAG = ShimmerService.class.getSimpleName();
     private static final boolean mEnableLogging=true;
     private Shimmer sensor;
     private static String address = "";

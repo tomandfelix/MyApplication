@@ -6,7 +6,7 @@ import android.os.Parcelable;
 /**
  * Created by Flixse on 27/01/2015.
  */
-public class Solo extends Quest {
+public class Solo extends Quest implements Parcelable{
     private int money;
     private int xp;
     private int duration;
@@ -84,10 +84,7 @@ public class Solo extends Quest {
     }
 
     private Solo(Parcel in) {
-        super(in);
-        id = in.readInt();
-        name = in.readString();
-        description = in.readString();
+        super(in.readInt(), in.readString(), in.readString());
         money = in.readInt();
         xp = in.readInt();
         difficulty = in.readInt();

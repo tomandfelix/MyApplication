@@ -2,8 +2,8 @@ package com.tomandfelix.stapp2.activity;
 
 import android.content.Context;
 import android.content.Intent;
-import android.os.Handler;
 import android.os.Bundle;
+import android.os.Handler;
 import android.os.Message;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -19,11 +19,16 @@ import com.android.volley.VolleyError;
 import com.gc.materialdesign.views.ButtonRectangle;
 import com.gc.materialdesign.views.ProgressBarDeterminate;
 import com.tomandfelix.stapp2.R;
+import com.tomandfelix.stapp2.application.StApp;
 import com.tomandfelix.stapp2.gcm.GCMMessageHandler;
 import com.tomandfelix.stapp2.persistency.Challenge;
+import com.tomandfelix.stapp2.persistency.ChallengeStatus;
+import com.tomandfelix.stapp2.persistency.DatabaseHelper;
 import com.tomandfelix.stapp2.persistency.GCMMessage;
+import com.tomandfelix.stapp2.persistency.LiveChallenge;
 import com.tomandfelix.stapp2.persistency.Profile;
 import com.tomandfelix.stapp2.persistency.ServerHelper;
+import com.tomandfelix.stapp2.persistency.ChallengeStatus.Status;
 
 import java.util.ArrayList;
 import java.util.Date;
@@ -33,7 +38,7 @@ public class OpenChallenge extends ServiceActivity {
     private ListView openChallengeList;
     private OpenChallengeListAdapter adapter;
     private ArrayList<Profile> mProfileList = new ArrayList<>();
-    private Challenge challenge;
+    private LiveChallenge challenge;
     private View buttons;
     private ButtonRectangle negativeButton;
     private ButtonRectangle positiveButton;
@@ -45,6 +50,7 @@ public class OpenChallenge extends ServiceActivity {
     private static final String ACCEPT = "Accept";
     private static final String DECLINE = "Decline";
     private static final String DISMISS = "Dismiss";
+    private static final String WAIT_FOR_RESULT_MSG = "Waiting for results from other players";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -61,8 +67,8 @@ public class OpenChallenge extends ServiceActivity {
         resultView = (TextView) findViewById(R.id.open_challenge_result);
 
         Intent intent = getIntent();
-        int challengeIndex = intent.getIntExtra("challenge_index", 0);
-        challenge = GCMMessageHandler.challenges.get(challengeIndex);
+        String challengeIndex = intent.getStringExtra("challenge_unique_index");
+        challenge = StApp.challenges.get(challengeIndex);
         updateChallengeViews();
 
         ServerHelper.getInstance().getProfilesByIds(challenge.getOpponents(), new ServerHelper.ResponseFunc<ArrayList<Profile>>() {
@@ -98,26 +104,8 @@ public class OpenChallenge extends ServiceActivity {
     }
 
     private void updateChallengeViews() {
-        switch(challenge.getState()) {
-            case Challenge.REQ_SENT:
-                buttons.setVisibility(View.VISIBLE);
-                progress.setVisibility(View.INVISIBLE);
-                resultView.setVisibility(View.INVISIBLE);
-                negativeButton.setVisibility(View.GONE);
-                positiveButton.setVisibility(View.VISIBLE);
-                positiveButton.setText(WAITING);
-                positiveButton.setEnabled(false);
-                break;
-            case Challenge.ACCEPTED:
-                buttons.setVisibility(View.VISIBLE);
-                progress.setVisibility(View.INVISIBLE);
-                resultView.setVisibility(View.INVISIBLE);
-                negativeButton.setVisibility(View.GONE);
-                positiveButton.setVisibility(View.VISIBLE);
-                positiveButton.setText(START);
-                positiveButton.setEnabled(true);
-                break;
-            case Challenge.REQ_REC:
+        switch(challenge.getMyStatus().getStatus()) {
+            case NOT_ACCEPTED: //old case REQ_REC
                 buttons.setVisibility(View.VISIBLE);
                 progress.setVisibility(View.INVISIBLE);
                 resultView.setVisibility(View.INVISIBLE);
@@ -127,26 +115,47 @@ public class OpenChallenge extends ServiceActivity {
                 positiveButton.setText(ACCEPT);
                 positiveButton.setEnabled(true);
                 break;
-            case Challenge.STARTED:
+            case ACCEPTED:
+                if(challenge.hasEveryoneAccepted()) { //old case ACCEPTED
+                    buttons.setVisibility(View.VISIBLE);
+                    progress.setVisibility(View.INVISIBLE);
+                    resultView.setVisibility(View.INVISIBLE);
+                    negativeButton.setVisibility(View.GONE);
+                    positiveButton.setVisibility(View.VISIBLE);
+                    positiveButton.setText(START);
+                    positiveButton.setEnabled(true);
+                } else { //old case REQ_SENT
+                    buttons.setVisibility(View.VISIBLE);
+                    progress.setVisibility(View.INVISIBLE);
+                    resultView.setVisibility(View.INVISIBLE);
+                    negativeButton.setVisibility(View.GONE);
+                    positiveButton.setVisibility(View.VISIBLE);
+                    positiveButton.setText(WAITING);
+                    positiveButton.setEnabled(false);
+                }
+                break;
+            case STARTED: //old case STARTED
                 buttons.setVisibility(View.INVISIBLE);
                 progress.setVisibility(View.VISIBLE);
                 resultView.setVisibility(View.INVISIBLE);
                 progress.setMin(0);
-                progress.setMax(challenge.getDuration());
-                progress.setProgress((int) ((new Date().getTime() - challenge.getStartTime().getTime()) / 1000));
+                progress.setMax(challenge.getChallenge().getDuration());
+                Date starttime = DatabaseHelper.stringToDate(challenge.getMyStatus().getData());
+                if(starttime != null)
+                    progress.setProgress((int) ((new Date().getTime() - starttime.getTime()) / 1000));
                 startTimer();
                 break;
-            case Challenge.WAITING:
+            case DONE: //old case WAITING
                 buttons.setVisibility(View.INVISIBLE);
                 progress.setVisibility(View.INVISIBLE);
                 resultView.setVisibility(View.VISIBLE);
-                resultView.setText("Waiting for results from other players");
+                resultView.setText(WAIT_FOR_RESULT_MSG);
                 break;
-            case Challenge.DONE:
+            case SCORED: //old case DONE
                 buttons.setVisibility(View.VISIBLE);
                 progress.setVisibility(View.INVISIBLE);
                 resultView.setVisibility(View.VISIBLE);
-                resultView.setText(challenge.getStateMessage());
+                resultView.setText(challenge.getMyStatus().getData().split("|")[1]);
                 negativeButton.setVisibility(View.GONE);
                 positiveButton.setVisibility(View.VISIBLE);
                 positiveButton.setText(DISMISS);
@@ -160,7 +169,7 @@ public class OpenChallenge extends ServiceActivity {
             @Override
             public void run() {
                 progress.setProgress(progress.getProgress() + 1);
-                if(progress.getProgress() != challenge.getDuration()) {
+                if (progress.getProgress() != challenge.getChallenge().getDuration()) {
                     startTimer();
                 }
             }
@@ -168,15 +177,18 @@ public class OpenChallenge extends ServiceActivity {
     }
 
     public void onPositiveButton(View v) {
-        switch(challenge.getState()) {
-            case Challenge.ACCEPTED:
-                challenge.startChallenge();
+        switch(challenge.getMyStatus().getStatus()) {
+            case ACCEPTED:
+                if(challenge.hasEveryoneAccepted()) {
+                    challenge.start();
+                }
                 break;
-            case Challenge.REQ_REC:
-                challenge.sendMessage(GCMMessage.ACCEPTED, "");
+            case NOT_ACCEPTED:
+                challenge.accept();
                 break;
-            case Challenge.DONE:
-                GCMMessageHandler.challenges.remove(challenge);
+            case SCORED:
+                StApp.challenges.remove(challenge.getUniqueId());
+                challenge.removeCallbacksAndMessages(null);
                 finish();
                 break;
         }
@@ -184,9 +196,9 @@ public class OpenChallenge extends ServiceActivity {
     }
 
     public void onNegativeButton(View v) {
-        switch(challenge.getState()) {
-            case Challenge.REQ_REC:
-                challenge.sendMessage(GCMMessage.DECLINED, "");
+        switch(challenge.getMyStatus().getStatus()) {
+            case NOT_ACCEPTED:
+                challenge.decline();
                 finish();
                 break;
         }
@@ -198,8 +210,8 @@ public class OpenChallenge extends ServiceActivity {
         openChallengeList.setAdapter(adapter);
 
         TextView challengeTitle = (TextView) findViewById(R.id.open_challenge_title);
-        TextView challengeDescription = (TextView) findViewById(R.id.open_challenge_description); challengeTitle.setText(challenge.getName());
-        challengeDescription.setText(challenge.getDescription() + "\n" + "duration : " + challenge.getDuration() + " seconds");
+        TextView challengeDescription = (TextView) findViewById(R.id.open_challenge_description); challengeTitle.setText(challenge.getChallenge().getName());
+        challengeDescription.setText(challenge.getChallenge().getDescription() + "\n" + "duration : " + challenge.getChallenge().getDuration() + " seconds");
     }
 
     private class OpenChallengeListAdapter extends ArrayAdapter<Profile> {
@@ -229,11 +241,12 @@ public class OpenChallenge extends ServiceActivity {
 
                 int avatarID = getResources().getIdentifier("avatar_" + p.getAvatar() +"_128", "drawable", getPackageName());
 
-                username.setTextColor(normalColor);
-
                 if(rank != null) {rank.setText(Integer.toString(p.getRank()));}
                 if(avatar != null) {avatar.setImageResource(avatarID);}
-                if(username != null) {username.setText(p.getUsername());}
+                if(username != null) {
+                    username.setTextColor(normalColor);
+                    username.setText(p.getUsername());
+                }
             }
             return convertView;
         }
