@@ -26,8 +26,7 @@ public class ChallengeList {
         Challenge.Processor standMostIn30secs = new Challenge.Processor() {
             @Override
             public void start(final LiveChallenge challenge) {
-                challenge.getMyStatus().setStatus(Status.STARTED);
-                challenge.getMyStatus().setData(DatabaseHelper.dateToString(new Date()));
+                challenge.setMyStatus(Status.STARTED, DatabaseHelper.dateToString(new Date()));
                 if(OpenChallenge.getHandler() != null) {
                     OpenChallenge.getHandler().obtainMessage(OpenChallenge.MSG_REFRESH).sendToTarget();
                 }
@@ -41,14 +40,16 @@ public class ChallengeList {
             }
 
             private void calculateResult(LiveChallenge challenge) {
-                if(challenge.getMyStatus().getStatus() == Status.STARTED) {
+                if(challenge.getMyStatus() == Status.STARTED) {
                     long now = System.currentTimeMillis();
                     Date start = new Date(now - 30 * 1000);
                     Date end = new Date(now);
                     long result = Algorithms.millisecondsStood(start, end);
-                    challenge.getMyStatus().setStatus(Status.DONE);
-                    challenge.getMyStatus().setData(Long.toString(result));
+                    challenge.setMyStatus(Status.DONE, Long.toString(result));
                     challenge.sendMessage(GCMMessage.MessageType.RESULT, Long.toString(result));
+                    if(challenge.isEverybodyDone()) {
+                        challenge.getChallenge().getProcessor().onEverybodyDone(challenge);
+                    }
                     if (OpenChallenge.getHandler() != null) {
                         OpenChallenge.getHandler().obtainMessage(OpenChallenge.MSG_REFRESH).sendToTarget();
                     }
@@ -57,21 +58,20 @@ public class ChallengeList {
 
             @Override
             public void onEverybodyDone(LiveChallenge challenge) {
-                long mine = Long.parseLong(challenge.getMyStatus().getData());
+                long mine = Long.parseLong(challenge.getMyStatusData());
                 long maxOthers = 0;
-                for(ChallengeStatus cs : challenge.getStatusses()) {
+                for(ChallengeStatus cs : challenge.getOpponentStatus().values()) {
                     maxOthers = Math.max(maxOthers, Long.parseLong(cs.getData()));
                 }
-                challenge.getMyStatus().setStatus(Status.SCORED);
                 if(mine > maxOthers) {
                     StApp.makeToast("You won, big time!");
-                    challenge.getMyStatus().setData(challenge.getMyStatus().getData() + "|You won, big time!");
+                    challenge.setMyStatus(Status.SCORED, challenge.getMyStatusData() + "|You won, big time!");
                 } else if(mine == maxOthers) {
                     StApp.makeToast("It's a Tie, how did you pull this off?");
-                    challenge.getMyStatus().setData(challenge.getMyStatus().getData() + "|It's a Tie, how did you pull this off?");
+                    challenge.setMyStatus(Status.SCORED, challenge.getMyStatusData() + "|It's a Tie, how did you pull this off?");
                 } else {
                     StApp.makeToast("You had one thing to do, ONE! (you lost)");
-                    challenge.getMyStatus().setData(challenge.getMyStatus().getData() + "|You had one thing to do, ONE! (you lost)");
+                    challenge.setMyStatus(Status.SCORED, challenge.getMyStatusData() + "|You had one thing to do, ONE! (you lost)");
                 }
                 if(OpenChallenge.getHandler() != null) {
                     OpenChallenge.getHandler().obtainMessage(OpenChallenge.MSG_REFRESH).sendToTarget();

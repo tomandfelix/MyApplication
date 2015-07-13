@@ -9,11 +9,9 @@ import com.android.volley.VolleyError;
 import com.google.common.primitives.Ints;
 import com.tomandfelix.stapp2.activity.OpenChallenge;
 import com.tomandfelix.stapp2.application.StApp;
-import com.tomandfelix.stapp2.gcm.GCMMessageHandler;
 import com.tomandfelix.stapp2.persistency.ChallengeStatus.Status;
 import com.tomandfelix.stapp2.persistency.GCMMessage.MessageType;
 
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
@@ -41,6 +39,14 @@ public class LiveChallenge extends Handler {
         for(int opp : opponents) {
             opponentStatus.put(opp, new ChallengeStatus(Status.NOT_ACCEPTED, null));
         }
+        DatabaseHelper.getInstance().createLC(this);
+    }
+
+    public LiveChallenge(String uniqueId, int id, Status status, String data, Map<Integer, ChallengeStatus> opponentStatus) {
+        this.uniqueId = uniqueId;
+        this.challenge = ChallengeList.getChallenge(id);
+        myStatus = new ChallengeStatus(status, data);
+        this.opponentStatus = opponentStatus;
     }
 
     public String getUniqueId() {
@@ -55,16 +61,30 @@ public class LiveChallenge extends Handler {
         return Ints.toArray(opponentStatus.keySet());
     }
 
-    public ChallengeStatus getMyStatus() {
-        return myStatus;
+    public Status getMyStatus() {
+        return myStatus.getStatus();
     }
 
-    public ChallengeStatus getStatusById(int id) {
-        return opponentStatus.get(id);
+    public String getMyStatusData() {
+        return myStatus.getData();
     }
 
-    public Collection<ChallengeStatus> getStatusses() {
-        return opponentStatus.values();
+    public void setMyStatus(Status status, String data) {
+        myStatus.setStatus(status);
+        if(data != null)
+            myStatus.setData(data);
+        DatabaseHelper.getInstance().updateLC(uniqueId, myStatus.getStatus(), myStatus.getData());
+    }
+
+    public void setStatusById(int id, Status status, String data) {
+        opponentStatus.get(id).setStatus(status);
+        if(data != null)
+            opponentStatus.get(id).setData(data);
+        DatabaseHelper.getInstance().updateOpponent(uniqueId, id, opponentStatus.get(id).getStatus(), opponentStatus.get(id).getData());
+    }
+
+    public Map<Integer, ChallengeStatus> getOpponentStatus() {
+        return opponentStatus;
     }
 
     public boolean hasEveryoneAccepted() {
@@ -95,7 +115,7 @@ public class LiveChallenge extends Handler {
         post(new Runnable() {
             @Override
             public void run() {
-                myStatus.setStatus(Status.ACCEPTED);
+                setMyStatus(Status.ACCEPTED, null);
                 sendMessage(MessageType.REQUEST, Integer.toString(challenge.getId()));
             }
         });
@@ -105,7 +125,7 @@ public class LiveChallenge extends Handler {
         post(new Runnable() {
             @Override
             public void run() {
-                myStatus.setStatus(Status.ACCEPTED);
+                setMyStatus(Status.ACCEPTED, null);
                 sendMessage(MessageType.ACCEPT, null);
                 if (OpenChallenge.getHandler() != null) {
                     OpenChallenge.getHandler().obtainMessage(OpenChallenge.MSG_REFRESH).sendToTarget();
@@ -144,14 +164,13 @@ public class LiveChallenge extends Handler {
                         removeCallbacksAndMessages(null);
                         break;
                     case ACCEPT:
-                        getStatusById(msg.getSenderId()).setStatus(Status.ACCEPTED);
+                        setStatusById(msg.getSenderId(), Status.ACCEPTED, null);
                         break;
                     case COMMUNICATION:
                         challenge.getProcessor().handleCommunicationMessage(LiveChallenge.this, msg);
                         break;
                     case RESULT:
-                        getStatusById(msg.getSenderId()).setStatus(Status.DONE);
-                        getStatusById(msg.getSenderId()).setData(msg.getMessage());
+                        setStatusById(msg.getSenderId(), Status.DONE, msg.getMessage());
                         if (isEverybodyDone()) {
                             challenge.getProcessor().onEverybodyDone(LiveChallenge.this);
                         }

@@ -14,7 +14,11 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.concurrent.TimeUnit;
+
+import com.tomandfelix.stapp2.persistency.ChallengeStatus.Status;
 
 
 /**
@@ -33,6 +37,8 @@ public class DatabaseHelper extends SQLiteOpenHelper{
     private static final String TABLE_PROFILES = "profiles";
     private static final String TABLE_SETTINGS = "settings";
     private static final String TABLE_SENSORS = "sensors";
+    private static final String TABLE_LC = "livechallenges";
+    private static final String TABLE_OPPONENTSTATUS = "opponentstatus";
     private static final String KEY_ID = "id";
     private static final String KEY_ACTION = "action";
     private static final String KEY_DATETIME = "datetime";
@@ -51,6 +57,10 @@ public class DatabaseHelper extends SQLiteOpenHelper{
     private static final String KEY_VALUE_STRING = "stringValue";
     private static final String KEY_MAC = "mac_address";
     private static final String KEY_FRIENDLY_NAME = "friendly_name";
+    private static final String KEY_UNIQUE_ID = "unique_id";
+    private static final String KEY_CHALLENGE_ID = "challenge_id";
+    private static final String KEY_STATUS = "status";
+    private static final String KEY_OPPONENT_ID = "opponent_id";
     public static final String OWNER = "owner";
     public static final String NOTIF = "notification";
     public static final String TOKEN = "token";
@@ -89,10 +99,13 @@ public class DatabaseHelper extends SQLiteOpenHelper{
 
     @Override
     public void onCreate(SQLiteDatabase db) {
+        db.execSQL("PRAGMA foreign_keys=ON;");
         db.execSQL("CREATE TABLE " + TABLE_LOGS + " (" + KEY_ID + " INTEGER PRIMARY KEY AUTOINCREMENT, " + KEY_ACTION + " TEXT, " + KEY_DATETIME + " DATETIME, " + KEY_DATA + " DOUBLE)");
         db.execSQL("CREATE TABLE " + TABLE_PROFILES + " (" + KEY_ID + " INTEGER PRIMARY KEY NOT NULL UNIQUE, " + KEY_FIRSTNAME + " TEXT, " + KEY_LASTNAME + " TEXT, " + KEY_USERNAME + " TEXT, " + KEY_EMAIL + " TEXT, " + KEY_MONEY + " INT, " + KEY_EXPERIENCE + " INT, " + KEY_AVATAR + " TEXT, " + KEY_RANK + " INT, " + KEY_UPDATED + " DATETIME)");
         db.execSQL("CREATE TABLE " + TABLE_SETTINGS + " (" + KEY_SETTING + " TEXT PRIMARY KEY NOT NULL UNIQUE, " + KEY_VALUE_INT + " INTEGER, " + KEY_VALUE_STRING + " TEXT)");
         db.execSQL("CREATE TABLE " + TABLE_SENSORS + " (" + KEY_MAC + " TEXT PRIMARY KEY NOT NULL UNIQUE, " + KEY_FRIENDLY_NAME + " TEXT)");
+        db.execSQL("CREATE TABLE " + TABLE_LC + " (" + KEY_ID + " INTEGER PRIMARY KEY AUTOINCREMENT, " + KEY_UNIQUE_ID + " TEXT NOT NULL UNIQUE, " + KEY_CHALLENGE_ID + " INTEGER, " + KEY_STATUS + " TEXT, " + KEY_DATA + " TEXT)");
+        db.execSQL("CREATE TABLE " + TABLE_OPPONENTSTATUS + " (" + KEY_ID + " INTEGER PRIMARY KEY AUTOINCREMENT, " + KEY_UNIQUE_ID + " TEXT, " + KEY_OPPONENT_ID + " INTEGER, " + KEY_STATUS + " TEXT, " + KEY_DATA + " TEXT, FOREIGN KEY(" + KEY_UNIQUE_ID + ") REFERENCES " + TABLE_LC + "(" + KEY_UNIQUE_ID + "))");
         ContentValues values = new ContentValues(2);
         values.put(KEY_SETTING, OWNER);
         values.put(KEY_VALUE_INT, -1);
@@ -133,6 +146,8 @@ public class DatabaseHelper extends SQLiteOpenHelper{
         db.execSQL("DROP TABLE IF EXISTS " + TABLE_PROFILES);
         db.execSQL("DROP TABLE IF EXISTS " + TABLE_SETTINGS);
         db.execSQL("DROP TABLE IF EXISTS " + TABLE_SENSORS);
+        db.execSQL("DROP TABLE IF EXISTS " + TABLE_LC);
+        db.execSQL("DROP TABLE IF EXISTS " + TABLE_OPPONENTSTATUS);
         onCreate(db);
     }
 
@@ -602,6 +617,61 @@ public class DatabaseHelper extends SQLiteOpenHelper{
         if(cursor != null && cursor.getCount() > 0) {
             cursor.moveToFirst();
             result = cursor.getString(0);
+        }
+        if (cursor != null) cursor.close();
+        return result;
+    }
+
+    //-----------------------------------------------------LIVECHALLENGES-----------------------------------------------------------------------
+
+    public void createLC(LiveChallenge lc) {
+        ContentValues input = new ContentValues(4);
+        input.put(KEY_UNIQUE_ID, lc.getUniqueId());
+        input.put(KEY_CHALLENGE_ID, lc.getChallenge().getId());
+        input.put(KEY_STATUS, lc.getMyStatus().name());
+        input.put(KEY_DATA, lc.getMyStatusData());
+        db.insert(TABLE_LC, null, input);
+        for(Map.Entry<Integer, ChallengeStatus> entry : lc.getOpponentStatus().entrySet()) {
+            input.clear();
+            input.put(KEY_UNIQUE_ID, lc.getUniqueId());
+            input.put(KEY_OPPONENT_ID, entry.getKey());
+            input.put(KEY_STATUS, entry.getValue().getStatus().name());
+            input.put(KEY_DATA, entry.getValue().getData());
+            db.insert(TABLE_OPPONENTSTATUS, null, input);
+        }
+    }
+
+    public void updateLC(String uniqueId, Status status, String data) {
+        ContentValues input = new ContentValues(2);
+        input.put(KEY_STATUS, status.name());
+        input.put(KEY_DATA, data);
+        db.update(TABLE_LC, input, KEY_UNIQUE_ID + " = ?", new String[]{uniqueId});
+    }
+
+    public void updateOpponent(String uniqueId, int opponentId, Status status, String data) {
+        ContentValues input = new ContentValues(2);
+        input.put(KEY_STATUS, status.name());
+        input.put(KEY_DATA, data);
+        db.update(TABLE_OPPONENTSTATUS, input, KEY_UNIQUE_ID + " = ? AND " + KEY_OPPONENT_ID + " = ?", new String[]{uniqueId, Integer.toString(opponentId)});
+    }
+
+    public Map<String, LiveChallenge> getLiveChallenges() {
+        String query = "SELECT " + KEY_UNIQUE_ID + ", " + KEY_CHALLENGE_ID + ", " + KEY_STATUS + ", " + KEY_DATA + " FROM " + TABLE_LC;
+        Cursor cursor = db.rawQuery(query, null);
+        Map<String, LiveChallenge> result = new HashMap<>();
+        if(cursor != null && cursor.getCount() > 0) {
+            while(cursor.moveToNext()) {
+                String query2 = "SELECT " + KEY_OPPONENT_ID + ", " + KEY_STATUS + ", " + KEY_DATA + " FROM " + TABLE_OPPONENTSTATUS + " WHERE " + KEY_UNIQUE_ID + " = '" + cursor.getString(0) + "'";
+                Cursor cursor2 = db.rawQuery(query2, null);
+                Map<Integer, ChallengeStatus> resultOpponents = new HashMap<>();
+                if(cursor2 != null && cursor2.getCount() > 0) {
+                    while(cursor2.moveToNext()) {
+                        resultOpponents.put(cursor2.getInt(0), new ChallengeStatus(Status.valueOf(cursor2.getString(1)), cursor2.getString(1)));
+                    }
+                }
+                if(cursor2 != null) cursor2.close();
+                result.put(cursor.getString(0), new LiveChallenge(cursor.getString(0), cursor.getInt(1), Status.valueOf(cursor.getString(2)), cursor.getString(3), resultOpponents));
+            }
         }
         if (cursor != null) cursor.close();
         return result;
