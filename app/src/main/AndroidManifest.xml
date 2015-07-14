@@ -80,7 +80,11 @@
         </activity>
         <activity
             android:name=".activity.OpenSoloQuest"
+            android:parentActivityName=".activity.SoloQuestList"
             android:label="@string/title_activity_quest_description" >
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value="com.tomandfelix.stapp2.activity.SoloQuestList" />
         </activity>
         <activity
             android:name=".activity.GraphView"

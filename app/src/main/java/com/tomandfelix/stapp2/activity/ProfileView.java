@@ -192,8 +192,7 @@ public class ProfileView extends DrawerActivity {
                 app.commandServiceConnect(sensor);
             }
         } else {
-            app.commandService(ShimmerService.DISCONNECT);
-            app.commandService(ShimmerService.LOG_ACHIEVED_SCORE);
+            app.commandService(ShimmerService.END_DAY);
         }
     }
 

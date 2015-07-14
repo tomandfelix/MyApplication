@@ -2,6 +2,7 @@ package com.tomandfelix.stapp2.persistency;
 
 import android.util.Log;
 
+import com.tomandfelix.stapp2.activity.OpenSoloQuest;
 import com.tomandfelix.stapp2.application.StApp;
 import com.tomandfelix.stapp2.tools.Algorithms;
 
@@ -33,12 +34,14 @@ public class SoloList {
             public void start(Solo solo) {
                 solo.setData(DatabaseHelper.dateToString(new Date()));
                 schedule(solo);
+                OpenSoloQuest.getHandler().obtainMessage(OpenSoloQuest.MSG_REFRESH).sendToTarget();
             }
 
             public void checkProgress(Solo solo) {
                 Date start = DatabaseHelper.stringToDate(solo.getData());
                 if(start != null && new Date().getTime() - start.getTime() >= 1800000) {
                     StApp.makeToast("Quest complete, you have lost!");
+                    solo.setData("Quest complete, you have lost!");
                     solo.stop();
                 } else {
                     double result = (double) Algorithms.millisecondsStood(start, new Date());
@@ -46,11 +49,13 @@ public class SoloList {
                     Log.d("solo", "Progress=" + solo.getProgress());
                     if (solo.getProgress() == 100) {
                         StApp.makeToast("Quest complete, you have won!");
+                        solo.setData("Quest complete, you have won!");
                         solo.stop();
                     } else {
                         schedule(solo);
                     }
                 }
+                OpenSoloQuest.getHandler().obtainMessage(OpenSoloQuest.MSG_REFRESH).sendToTarget();
             }
 
             private long getNeeded(Solo solo) {
@@ -95,6 +100,7 @@ public class SoloList {
                         }
                     }, i * 600000 + 90000 + randomInt);
                 }
+                OpenSoloQuest.getHandler().obtainMessage(OpenSoloQuest.MSG_REFRESH).sendToTarget();
             }
 
             private void vibrate() {
@@ -108,17 +114,18 @@ public class SoloList {
                 long result = Algorithms.millisecondsStood(start, end);
                 if(result < 60000) {
                     StApp.makeToast("Quest complete, you have lost!");
-                    Log.d("Solo", "Quest complete, you have lost!");
+                    solo.setData("Quest complete, you have lost!");
                     solo.stop();
                 } else {
                     solo.setProgress(Math.min(solo.getProgress() + 1000d / ((double) solo.getDuration()), 100d));
                     Log.d("solo", "Progress=" + solo.getProgress());
                     if(solo.getProgress() == 100) {
                         StApp.makeToast("Quest complete, you have won!");
-                        Log.d("Solo", "Quest complete, you have won!");
+                        solo.setData("Quest complete, you have won!");
                         solo.stop();
                     }
                 }
+                OpenSoloQuest.getHandler().obtainMessage(OpenSoloQuest.MSG_REFRESH).sendToTarget();
             }
         };
         map.add(0, new Solo(0, "Stand to win", "Stand for more than 10 minutes within 30 minutes", 150, 30, Solo.Difficulty.EASY, standAmountIn30min));

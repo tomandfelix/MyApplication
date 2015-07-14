@@ -70,8 +70,11 @@ public class Solo extends Quest{
     public void stop() {
         handler.removeCallbacksAndMessages(null);
         handler = null;
-        data = null;
         progress = 0;
+    }
+
+    public void clear() {
+        data = null;
     }
 
     @Override

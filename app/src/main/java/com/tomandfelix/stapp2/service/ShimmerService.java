@@ -77,10 +77,9 @@ public class ShimmerService extends Service {
     public static final int DOWNLOAD_DATA = 2;
     public static final int CONNECT = 3;
     public static final int PAUSE = 4;
-    public static final int DISCONNECT = 5;
+    public static final int END_DAY = 5;
     public static final int REQUEST_STATE = 6;
     public static final int LOG_START_DAY = 7;
-    public static final int LOG_ACHIEVED_SCORE = 8;
     private Handler handler = new Handler(Looper.getMainLooper());
     final Runnable tryReconnectWithPause = new Runnable() {
         public void run() {
@@ -117,18 +116,14 @@ public class ShimmerService extends Service {
                 case PAUSE:
                     mShimmerService.get().disconnect();
                     break;
-                case DISCONNECT:
-                    address = "";
-                    mShimmerService.get().disconnect();
-                    break;
                 case REQUEST_STATE:
                     mShimmerService.get().sendToApp(Logging.getInstance(mShimmerService.get()).getState());
                     break;
                 case LOG_START_DAY:
                     Logging.getInstance(mShimmerService.get()).logStartDay();
                     break;
-                case LOG_ACHIEVED_SCORE:
-                    Logging.getInstance(mShimmerService.get()).logAchievedScore();
+                case END_DAY:
+                    mShimmerService.get().endDay();
                     break;
                 default:
                     super.handleMessage(msg);
@@ -277,14 +272,19 @@ public class ShimmerService extends Service {
     public void disconnect() {
         if(sensor != null) {
             if(sensor.getShimmerState() == Shimmer.STATE_CONNECTED && sensor.getStreamingStatus()) {
-                if(address.equals("")) {
-                }
                 sensor.stopStreaming();
             } else if(address.equals("")){
                 sensor.stop();
                 sensor = null;
             }
         }
+    }
+
+    public void endDay() {
+        address = "";
+        sensor.stop();
+        Logging.getInstance(this).logDisconnect();
+        Logging.getInstance(this).logAchievedScore();
     }
 
     public final Handler mHandler = new ShimmerHandler(this);

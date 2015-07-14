@@ -9,7 +9,7 @@
     <string name="title_activity_quest_view">Quests</string>
     <string name="title_activity_graph">Graphs</string>
     <string name="title_activity_internet__connection">Internet Connection</string>
-    <string name="title_activity_quest_description">Quest description</string>
+    <string name="title_activity_quest_description">Solo Quest</string>
     <string name="title_activity_stranger_view">Stranger</string>
     <string name="title_activity_challenge_leaderboard">Opponents</string>
     <string name="title_activity_challenge_stranger">ChallengeStranger</string>
