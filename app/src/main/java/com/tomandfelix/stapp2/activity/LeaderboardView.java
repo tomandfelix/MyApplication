@@ -18,6 +18,7 @@ import android.widget.HeaderViewListAdapter;
 import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.android.volley.Response;
 import com.android.volley.VolleyError;
@@ -39,7 +40,6 @@ public class LeaderboardView extends DrawerActivity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-        Log.d("onCreate", "LeaderBoardView");
         setContentView(R.layout.activity_leaderboard);
         super.onCreate(savedInstanceState);
         leaderboardList = (ListView) findViewById(R.id.leaderboard_list);
@@ -47,19 +47,23 @@ public class LeaderboardView extends DrawerActivity {
     }
 
     private void getLeaderboard() {
-        ServerHelper.getInstance().getLeaderboardById(DatabaseHelper.getInstance().getOwnerId(),
-                new ServerHelper.ResponseFunc<ArrayList<Profile>>() {
-                    @Override
-                    public void onResponse(ArrayList<Profile> response) {
-                        list = response;
-                        setupList();
-                    }
-                }, new Response.ErrorListener() {
-                    @Override
-                    public void onErrorResponse(VolleyError volleyError) {
-                        askForPassword();
-                    }
-                }, false);
+        if(ServerHelper.getInstance().checkInternetConnection()) {
+            ServerHelper.getInstance().getLeaderboardById(DatabaseHelper.getInstance().getOwnerId(),
+                    new ServerHelper.ResponseFunc<ArrayList<Profile>>() {
+                        @Override
+                        public void onResponse(ArrayList<Profile> response) {
+                            list = response;
+                            setupList();
+                        }
+                    }, new Response.ErrorListener() {
+                        @Override
+                        public void onErrorResponse(VolleyError volleyError) {
+                            askForPassword();
+                        }
+                    }, false);
+        }else{
+            Toast.makeText(getApplicationContext(),"Unable to get leaderboard, no internet connection", Toast.LENGTH_SHORT).show();
+        }
     }
 
     private void askForPassword() {
@@ -74,22 +78,26 @@ public class LeaderboardView extends DrawerActivity {
             public void onClick(DialogInterface dialog, int which) {
                 switch(which) {
                     case DialogInterface.BUTTON_POSITIVE:
-                        String password = input.getText().toString();
-                        ServerHelper.getInstance().login(DatabaseHelper.getInstance().getOwner().getUsername(), password,
-                                new ServerHelper.ResponseFunc<Profile>() {
-                                    @Override
-                                    public void onResponse(Profile response) {
-                                        app.setProfile(response);
-                                        getLeaderboard();
-                                    }
-                                }, new Response.ErrorListener() {
-                                    @Override
-                                    public void onErrorResponse(VolleyError volleyError) {
-                                        if(volleyError.getMessage().equals("wrong")) {
-                                            askForPassword();
+                        if(ServerHelper.getInstance().checkInternetConnection()) {
+                            String password = input.getText().toString();
+                            ServerHelper.getInstance().login(DatabaseHelper.getInstance().getOwner().getUsername(), password,
+                                    new ServerHelper.ResponseFunc<Profile>() {
+                                        @Override
+                                        public void onResponse(Profile response) {
+                                            app.setProfile(response);
+                                            getLeaderboard();
                                         }
-                                    }
-                                });
+                                    }, new Response.ErrorListener() {
+                                        @Override
+                                        public void onErrorResponse(VolleyError volleyError) {
+                                            if (volleyError.getMessage().equals("wrong")) {
+                                                askForPassword();
+                                            }
+                                        }
+                                    });
+                        }else{
+                            Toast.makeText(getApplicationContext(),"Unable to change password, No internet connection",Toast.LENGTH_SHORT).show();
+                        }
                         break;
                 }
             }
@@ -113,37 +121,41 @@ public class LeaderboardView extends DrawerActivity {
         leaderboardList.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                int startRank;
-                int endRank;
-                if(position == 0 && (startRank = list.get(0).getRank()) != 1) {
-                    ServerHelper.getInstance().getLeaderboardByRank(startRank - 2,
-                            new ServerHelper.ResponseFunc<ArrayList<Profile>>() {
-                                @Override
-                                public void onResponse(ArrayList<Profile> response) {
-                                    list.addAll(0, response);
-                                    ((ArrayAdapter) ((HeaderViewListAdapter) leaderboardList.getAdapter()).getWrappedAdapter()).notifyDataSetChanged();
-                                }
-                            }, null, false);
-                } else if (position == list.size() + 1 && (endRank = list.get(list.size() - 1).getRank()) % 10 == 0) {
-                    ServerHelper.getInstance().getLeaderboardByRank(endRank + 1,
-                            new ServerHelper.ResponseFunc<ArrayList<Profile>>() {
-                                @Override
-                                public void onResponse(ArrayList<Profile> response) {
-                                    list.addAll(response);
-                                    ((ArrayAdapter) ((HeaderViewListAdapter) leaderboardList.getAdapter()).getWrappedAdapter()).notifyDataSetChanged();
-                                }
-                            }, null, false);
-                } else  if(position > 0 && position <= list.size()) {
-                    int destId = list.get(position - 1).getId();
-                    if(destId == DatabaseHelper.getInstance().getOwnerId()) {
+                if(ServerHelper.getInstance().checkInternetConnection()) {
+                    int startRank;
+                    int endRank;
+                    if (position == 0 && (startRank = list.get(0).getRank()) != 1) {
+                        ServerHelper.getInstance().getLeaderboardByRank(startRank - 2,
+                                new ServerHelper.ResponseFunc<ArrayList<Profile>>() {
+                                    @Override
+                                    public void onResponse(ArrayList<Profile> response) {
+                                        list.addAll(0, response);
+                                        ((ArrayAdapter) ((HeaderViewListAdapter) leaderboardList.getAdapter()).getWrappedAdapter()).notifyDataSetChanged();
+                                    }
+                                }, null, false);
+                    } else if (position == list.size() + 1 && (endRank = list.get(list.size() - 1).getRank()) % 10 == 0) {
+                        ServerHelper.getInstance().getLeaderboardByRank(endRank + 1,
+                                new ServerHelper.ResponseFunc<ArrayList<Profile>>() {
+                                    @Override
+                                    public void onResponse(ArrayList<Profile> response) {
+                                        list.addAll(response);
+                                        ((ArrayAdapter) ((HeaderViewListAdapter) leaderboardList.getAdapter()).getWrappedAdapter()).notifyDataSetChanged();
+                                    }
+                                }, null, false);
+                    } else if (position > 0 && position <= list.size()) {
+                        int destId = list.get(position - 1).getId();
+                        if (destId == DatabaseHelper.getInstance().getOwnerId()) {
 //                        drawer.setSelection(PROFILE);
-                        //TODO why was this here?
-                    } else {
-                        Intent intent = new Intent(LeaderboardView.this, StrangerView.class);
-                        intent.putExtra("strangerId", destId);
-                        startActivity(intent);
-                        overridePendingTransition(R.anim.enter_right, R.anim.leave_left);
+                            //TODO why was this here?
+                        } else {
+                            Intent intent = new Intent(LeaderboardView.this, StrangerView.class);
+                            intent.putExtra("strangerId", destId);
+                            startActivity(intent);
+                            overridePendingTransition(R.anim.enter_right, R.anim.leave_left);
+                        }
                     }
+                }else{
+                    Toast.makeText(getApplicationContext(),"Unable to get leaderboard, no internet connection", Toast.LENGTH_SHORT).show();
                 }
             }
         });

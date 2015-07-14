@@ -15,17 +15,15 @@ import android.widget.HeaderViewListAdapter;
 import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.android.volley.Response;
 import com.android.volley.VolleyError;
 import com.gc.materialdesign.views.ButtonRectangle;
 import com.tomandfelix.stapp2.R;
 import com.tomandfelix.stapp2.application.StApp;
-import com.tomandfelix.stapp2.gcm.GCMMessageHandler;
-import com.tomandfelix.stapp2.persistency.Challenge;
 import com.tomandfelix.stapp2.persistency.ChallengeList;
 import com.tomandfelix.stapp2.persistency.DatabaseHelper;
-import com.tomandfelix.stapp2.persistency.GCMMessage;
 import com.tomandfelix.stapp2.persistency.LiveChallenge;
 import com.tomandfelix.stapp2.persistency.Profile;
 import com.tomandfelix.stapp2.persistency.ServerHelper;
@@ -52,29 +50,33 @@ public class ChallengeLeaderboard extends ServiceActivity {
 
         checked = new ArrayList<>();
         leaderboardList = (ListView) findViewById(R.id.leaderboard_list);
-        ServerHelper.getInstance().getLeaderboardById(DatabaseHelper.getInstance().getOwnerId(),
-                new ServerHelper.ResponseFunc<ArrayList<Profile>>() {
-                    @Override
-                    public void onResponse(ArrayList<Profile> response) {
-                        list = response;
-                        for(int i = 0; i < response.size(); i++)
-                            checked.add(false);
-                        setupList();
-                    }
-                }, new Response.ErrorListener() {
-                    @Override
-                    public void onErrorResponse(VolleyError volleyError) {
-                        final AlertDialog alertDialog = new AlertDialog.Builder(ChallengeLeaderboard.this).create();
-                        alertDialog.setMessage("It seems like an error occured, please logout and try again");
-                        alertDialog.setButton("Dismiss", new DialogInterface.OnClickListener() {
-                            @Override
-                            public void onClick(DialogInterface dialog, int which) {
-                                alertDialog.dismiss();
-                            }
-                        });
-                        alertDialog.show();
-                    }
-                }, false);
+        if(ServerHelper.getInstance().checkInternetConnection()) {
+            ServerHelper.getInstance().getLeaderboardById(DatabaseHelper.getInstance().getOwnerId(),
+                    new ServerHelper.ResponseFunc<ArrayList<Profile>>() {
+                        @Override
+                        public void onResponse(ArrayList<Profile> response) {
+                            list = response;
+                            for (int i = 0; i < response.size(); i++)
+                                checked.add(false);
+                            setupList();
+                        }
+                    }, new Response.ErrorListener() {
+                        @Override
+                        public void onErrorResponse(VolleyError volleyError) {
+                            final AlertDialog alertDialog = new AlertDialog.Builder(ChallengeLeaderboard.this).create();
+                            alertDialog.setMessage("It seems like an error occured, please logout and try again");
+                            alertDialog.setButton("Dismiss", new DialogInterface.OnClickListener() {
+                                @Override
+                                public void onClick(DialogInterface dialog, int which) {
+                                    alertDialog.dismiss();
+                                }
+                            });
+                            alertDialog.show();
+                        }
+                    }, false);
+        }else{
+            Toast.makeText(getApplicationContext(),"Unable to get leaderboard, no internet connection", Toast.LENGTH_SHORT).show();
+        }
         checkCount();
     }
 
@@ -92,32 +94,38 @@ public class ChallengeLeaderboard extends ServiceActivity {
         leaderboardList.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                int startRank;
-                int endRank;
-                if(position == 0 && (startRank = list.get(0).getRank()) != 1) {
-                    ServerHelper.getInstance().getLeaderboardByRank(startRank - 2,
-                            new ServerHelper.ResponseFunc<ArrayList<Profile>>() {
-                                @Override
-                                public void onResponse(ArrayList<Profile> response) {
-                                    list.addAll(0, response);
-                                    for(int i = 0; i < response.size(); i++)
-                                        checked.add(0, false);
-                                    ((ArrayAdapter) ((HeaderViewListAdapter) leaderboardList.getAdapter()).getWrappedAdapter()).notifyDataSetChanged();
-                                }
-                            }, null, false);
-                } else if (position == list.size() + 1 && (endRank = list.get(list.size() - 1).getRank()) % 10 == 0) {
-                    ServerHelper.getInstance().getLeaderboardByRank(endRank + 1,
-                            new ServerHelper.ResponseFunc<ArrayList<Profile>>() {
-                                @Override
-                                public void onResponse(ArrayList<Profile> response) {
-                                    list.addAll(response);
-                                    for(int i = 0; i < response.size(); i++)
-                                        checked.add(false);
-                                    ((ArrayAdapter) ((HeaderViewListAdapter) leaderboardList.getAdapter()).getWrappedAdapter()).notifyDataSetChanged();
-                                }
-                            }, null, false);
+                if(ServerHelper.getInstance().checkInternetConnection()) {
+                    int startRank;
+                    int endRank;
+                    if (position == 0 && (startRank = list.get(0).getRank()) != 1) {
+                        ServerHelper.getInstance().getLeaderboardByRank(startRank - 2,
+                                new ServerHelper.ResponseFunc<ArrayList<Profile>>() {
+                                    @Override
+                                    public void onResponse(ArrayList<Profile> response) {
+                                        list.addAll(0, response);
+                                        for (int i = 0; i < response.size(); i++)
+                                            checked.add(0, false);
+                                        ((ArrayAdapter) ((HeaderViewListAdapter) leaderboardList.getAdapter()).getWrappedAdapter()).notifyDataSetChanged();
+                                    }
+                                }, null, false);
+                    } else if (position == list.size() + 1 && (endRank = list.get(list.size() - 1).getRank()) % 10 == 0) {
+                        ServerHelper.getInstance().getLeaderboardByRank(endRank + 1,
+                                new ServerHelper.ResponseFunc<ArrayList<Profile>>() {
+                                    @Override
+                                    public void onResponse(ArrayList<Profile> response) {
+                                        list.addAll(response);
+                                        for (int i = 0; i < response.size(); i++)
+                                            checked.add(false);
+                                        ((ArrayAdapter) ((HeaderViewListAdapter) leaderboardList.getAdapter()).getWrappedAdapter()).notifyDataSetChanged();
+                                    }
+                                }, null, false);
+                    }
+                }else{
+                    Toast.makeText(getApplicationContext(),"Unable to get leaderboard, no internet connection", Toast.LENGTH_SHORT).show();
                 }
             }
+
+
         });
     }
 

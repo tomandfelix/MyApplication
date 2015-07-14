@@ -1,34 +1,30 @@
 package com.tomandfelix.stapp2.persistency;
 
-import android.os.Parcel;
-import android.os.Parcelable;
+import android.os.Handler;
+import android.os.Looper;
 
 /**
  * Created by Flixse on 27/01/2015.
  */
-public class Solo extends Quest implements Parcelable{
-    private int money;
+public class Solo extends Quest{
+    public enum Difficulty {EASY, MEDIUM, HARD}
+
     private int xp;
     private int duration;
-    private int difficulty;
-    public static final int EASY = 0;
-    public static final int MEDIUM = 1;
-    public static final int HARD = 2;
-    private Runnable validator;
+    private Difficulty difficulty;
+    private double progress;
+    private String data;
+    private Processor processor;
+    private Handler handler;
 
-    public Solo( int id, String name, String description, int money, int xp, int duration, int difficulty, Runnable validator){
+    public Solo(int id, String name, String description, int xp, int duration, Difficulty difficulty, Processor processor){
         super(id, name, description);
-        this.money = money;
         this.xp = xp;
         this.duration = duration;
         this.difficulty = difficulty;
-        this.validator = validator;
+        this.progress = 0;
+        this.processor = processor;
     }
-
-    public int getMoney() {
-        return money;
-    }
-
     public int getxp() {
         return xp;
     }
@@ -37,12 +33,45 @@ public class Solo extends Quest implements Parcelable{
         return duration;
     }
 
-    public int getDifficulty() {
+    public Difficulty getDifficulty() {
         return difficulty;
     }
 
-    public Runnable getValidator() {
-        return validator;
+    public double getProgress() {
+        return progress;
+    }
+
+    public void setProgress(double progress) {
+        this.progress = progress;
+    }
+
+    public String getData() {
+        return data;
+    }
+
+    public void setData(String data) {
+        this.data = data;
+    }
+
+    public Handler getHandler() {
+        return handler;
+    }
+
+    public void start() {
+        handler = new Handler(Looper.getMainLooper());
+        handler.post(new Runnable() {
+            @Override
+            public void run() {
+                processor.start(Solo.this);
+            }
+        });
+    }
+
+    public void stop() {
+        handler.removeCallbacksAndMessages(null);
+        handler = null;
+        data = null;
+        progress = 0;
     }
 
     @Override
@@ -51,7 +80,6 @@ public class Solo extends Quest implements Parcelable{
         info += "id:" + id;
         info += (name == null ? "":" name:" + name);
         info += (description == null ? "":" description:" + description);
-        info += " money:" + money;
         info += " experience:" + xp;
         info += " duration:" + duration;
         info += " difficulty:";
@@ -68,35 +96,8 @@ public class Solo extends Quest implements Parcelable{
         }
         return info;
     }
-    @Override
-    public int describeContents() {
-        return 0;
+
+    public static abstract class Processor {
+        public abstract void start(Solo solo);
     }
-
-    @Override
-    public void writeToParcel(Parcel dest, int flags) {
-        dest.writeInt(id);
-        dest.writeString(name);
-        dest.writeString(description);
-        dest.writeInt(money);
-        dest.writeInt(xp);
-        dest.writeInt(difficulty);
-    }
-
-    private Solo(Parcel in) {
-        super(in.readInt(), in.readString(), in.readString());
-        money = in.readInt();
-        xp = in.readInt();
-        difficulty = in.readInt();
-    }
-
-    public static final Parcelable.Creator<Solo> CREATOR = new Parcelable.Creator<Solo>() {
-        public Solo createFromParcel(Parcel in) {
-            return new Solo(in);
-        }
-
-        public Solo[] newArray(int size) {
-            return new Solo[size];
-        }
-    };
 }

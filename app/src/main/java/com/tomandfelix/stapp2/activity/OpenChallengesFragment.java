@@ -14,15 +14,9 @@ import android.widget.ArrayAdapter;
 import android.widget.ListView;
 import android.widget.TextView;
 
-import com.android.volley.Response;
-import com.android.volley.VolleyError;
 import com.tomandfelix.stapp2.R;
 import com.tomandfelix.stapp2.application.StApp;
-import com.tomandfelix.stapp2.gcm.GCMMessageHandler;
-import com.tomandfelix.stapp2.persistency.Challenge;
 import com.tomandfelix.stapp2.persistency.LiveChallenge;
-import com.tomandfelix.stapp2.persistency.Profile;
-import com.tomandfelix.stapp2.persistency.ServerHelper;
 
 import java.util.ArrayList;
 import java.util.List;

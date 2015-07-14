@@ -7,6 +7,7 @@ import android.util.Log;
 import android.view.MenuItem;
 import android.widget.ImageView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.android.volley.Response;
 import com.android.volley.VolleyError;
@@ -29,13 +30,17 @@ public class StrangerView extends ServiceActivity {
         }
 
         int strangerId = getIntent().getIntExtra("strangerId", -1);
-        ServerHelper.getInstance().getOtherProfile(strangerId,
-                new ServerHelper.ResponseFunc<Profile>() {
-                    @Override
-                    public void onResponse(Profile response) {
-                        updateVisual(response);
-                    }
-                }, null, false); //TODO make this a meaningful errorListener
+        if(ServerHelper.getInstance().checkInternetConnection()) {
+            ServerHelper.getInstance().getOtherProfile(strangerId,
+                    new ServerHelper.ResponseFunc<Profile>() {
+                        @Override
+                        public void onResponse(Profile response) {
+                            updateVisual(response);
+                        }
+                    }, null, false); //TODO make this a meaningful errorListener
+        }else{
+            Toast.makeText(getApplicationContext(), "No internet connection", Toast.LENGTH_SHORT).show();
+        }
     }
 
     @Override
@@ -59,22 +64,25 @@ public class StrangerView extends ServiceActivity {
         rank.setText( profile.getRank() + "");
         username.setText(profile.getUsername());
         avatar.setImageResource(avatarID);
-
-        ServerHelper.getInstance().getProgressOfOther(profile.getId(), new ServerHelper.ResponseFunc<Float>() {
-            @Override
-            public void onResponse(Float response) {
-                if(response > 0) {
-                    float roundedFloat = (float) Math.round(response);
-                    progress.setText(profile.getUsername() + " has a behaviour of " + roundedFloat + "%");
-                }else{
-                    progress.setText(profile.getUsername() + " has not been active in the past 2 weeks");
+        if(ServerHelper.getInstance().checkInternetConnection()) {
+            ServerHelper.getInstance().getProgressOfOther(profile.getId(), new ServerHelper.ResponseFunc<Float>() {
+                @Override
+                public void onResponse(Float response) {
+                    if (response > 0) {
+                        float roundedFloat = (float) Math.round(response);
+                        progress.setText(profile.getUsername() + " has a behaviour of " + roundedFloat + "%");
+                    } else {
+                        progress.setText(profile.getUsername() + " has not been active in the past 2 weeks");
+                    }
                 }
-            }
-        }, new Response.ErrorListener() {
-            @Override
-            public void onErrorResponse(VolleyError volleyError) {
-                Log.e("VolleyError","getProgressOfOther");
-            }
-        });
+            }, new Response.ErrorListener() {
+                @Override
+                public void onErrorResponse(VolleyError volleyError) {
+                    Log.e("VolleyError", "getProgressOfOther");
+                }
+            });
+        }else{
+            Toast.makeText(getApplicationContext(), "No internet connection", Toast.LENGTH_SHORT).show();
+        }
     }
 }

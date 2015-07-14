@@ -7,22 +7,26 @@ import com.tomandfelix.stapp2.application.StApp;
 import com.tomandfelix.stapp2.persistency.ChallengeStatus.Status;
 import com.tomandfelix.stapp2.tools.Algorithms;
 
+import java.util.ArrayList;
 import java.util.Date;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.List;
 
 /**
  * Created by Tom on 23/03/2015.
  */
 public class ChallengeList {
-    public static final Map<Integer, Challenge> challenges = createChallengesList();
+    public static final List<Challenge> challenges = createChallengesList();
 
     public static Challenge getChallenge(int id) {
         return challenges.get(id);
     }
 
-    private static Map<Integer, Challenge> createChallengesList() {
-        Map<Integer, Challenge> map = new HashMap<>();
+    public static List<Challenge> getList() {
+        return challenges;
+    }
+
+    private static List<Challenge> createChallengesList() {
+        ArrayList<Challenge> list = new ArrayList<>();
         Challenge.Processor standMostIn30secs = new Challenge.Processor() {
             @Override
             public void start(final LiveChallenge challenge) {
@@ -78,8 +82,8 @@ public class ChallengeList {
                 }
             }
         };
-        map.put(0, new Challenge(0, "Quick test", "Stand longer than your opponent", 2, 2, 30, standMostIn30secs));
-        map.put(1, new Challenge(1, "Group challenge", "Stand longer than your opponent", 3, 5, 30, standMostIn30secs));
-        return map;
+        list.add(0, new Challenge(0, "Quick test", "Stand longer than your opponent", 2, 2, 30, standMostIn30secs));
+        list.add(1, new Challenge(1, "Group challenge", "Stand longer than your opponent", 3, 5, 30, standMostIn30secs));
+        return list;
     }
 }

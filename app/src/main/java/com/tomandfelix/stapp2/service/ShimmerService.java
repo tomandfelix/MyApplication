@@ -182,8 +182,7 @@ public class ShimmerService extends Service {
     }
 
     private void uploadData() {
-        NetworkInfo wifi = ((ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE)).getNetworkInfo(ConnectivityManager.TYPE_WIFI);
-        if (wifi.isConnected() || DatabaseHelper.getInstance().uploadOn3G()) {
+        if(ServerHelper.getInstance().checkInternetConnection()) {
             ArrayList<IdLog> logs = DatabaseHelper.getInstance().getLogsToUpload();
             if(logs != null) {
                 Log.d(TAG, "uploading records " + logs.get(0).getId() + "->" + logs.get(logs.size() - 1).getId());
@@ -199,7 +198,7 @@ public class ShimmerService extends Service {
                 }, new Response.ErrorListener() {
                     @Override
                     public void onErrorResponse(VolleyError volleyError) {
-                        if(volleyError.getMessage().equals("token")) {
+                        if(volleyError.getMessage() != null && volleyError.getMessage().equals("token")) {
                             // TODO password prompt
                         } else {
                             Log.e("uploadData", volleyError.getMessage());

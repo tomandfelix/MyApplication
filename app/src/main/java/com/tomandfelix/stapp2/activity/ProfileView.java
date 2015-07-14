@@ -76,20 +76,24 @@ public class ProfileView extends DrawerActivity {
         } else {
             app.setProfile(DatabaseHelper.getInstance().getOwner());
             updateVisual();
-            ServerHelper.getInstance().getProfile(new ServerHelper.ResponseFunc<Profile>() {
-                @Override
-                public void onResponse(Profile response) {
-                    if (response != null) {
-                        app.setProfile(response);
-                        updateVisual();
+            if(ServerHelper.getInstance().checkInternetConnection()) {
+                ServerHelper.getInstance().getProfile(new ServerHelper.ResponseFunc<Profile>() {
+                    @Override
+                    public void onResponse(Profile response) {
+                        if (response != null) {
+                            app.setProfile(response);
+                            updateVisual();
+                        }
                     }
-                }
-            }, new Response.ErrorListener() {
-                @Override
-                public void onErrorResponse(VolleyError volleyError) {
-                    askForPassword();
-                }
-            }, true);
+                }, new Response.ErrorListener() {
+                    @Override
+                    public void onErrorResponse(VolleyError volleyError) {
+                        askForPassword();
+                    }
+                }, true);
+            }else{
+                Toast.makeText(getApplicationContext(),"Profile could be out of date, no Internet connection", Toast.LENGTH_SHORT).show();
+            }
         }
 
         statusIcon = (ImageView) findViewById(R.id.profile_status_icon);
@@ -108,22 +112,26 @@ public class ProfileView extends DrawerActivity {
             public void onClick(DialogInterface dialog, int which) {
                 switch(which) {
                     case DialogInterface.BUTTON_POSITIVE:
-                        String password = input.getText().toString();
-                        ServerHelper.getInstance().login(DatabaseHelper.getInstance().getOwner().getUsername(), password,
-                                new ServerHelper.ResponseFunc<Profile>() {
-                                    @Override
-                                    public void onResponse(Profile response) {
-                                        app.setProfile(response);
-                                        updateVisual();
-                                    }
-                                }, new Response.ErrorListener() {
-                                    @Override
-                                    public void onErrorResponse(VolleyError volleyError) {
-                                        if(volleyError.getMessage().equals("wrong")) {
-                                            askForPassword();
+                        if(ServerHelper.getInstance().checkInternetConnection()) {
+                            String password = input.getText().toString();
+                            ServerHelper.getInstance().login(DatabaseHelper.getInstance().getOwner().getUsername(), password,
+                                    new ServerHelper.ResponseFunc<Profile>() {
+                                        @Override
+                                        public void onResponse(Profile response) {
+                                            app.setProfile(response);
+                                            updateVisual();
                                         }
-                                    }
-                                });
+                                    }, new Response.ErrorListener() {
+                                        @Override
+                                        public void onErrorResponse(VolleyError volleyError) {
+                                            if (volleyError.getMessage().equals("wrong")) {
+                                                askForPassword();
+                                            }
+                                        }
+                                    });
+                        }else{
+                            Toast.makeText(getApplicationContext(), "Unable to login again, no internet connection", Toast.LENGTH_SHORT).show();
+                        }
                         break;
                 }
             }

@@ -13,17 +13,18 @@ import android.os.IBinder;
 import android.os.Message;
 import android.os.Messenger;
 import android.os.RemoteException;
+import android.os.Vibrator;
 import android.util.Log;
 import android.widget.Toast;
 
 import com.android.volley.Response;
 import com.android.volley.VolleyError;
 import com.tomandfelix.stapp2.gcm.GCMMessageHandler;
-import com.tomandfelix.stapp2.persistency.ChallengeList;
 import com.tomandfelix.stapp2.persistency.DatabaseHelper;
 import com.tomandfelix.stapp2.persistency.LiveChallenge;
 import com.tomandfelix.stapp2.persistency.Profile;
 import com.tomandfelix.stapp2.persistency.ServerHelper;
+import com.tomandfelix.stapp2.persistency.Solo;
 import com.tomandfelix.stapp2.persistency.VolleyQueue;
 import com.tomandfelix.stapp2.service.ShimmerService;
 import com.google.android.gms.common.ConnectionResult;
@@ -31,8 +32,10 @@ import com.google.android.gms.common.GooglePlayServicesUtil;
 import com.google.android.gms.gcm.GoogleCloudMessaging;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -113,6 +116,11 @@ public class StApp  extends Application {
 
     public static void makeToast(String text) {
         Toast.makeText(singleton, text, Toast.LENGTH_LONG).show();
+    }
+
+    public static void vibrate(int duration) {
+        Vibrator v = (Vibrator) singleton.getSystemService(Context.VIBRATOR_SERVICE);
+        v.vibrate(duration);
     }
 
     public Profile getProfile() {

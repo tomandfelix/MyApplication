@@ -15,6 +15,7 @@ import android.widget.CompoundButton;
 import android.widget.EditText;
 import android.widget.ListView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.tomandfelix.stapp2.R;
 import com.tomandfelix.stapp2.persistency.DatabaseHelper;
@@ -181,24 +182,34 @@ public class SettingsView extends DrawerActivity {
                     DialogInterface.OnClickListener dialogListener = new DialogInterface.OnClickListener() {
                         @Override
                         public void onClick(DialogInterface dialog, int which) {
-                            switch (which) {
-                                case DialogInterface.BUTTON_POSITIVE:
-                                    ServerHelper.getInstance().logout();
-                                    DatabaseHelper.getInstance().setToken("");
-                                    index = INITIAL;
-                                    Intent intent = new Intent(SettingsView.this, FragmentViewer.class);
-                                    startActivity(intent);
-                                    overridePendingTransition(R.anim.enter_bottom, R.anim.leave_top);
-                                    finish();
-                                    break;
+                            if(ServerHelper.getInstance().checkInternetConnection()) {
+                                switch (which) {
+                                    case DialogInterface.BUTTON_POSITIVE:
+                                        if (ServerHelper.getInstance().checkInternetConnection()) {
+                                            ServerHelper.getInstance().logout();
+                                        }
+                                        DatabaseHelper.getInstance().setToken("");
+                                        index = INITIAL;
+                                        Intent intent = new Intent(SettingsView.this, FragmentViewer.class);
+                                        startActivity(intent);
+                                        overridePendingTransition(R.anim.enter_bottom, R.anim.leave_top);
+                                        finish();
+                                        break;
+                                }
+                            }else{
+                                Toast.makeText(getApplicationContext(), "unable to logout without internet connection!", Toast.LENGTH_SHORT).show();
                             }
                         }
                     };
-                    final AlertDialog.Builder alertDialog = new AlertDialog.Builder(SettingsView.this);
-                    alertDialog.setMessage("Are you sure you want to log out?");
-                    alertDialog.setPositiveButton("Logout", dialogListener);
-                    alertDialog.setNegativeButton("Cancel", dialogListener);
-                    alertDialog.show();
+                    if(ServerHelper.getInstance().checkInternetConnection()) {
+                        final AlertDialog.Builder alertDialog = new AlertDialog.Builder(SettingsView.this);
+                        alertDialog.setMessage("Are you sure you want to log out?");
+                        alertDialog.setPositiveButton("Logout", dialogListener);
+                        alertDialog.setNegativeButton("Cancel", dialogListener);
+                        alertDialog.show();
+                    }else{
+                        Toast.makeText(getApplicationContext(), "unable to logout without internet connection!", Toast.LENGTH_SHORT).show();
+                    }
                     break;
             }
         }

@@ -13,6 +13,7 @@ import android.widget.ArrayAdapter;
 import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.android.volley.Response;
 import com.android.volley.VolleyError;
@@ -20,15 +21,10 @@ import com.gc.materialdesign.views.ButtonRectangle;
 import com.gc.materialdesign.views.ProgressBarDeterminate;
 import com.tomandfelix.stapp2.R;
 import com.tomandfelix.stapp2.application.StApp;
-import com.tomandfelix.stapp2.gcm.GCMMessageHandler;
-import com.tomandfelix.stapp2.persistency.Challenge;
-import com.tomandfelix.stapp2.persistency.ChallengeStatus;
 import com.tomandfelix.stapp2.persistency.DatabaseHelper;
-import com.tomandfelix.stapp2.persistency.GCMMessage;
 import com.tomandfelix.stapp2.persistency.LiveChallenge;
 import com.tomandfelix.stapp2.persistency.Profile;
 import com.tomandfelix.stapp2.persistency.ServerHelper;
-import com.tomandfelix.stapp2.persistency.ChallengeStatus.Status;
 
 import java.util.ArrayList;
 import java.util.Date;
@@ -70,19 +66,23 @@ public class OpenChallenge extends ServiceActivity {
         String challengeIndex = intent.getStringExtra("challenge_unique_index");
         challenge = StApp.challenges.get(challengeIndex);
         updateChallengeViews();
+        if(ServerHelper.getInstance().checkInternetConnection()) {
+            ServerHelper.getInstance().getProfilesByIds(challenge.getOpponents(), new ServerHelper.ResponseFunc<ArrayList<Profile>>() {
+                @Override
+                public void onResponse(ArrayList<Profile> response) {
+                    mProfileList = response;
+                    updateProfileViews();
+                }
+            }, new Response.ErrorListener() {
+                @Override
+                public void onErrorResponse(VolleyError volleyError) {
+                    Log.e("OpenChallenge", volleyError.getMessage());
+                }
+            }, false);
 
-        ServerHelper.getInstance().getProfilesByIds(challenge.getOpponents(), new ServerHelper.ResponseFunc<ArrayList<Profile>>() {
-            @Override
-            public void onResponse(ArrayList<Profile> response) {
-                mProfileList = response;
-                updateProfileViews();
-            }
-        }, new Response.ErrorListener() {
-            @Override
-            public void onErrorResponse(VolleyError volleyError) {
-                Log.e("OpenChallenge", volleyError.getMessage());
-            }
-        }, false);
+        }else{
+            Toast.makeText(getApplicationContext(),"Unable to get open challenges, no internet connection", Toast.LENGTH_SHORT).show();
+        }
     }
 
     public static Handler getHandler() {

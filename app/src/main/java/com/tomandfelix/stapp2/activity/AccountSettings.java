@@ -12,6 +12,7 @@ import android.widget.AdapterView;
 import android.widget.EditText;
 import android.widget.GridView;
 import android.widget.ImageView;
+import android.widget.Toast;
 
 import com.android.volley.Response;
 import com.android.volley.VolleyError;
@@ -53,29 +54,32 @@ public class AccountSettings extends ServiceActivity {
         firstname.setText(app.getProfile().getFirstName());
         lastname.setText(app.getProfile().getLastName());
         email.setText(app.getProfile().getEmail());
-
-        avatar.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                if (avatarGrid.getVisibility() == View.GONE) {
-                    avatarGrid.setVisibility(View.VISIBLE);
-                } else {
-                    avatarGrid.setVisibility(View.GONE);
+        if(ServerHelper.getInstance().checkInternetConnection()) {
+            avatar.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    if (avatarGrid.getVisibility() == View.GONE) {
+                        avatarGrid.setVisibility(View.VISIBLE);
+                    } else {
+                        avatarGrid.setVisibility(View.GONE);
+                    }
                 }
-            }
-        });
+            });
 
-        avatars = getResources().obtainTypedArray(R.array.avatars);
-        AvatarGridAdapter avatarGridAdapter = new AvatarGridAdapter(this, R.layout.grid_item_avatar, avatars);
-        avatarGrid.setAdapter(avatarGridAdapter);
-        avatarGrid.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                avatar.callOnClick();
-                newAvatar = getResources().getStringArray(R.array.avatar_names)[position];
-                int avatarID = getResources().getIdentifier("avatar_" + newAvatar + "_512", "drawable", getPackageName());
-                avatar.setImageResource(avatarID);
-            }
-        });
+            avatars = getResources().obtainTypedArray(R.array.avatars);
+            AvatarGridAdapter avatarGridAdapter = new AvatarGridAdapter(this, R.layout.grid_item_avatar, avatars);
+            avatarGrid.setAdapter(avatarGridAdapter);
+            avatarGrid.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+                public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                    avatar.callOnClick();
+                    newAvatar = getResources().getStringArray(R.array.avatar_names)[position];
+                    int avatarID = getResources().getIdentifier("avatar_" + newAvatar + "_512", "drawable", getPackageName());
+                    avatar.setImageResource(avatarID);
+                }
+            });
+        }else{
+            Toast.makeText(getApplicationContext(), "Unable to change account settings, no internet connection", Toast.LENGTH_SHORT).show();
+        }
     }
 
     @Override
@@ -125,16 +129,20 @@ public class AccountSettings extends ServiceActivity {
                 switch(which) {
                     case DialogInterface.BUTTON_POSITIVE:
                         String oldPassword = input.getText().toString();
-                        ServerHelper.getInstance().updateProfileSettings(newFirstName, newLastName, newUsername, newEmail, newAvatar, oldPassword, newPassword, new Response.ErrorListener() {
-                            @Override
-                            public void onErrorResponse(VolleyError volleyError) {
-                                if(volleyError.getMessage().equals("none")) {
-                                    finish();
-                                } else if(volleyError.getMessage().equals("password")) {
-                                    updateWithPassword(newFirstName, newLastName, newUsername, newEmail, newAvatar, newPassword);
+                        if(ServerHelper.getInstance().checkInternetConnection()) {
+                            ServerHelper.getInstance().updateProfileSettings(newFirstName, newLastName, newUsername, newEmail, newAvatar, oldPassword, newPassword, new Response.ErrorListener() {
+                                @Override
+                                public void onErrorResponse(VolleyError volleyError) {
+                                    if (volleyError.getMessage().equals("none")) {
+                                        finish();
+                                    } else if (volleyError.getMessage().equals("password")) {
+                                        updateWithPassword(newFirstName, newLastName, newUsername, newEmail, newAvatar, newPassword);
+                                    }
                                 }
-                            }
-                        });
+                            });
+                        }else{
+                            Toast.makeText(getApplicationContext(), "Unable to change password, no internet connection", Toast.LENGTH_SHORT).show();
+                        }
                         break;
                     case DialogInterface.BUTTON_NEGATIVE:
                         password.setText(null);
@@ -148,49 +156,53 @@ public class AccountSettings extends ServiceActivity {
     }
 
     private void updateWithToken(final String newFirstName, final String newLastName, final String newUsername, final String newEmail, final String newAvatar) {
-        ServerHelper.getInstance().updateProfileSettings(newFirstName, newLastName, newUsername, newEmail, newAvatar, new Response.ErrorListener() {
-            @Override
-            public void onErrorResponse(VolleyError volleyError) {
-                if(volleyError.getMessage().equals("none")) {
-                    finish();
-                } else if(volleyError.getMessage().equals("token")) {
-                    AlertDialog.Builder alert = new AlertDialog.Builder(AccountSettings.this);
-                    alert.setMessage("It seems like an error occured, Please enter your password again").setTitle("Password");
-                    final EditText input = new EditText(AccountSettings.this);
-                    input.setInputType(InputType.TYPE_TEXT_VARIATION_PASSWORD);
-                    input.setTransformationMethod(PasswordTransformationMethod.getInstance());
-                    alert.setView(input);
-                    DialogInterface.OnClickListener listener = new DialogInterface.OnClickListener() {
-                        @Override
-                        public void onClick(DialogInterface dialog, int which) {
-                            switch(which) {
-                                case DialogInterface.BUTTON_POSITIVE:
-                                    String password = input.getText().toString();
-                                    ServerHelper.getInstance().login(DatabaseHelper.getInstance().getOwner().getUsername(), password,
-                                            new ServerHelper.ResponseFunc<Profile>() {
-                                                @Override
-                                                public void onResponse(Profile response) {
-                                                    app.setProfile(response);
-                                                    onConfirm(null);
-                                                }
-                                            }, new Response.ErrorListener() {
-                                                @Override
-                                                public void onErrorResponse(VolleyError volleyError) {
-                                                    if(volleyError.getMessage().equals("wrong")) {
-                                                        updateWithToken(newFirstName, newLastName, newUsername, newEmail, newAvatar);
+        if(ServerHelper.getInstance().checkInternetConnection()) {
+            ServerHelper.getInstance().updateProfileSettings(newFirstName, newLastName, newUsername, newEmail, newAvatar, new Response.ErrorListener() {
+                @Override
+                public void onErrorResponse(VolleyError volleyError) {
+                    if (volleyError.getMessage().equals("none")) {
+                        finish();
+                    } else if (volleyError.getMessage().equals("token")) {
+                        AlertDialog.Builder alert = new AlertDialog.Builder(AccountSettings.this);
+                        alert.setMessage("It seems like an error occured, Please enter your password again").setTitle("Password");
+                        final EditText input = new EditText(AccountSettings.this);
+                        input.setInputType(InputType.TYPE_TEXT_VARIATION_PASSWORD);
+                        input.setTransformationMethod(PasswordTransformationMethod.getInstance());
+                        alert.setView(input);
+                        DialogInterface.OnClickListener listener = new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialog, int which) {
+                                switch (which) {
+                                    case DialogInterface.BUTTON_POSITIVE:
+                                        String password = input.getText().toString();
+                                        ServerHelper.getInstance().login(DatabaseHelper.getInstance().getOwner().getUsername(), password,
+                                                new ServerHelper.ResponseFunc<Profile>() {
+                                                    @Override
+                                                    public void onResponse(Profile response) {
+                                                        app.setProfile(response);
+                                                        onConfirm(null);
                                                     }
-                                                }
-                                            });
-                                    break;
+                                                }, new Response.ErrorListener() {
+                                                    @Override
+                                                    public void onErrorResponse(VolleyError volleyError) {
+                                                        if (volleyError.getMessage().equals("wrong")) {
+                                                            updateWithToken(newFirstName, newLastName, newUsername, newEmail, newAvatar);
+                                                        }
+                                                    }
+                                                });
+                                        break;
+                                }
                             }
-                        }
-                    };
-                    alert.setPositiveButton("CONFIRM", listener);
-                    alert.setNegativeButton("CANCEL", listener);
-                    alert.show();
+                        };
+                        alert.setPositiveButton("CONFIRM", listener);
+                        alert.setNegativeButton("CANCEL", listener);
+                        alert.show();
+                    }
                 }
-            }
-        });
+            });
+        }else{
+            Toast.makeText(getApplicationContext(), "Unable to change account settings, no internet connection", Toast.LENGTH_SHORT).show();
+        }
     }
 
     private String validateInput(String input, String old) {

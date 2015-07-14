@@ -22,26 +22,6 @@
         android:layout_marginLeft="@dimen/activity_margin"
         android:text="Quest name, this is long" />
 
-    <ImageView
-        android:id="@+id/solo_list_money_icon"
-        android:layout_width="20dp"
-        android:layout_height="20dp"
-        android:layout_below="@id/solo_list_name"
-        android:layout_marginTop="3dp"
-        android:layout_toRightOf="@id/solo_list_difficulty"
-        android:layout_marginLeft="@dimen/activity_margin"
-        android:scaleType="centerInside"
-        android:src="@drawable/icon_money" />
-
-    <TextView
-        android:id="@+id/solo_list_money"
-        android:textSize="16sp"
-        android:layout_width="120dp"
-        android:layout_height="wrap_content"
-        android:layout_alignTop="@id/solo_list_money_icon"
-        android:layout_toRightOf="@id/solo_list_money_icon"
-        android:layout_marginLeft="5dp"
-        android:text="500" />
 
     <ImageView
         android:id="@+id/solo_list_xp_icon"
@@ -49,7 +29,7 @@
         android:layout_height="20dp"
         android:layout_below="@id/solo_list_name"
         android:layout_marginTop="3dp"
-        android:layout_toRightOf="@id/solo_list_money"
+        android:layout_toRightOf="@id/solo_list_difficulty"
         android:layout_marginLeft="@dimen/activity_margin"
         android:scaleType="centerInside"
         android:src="@drawable/icon_xp"/>

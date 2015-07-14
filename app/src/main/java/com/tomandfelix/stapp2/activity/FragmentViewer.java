@@ -13,6 +13,7 @@ import android.view.View;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.android.volley.Response;
 import com.android.volley.VolleyError;
@@ -109,63 +110,70 @@ public class FragmentViewer extends FragmentActivity implements FragmentProvider
     }
 
     public void loginBtn(final View v) {
-        v.setEnabled(false);
-        final EditText username = (EditText) findViewById(R.id.login_username);
-        final EditText password = (EditText) findViewById(R.id.login_password);
-        final TextView txtView = (TextView) findViewById(R.id.succes);
-        DatabaseHelper.getInstance().setLastEnteredUsername(username.getText().toString());
-        ServerHelper.getInstance().login(username.getText().toString(), password.getText().toString(), new ServerHelper.ResponseFunc<Profile>() {
-            @Override
-            public void onResponse(Profile response) {
-                if(response != null) {
-                    txtView.setText("profile is being loaded");
-                    Intent intent = new Intent(FragmentViewer.this, ProfileView.class);
-                    intent.putExtra("profile", response);
-                    startActivity(intent);
-                    overridePendingTransition(R.anim.enter_top, R.anim.leave_bottom);
-                    ((StApp) getApplication()).commandService(ShimmerService.UPLOAD_DATA);
-                    ((StApp) getApplication()).commandService(ShimmerService.DOWNLOAD_DATA);
-                    finish();
+        if(ServerHelper.getInstance().checkInternetConnection()) {
+            v.setEnabled(false);
+            final EditText username = (EditText) findViewById(R.id.login_username);
+            final EditText password = (EditText) findViewById(R.id.login_password);
+            final TextView txtView = (TextView) findViewById(R.id.succes);
+            DatabaseHelper.getInstance().setLastEnteredUsername(username.getText().toString());
+            ServerHelper.getInstance().login(username.getText().toString(), password.getText().toString(), new ServerHelper.ResponseFunc<Profile>() {
+                @Override
+                public void onResponse(Profile response) {
+                    if (response != null) {
+                        txtView.setText("profile is being loaded");
+                        Intent intent = new Intent(FragmentViewer.this, ProfileView.class);
+                        intent.putExtra("profile", response);
+                        startActivity(intent);
+                        overridePendingTransition(R.anim.enter_top, R.anim.leave_bottom);
+                        ((StApp) getApplication()).commandService(ShimmerService.UPLOAD_DATA);
+                        ((StApp) getApplication()).commandService(ShimmerService.DOWNLOAD_DATA);
+                        finish();
+                    }
                 }
-            }
-        }, new Response.ErrorListener() {
-            @Override
-            public void onErrorResponse(VolleyError error) {
-                if(error != null && error.getMessage() != null && error.getMessage().equals("wrong")) {
-                    txtView.setText("No such profile exists, please try again");
-                    password.setText(null);
-                    v.setEnabled(true);
-                } else {
-                    Log.e("loginBtn", error.getMessage());
+            }, new Response.ErrorListener() {
+                @Override
+                public void onErrorResponse(VolleyError error) {
+                    if (error != null && error.getMessage() != null && error.getMessage().equals("wrong")) {
+                        txtView.setText("No such profile exists, please try again");
+                        password.setText(null);
+                        v.setEnabled(true);
+                    } else {
+                        //Log.e("loginBtn", error.getMessage());
+                    }
                 }
-            }
-        });
+            });
+        }else{
+            Toast.makeText(getApplicationContext(), "Unable to login, no internet connection", Toast.LENGTH_SHORT).show();
+        }
 
     }
 
 
     public void registerBtn(View v) {
+        if(ServerHelper.getInstance().checkInternetConnection()) {
         EditText firstName = (EditText) findViewById(R.id.new_firstname);
         EditText lastName = (EditText) findViewById(R.id.new_lastname);
         EditText username = (EditText) findViewById(R.id.new_username);
         EditText email = (EditText) findViewById(R.id.new_email);
         EditText password = (EditText) findViewById(R.id.new_password);
-
-        ServerHelper.getInstance().createProfile(firstName.getText().toString(), lastName.getText().toString(), username.getText().toString(), email.getText().toString(), avatar, password.getText().toString(), new ServerHelper.ResponseFunc<Profile>() {
-            @Override
-            public void onResponse(Profile response) {
-                Intent intent = new Intent(FragmentViewer.this, ProfileView.class);
-                intent.putExtra("profile", response);
-                startActivity(intent);
-                overridePendingTransition(R.anim.enter_top, R.anim.leave_bottom);
-                finish();
-            }
-        }, new Response.ErrorListener() {
-            @Override
-            public void onErrorResponse(VolleyError error) {
-                Log.d("registerBtn", error.getMessage());
-            }
-        });
+            ServerHelper.getInstance().createProfile(firstName.getText().toString(), lastName.getText().toString(), username.getText().toString(), email.getText().toString(), avatar, password.getText().toString(), new ServerHelper.ResponseFunc<Profile>() {
+                @Override
+                public void onResponse(Profile response) {
+                    Intent intent = new Intent(FragmentViewer.this, ProfileView.class);
+                    intent.putExtra("profile", response);
+                    startActivity(intent);
+                    overridePendingTransition(R.anim.enter_top, R.anim.leave_bottom);
+                    finish();
+                }
+            }, new Response.ErrorListener() {
+                @Override
+                public void onErrorResponse(VolleyError error) {
+                    Log.d("registerBtn", error.getMessage());
+                }
+            });
+        }else{
+            Toast.makeText(getApplicationContext(), "Unable to register, no internet connection", Toast.LENGTH_SHORT).show();
+        }
     }
 
     public void toLogin(View v) {
