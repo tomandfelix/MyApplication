@@ -27,6 +27,7 @@ import com.android.volley.VolleyError;
 import com.gc.materialdesign.views.ButtonRectangle;
 import com.gc.materialdesign.views.ProgressBarCircularIndeterminate;
 import com.tomandfelix.stapp2.R;
+import com.tomandfelix.stapp2.application.StApp;
 import com.tomandfelix.stapp2.persistency.DatabaseHelper;
 import com.tomandfelix.stapp2.persistency.Profile;
 import com.tomandfelix.stapp2.persistency.ServerHelper;
@@ -144,8 +145,8 @@ public class ProfileView extends DrawerActivity {
     @Override
     protected void onResume() {
         super.onResume();
-        if(app.getHandler() != loggingMessageHandler) {
-            app.setHandler(loggingMessageHandler);
+        if(StApp.getHandler() != loggingMessageHandler) {
+            StApp.setHandler(loggingMessageHandler);
         }
         app.commandService(ShimmerService.REQUEST_STATE);
     }
@@ -153,8 +154,8 @@ public class ProfileView extends DrawerActivity {
     @Override
     protected void onPause() {
         super.onPause();
-        if(app.getHandler() == loggingMessageHandler) {
-            app.setHandler(null);
+        if(StApp.getHandler() == loggingMessageHandler) {
+            StApp.setHandler(null);
         }
     }
 

@@ -15,7 +15,7 @@ import com.tomandfelix.stapp2.R;
 import com.tomandfelix.stapp2.activity.OpenChallenge;
 import com.tomandfelix.stapp2.activity.OpenChallengesFragment;
 import com.tomandfelix.stapp2.application.StApp;
-import com.tomandfelix.stapp2.persistency.ChallengeStatus;
+import com.tomandfelix.stapp2.persistency.ChallengeStatus.Status;
 import com.tomandfelix.stapp2.persistency.DatabaseHelper;
 import com.tomandfelix.stapp2.persistency.GCMMessage;
 import com.tomandfelix.stapp2.persistency.GCMMessage.MessageType;
@@ -23,12 +23,6 @@ import com.tomandfelix.stapp2.persistency.LiveChallenge;
 
 import org.json.JSONArray;
 import org.json.JSONException;
-
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
 
 public class GCMMessageHandler extends IntentService {
     private static NotificationCompat.Builder mBuilder = null;
@@ -100,9 +94,14 @@ public class GCMMessageHandler extends IntentService {
             }
         }
         StApp.challenges.put(message.getUniqueId(), new LiveChallenge(message.getUniqueId(), Integer.parseInt(message.getMessage()), opponents));
-        StApp.challenges.get(message.getUniqueId()).getStatusById(message.getSenderId()).setStatus(ChallengeStatus.Status.ACCEPTED);
+        StApp.challenges.get(message.getUniqueId()).setStatusById(message.getSenderId(), Status.ACCEPTED, null);
         if(OpenChallengesFragment.hasAdapter()) {
-            OpenChallengesFragment.getAdapter().notifyDataSetChanged();
+            OpenChallengesFragment.getBoundedView().post(new Runnable() {
+                @Override
+                public void run() {
+                    OpenChallengesFragment.getAdapter().notifyDataSetChanged();
+                }
+            });
         } else {
             PendingIntent pendingIntent;
             mBuilder.setContentText("You have a new challenge");

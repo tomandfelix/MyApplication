@@ -81,6 +81,13 @@ public class ShimmerService extends Service {
     public static final int REQUEST_STATE = 6;
     public static final int LOG_START_DAY = 7;
     public static final int LOG_ACHIEVED_SCORE = 8;
+    private Handler handler = new Handler(Looper.getMainLooper());
+    final Runnable tryReconnectWithPause = new Runnable() {
+        public void run() {
+            retryAmount = 0;
+            tryReconnect();
+        }
+    };
 
     private static Messenger toApp;
     private static class AppHandler extends Handler {
@@ -103,6 +110,7 @@ public class ShimmerService extends Service {
                     mShimmerService.get().downloadData();
                     break;
                 case CONNECT:
+                    mShimmerService.get().handler.removeCallbacksAndMessages(null);
                     address = msg.getData().getString("address");
                     mShimmerService.get().connect();
                     break;
@@ -148,14 +156,7 @@ public class ShimmerService extends Service {
             connect();
         } else {
             Log.e(TAG, "waiting 30 seconds to RETRY");
-            Handler handler = new Handler(Looper.getMainLooper());
-            final Runnable r = new Runnable() {
-                public void run() {
-                    retryAmount = 0;
-                    tryReconnect();
-                }
-            };
-            handler.postDelayed(r, 30000);
+            handler.postDelayed(tryReconnectWithPause, 30000);
         }
     }
 

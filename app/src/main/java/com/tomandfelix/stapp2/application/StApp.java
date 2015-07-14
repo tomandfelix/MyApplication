@@ -162,6 +162,7 @@ public class StApp  extends Application {
         ServerHelper.init(this);
         VolleyQueue.init(this);
         new GCMMessageHandler();
+        challenges.putAll(DatabaseHelper.getInstance().getLiveChallenges());
         if(!isServiceRunning()) {
             startService(new Intent(this, ShimmerService.class));
         }

@@ -13,7 +13,6 @@ import android.widget.ArrayAdapter;
 import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import com.android.volley.Response;
 import com.android.volley.VolleyError;
@@ -21,16 +20,22 @@ import com.gc.materialdesign.views.ButtonRectangle;
 import com.gc.materialdesign.views.ProgressBarDeterminate;
 import com.tomandfelix.stapp2.R;
 import com.tomandfelix.stapp2.application.StApp;
+import com.tomandfelix.stapp2.gcm.GCMMessageHandler;
+import com.tomandfelix.stapp2.persistency.Challenge;
+import com.tomandfelix.stapp2.persistency.ChallengeStatus;
 import com.tomandfelix.stapp2.persistency.DatabaseHelper;
+import com.tomandfelix.stapp2.persistency.GCMMessage;
 import com.tomandfelix.stapp2.persistency.LiveChallenge;
 import com.tomandfelix.stapp2.persistency.Profile;
 import com.tomandfelix.stapp2.persistency.ServerHelper;
+import com.tomandfelix.stapp2.persistency.ChallengeStatus.Status;
+import com.tomandfelix.stapp2.service.ShimmerService;
 
 import java.util.ArrayList;
 import java.util.Date;
 
 public class OpenChallenge extends ServiceActivity {
-    private static Handler handler;
+    private static OpenChallengeHandler openHandler = new OpenChallengeHandler();
     private ListView openChallengeList;
     private OpenChallengeListAdapter adapter;
     private ArrayList<Profile> mProfileList = new ArrayList<>();
@@ -40,18 +45,22 @@ public class OpenChallenge extends ServiceActivity {
     private ButtonRectangle positiveButton;
     private ProgressBarDeterminate progress;
     private TextView resultView;
+    private int state;
     public static final int MSG_REFRESH = 1;
     private static final String START = "Start";
     private static final String WAITING = "Waiting";
     private static final String ACCEPT = "Accept";
     private static final String DECLINE = "Decline";
     private static final String DISMISS = "Dismiss";
+    private static final String PLS_CONNECT = "Connect a sensor first";
     private static final String WAIT_FOR_RESULT_MSG = "Waiting for results from other players";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         setContentView(R.layout.activity_open_challenge);
         super.onCreate(savedInstanceState);
+
+        openHandler.setInstance(this);
 
         openChallengeList = (ListView) findViewById(R.id.open_challenge_list_view);
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
@@ -79,33 +88,38 @@ public class OpenChallenge extends ServiceActivity {
                     Log.e("OpenChallenge", volleyError.getMessage());
                 }
             }, false);
-
-        }else{
-            Toast.makeText(getApplicationContext(),"Unable to get open challenges, no internet connection", Toast.LENGTH_SHORT).show();
+            app.commandService(ShimmerService.REQUEST_STATE);
+         } else {
+            StApp.makeToast("Unable to get opponent information, no internet connection");
         }
     }
 
     public static Handler getHandler() {
-        return handler;
+        return openHandler;
     }
 
     @Override
     protected void onResume() {
         super.onResume();
-        handler = new OpenHandler();
+        openHandler.setInstance(this);
+        if(StApp.getHandler() != openHandler) {
+            StApp.setHandler(openHandler);
+        }
         updateChallengeViews();
+        app.commandService(ShimmerService.REQUEST_STATE);
     }
 
     @Override
     protected void onPause() {
         super.onPause();
-        handler.removeCallbacksAndMessages(null);
-        handler = null;
+        if(StApp.getHandler() == openHandler) {
+            StApp.setHandler(null);
+        }
     }
 
     private void updateChallengeViews() {
-        switch(challenge.getMyStatus().getStatus()) {
-            case NOT_ACCEPTED: //old case REQ_REC
+        switch(challenge.getMyStatus()) {
+            case NOT_ACCEPTED:
                 buttons.setVisibility(View.VISIBLE);
                 progress.setVisibility(View.INVISIBLE);
                 resultView.setVisibility(View.INVISIBLE);
@@ -116,15 +130,25 @@ public class OpenChallenge extends ServiceActivity {
                 positiveButton.setEnabled(true);
                 break;
             case ACCEPTED:
-                if(challenge.hasEveryoneAccepted()) { //old case ACCEPTED
-                    buttons.setVisibility(View.VISIBLE);
-                    progress.setVisibility(View.INVISIBLE);
-                    resultView.setVisibility(View.INVISIBLE);
-                    negativeButton.setVisibility(View.GONE);
-                    positiveButton.setVisibility(View.VISIBLE);
-                    positiveButton.setText(START);
-                    positiveButton.setEnabled(true);
-                } else { //old case REQ_SENT
+                if(challenge.hasEveryoneAccepted()) {
+                    if(Arrays.asList(Logging.STATE_CONNECTED, Logging.STATE_SIT, Logging.STATE_STAND, Logging.STATE_OVERTIME).contains(state)) {
+                        buttons.setVisibility(View.VISIBLE);
+                        progress.setVisibility(View.INVISIBLE);
+                        resultView.setVisibility(View.INVISIBLE);
+                        negativeButton.setVisibility(View.GONE);
+                        positiveButton.setVisibility(View.VISIBLE);
+                        positiveButton.setText(START);
+                        positiveButton.setEnabled(true);
+                    } else {
+                        buttons.setVisibility(View.VISIBLE);
+                        progress.setVisibility(View.INVISIBLE);
+                        resultView.setVisibility(View.INVISIBLE);
+                        negativeButton.setVisibility(View.GONE);
+                        positiveButton.setVisibility(View.VISIBLE);
+                        positiveButton.setText(PLS_CONNECT);
+                        positiveButton.setEnabled(false);
+                    }
+                } else {
                     buttons.setVisibility(View.VISIBLE);
                     progress.setVisibility(View.INVISIBLE);
                     resultView.setVisibility(View.INVISIBLE);
@@ -134,34 +158,39 @@ public class OpenChallenge extends ServiceActivity {
                     positiveButton.setEnabled(false);
                 }
                 break;
-            case STARTED: //old case STARTED
+            case STARTED:
                 buttons.setVisibility(View.INVISIBLE);
                 progress.setVisibility(View.VISIBLE);
                 resultView.setVisibility(View.INVISIBLE);
                 progress.setMin(0);
                 progress.setMax(challenge.getChallenge().getDuration());
-                Date starttime = DatabaseHelper.stringToDate(challenge.getMyStatus().getData());
+                Date starttime = DatabaseHelper.stringToDate(challenge.getMyStatusData());
                 if(starttime != null)
                     progress.setProgress((int) ((new Date().getTime() - starttime.getTime()) / 1000));
                 startTimer();
                 break;
-            case DONE: //old case WAITING
+            case DONE:
                 buttons.setVisibility(View.INVISIBLE);
                 progress.setVisibility(View.INVISIBLE);
                 resultView.setVisibility(View.VISIBLE);
                 resultView.setText(WAIT_FOR_RESULT_MSG);
                 break;
-            case SCORED: //old case DONE
+            case SCORED:
                 buttons.setVisibility(View.VISIBLE);
                 progress.setVisibility(View.INVISIBLE);
                 resultView.setVisibility(View.VISIBLE);
-                resultView.setText(challenge.getMyStatus().getData().split("\\|")[1]);
+                resultView.setText(challenge.getMyStatusData().split("\\|")[1]);
                 negativeButton.setVisibility(View.GONE);
                 positiveButton.setVisibility(View.VISIBLE);
                 positiveButton.setText(DISMISS);
                 positiveButton.setEnabled(true);
                 break;
         }
+    }
+
+    private void updateState(int state) {
+        this.state = state;
+        updateChallengeViews();
     }
 
     private void startTimer() {
@@ -177,7 +206,7 @@ public class OpenChallenge extends ServiceActivity {
     }
 
     public void onPositiveButton(View v) {
-        switch(challenge.getMyStatus().getStatus()) {
+        switch(challenge.getMyStatus()) {
             case ACCEPTED:
                 if(challenge.hasEveryoneAccepted()) {
                     challenge.start();
@@ -196,7 +225,7 @@ public class OpenChallenge extends ServiceActivity {
     }
 
     public void onNegativeButton(View v) {
-        switch(challenge.getMyStatus().getStatus()) {
+        switch(challenge.getMyStatus()) {
             case NOT_ACCEPTED:
                 challenge.decline();
                 finish();
@@ -257,11 +286,20 @@ public class OpenChallenge extends ServiceActivity {
         }
     }
 
-    private class OpenHandler extends Handler {
+    private static class OpenChallengeHandler extends Handler {
+        private WeakReference<OpenChallenge> oc;
+
+        public void setInstance(OpenChallenge oc) {
+            this.oc = new WeakReference<>(oc);
+        }
         @Override
         public void handleMessage(Message msg) {
-            if(msg.what == MSG_REFRESH) {
-                updateChallengeViews();
+            if(oc.get() != null) {
+                if (msg.what == MSG_REFRESH) {
+                    oc.get().updateChallengeViews();
+                } else {
+                    oc.get().updateState(msg.what);
+                }
             }
         }
     }

@@ -26,15 +26,20 @@ import java.util.List;
  */
 public class OpenChallengesFragment extends ListFragment {
     private static RequestAdapter requestAdapter;
+    private static View boundedView;
 
     public static boolean hasAdapter() {
         return visible;
     }
 
-    private static boolean visible;
+    private static boolean visible = false;
 
     public static ArrayAdapter getAdapter() {
         return requestAdapter;
+    }
+
+    public static View getBoundedView() {
+        return boundedView;
     }
 
     @Override
@@ -47,6 +52,7 @@ public class OpenChallengesFragment extends ListFragment {
     public void onPause() {
         super.onPause();
         visible = false;
+        boundedView = null;
     }
 
     @Override
@@ -56,6 +62,7 @@ public class OpenChallengesFragment extends ListFragment {
         if(requestAdapter != null) {
             requestAdapter.notifyDataSetChanged();
         }
+        boundedView = this.getView();
     }
 
     @Override
