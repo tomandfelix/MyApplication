@@ -49,6 +49,8 @@ public class OpenChallenge extends ServiceActivity {
     private ProgressBarDeterminate progress;
     private TextView resultView;
     private int state;
+    private static boolean timerRunning = false;
+    private Date startTime;
     public static final int MSG_REFRESH = 1;
     private static final String START = "Start";
     private static final String WAITING = "Waiting";
@@ -118,6 +120,8 @@ public class OpenChallenge extends ServiceActivity {
         if(StApp.getHandler() == openHandler) {
             StApp.setHandler(null);
         }
+        openHandler.removeCallbacksAndMessages(null);
+        timerRunning = false;
     }
 
     private void updateChallengeViews() {
@@ -167,10 +171,13 @@ public class OpenChallenge extends ServiceActivity {
                 resultView.setVisibility(View.INVISIBLE);
                 progress.setMin(0);
                 progress.setMax(challenge.getChallenge().getDuration());
-                Date starttime = DatabaseHelper.stringToDate(challenge.getMyStatusData());
-                if(starttime != null)
-                    progress.setProgress((int) ((new Date().getTime() - starttime.getTime()) / 1000));
-                startTimer();
+                if(startTime == null)
+                    startTime = DatabaseHelper.stringToDate(challenge.getMyStatusData());
+                progress.setProgress((int) ((new Date().getTime() - startTime.getTime()) / 1000));
+                if(!timerRunning) {
+                    timerRunning = true;
+                    startTimer();
+                }
                 break;
             case DONE:
                 buttons.setVisibility(View.INVISIBLE);
@@ -197,12 +204,14 @@ public class OpenChallenge extends ServiceActivity {
     }
 
     private void startTimer() {
-        progress.postDelayed(new Runnable() {
+        openHandler.postDelayed(new Runnable() {
             @Override
             public void run() {
-                progress.setProgress(progress.getProgress() + 1);
-                if (progress.getProgress() != challenge.getChallenge().getDuration()) {
+                progress.setProgress((int) ((new Date().getTime() - startTime.getTime()) / 1000));
+                if (progress.getProgress() < challenge.getChallenge().getDuration()) {
                     startTimer();
+                } else {
+                    timerRunning = false;
                 }
             }
         }, 1000);
