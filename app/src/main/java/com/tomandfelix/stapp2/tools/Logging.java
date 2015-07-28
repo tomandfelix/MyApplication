@@ -48,10 +48,14 @@ import android.content.Context;
 import android.os.Handler;
 import android.util.Log;
 
+import com.android.volley.Response;
+import com.android.volley.VolleyError;
 import com.tomandfelix.stapp2.persistency.DBLog;
 import com.tomandfelix.stapp2.persistency.DatabaseHelper;
 import com.tomandfelix.stapp2.driver.FormatCluster;
 import com.tomandfelix.stapp2.driver.ObjectCluster;
+import com.tomandfelix.stapp2.persistency.Profile;
+import com.tomandfelix.stapp2.persistency.ServerHelper;
 import com.tomandfelix.stapp2.service.ShimmerService;
 
 
@@ -210,6 +214,18 @@ public class Logging {
                 achievedScore = getIncreasingScore(connTimeSinceCurr, currentActivity.getData());
             }
             overtimeLogged = false;
+            Profile profileXpAdded = DatabaseHelper.getInstance().getOwner();
+            int newXp = profileXpAdded.getExperience() + (int) achievedScore;
+            profileXpAdded.setExperience(newXp);
+            DatabaseHelper.getInstance().updateProfile(profileXpAdded);
+            if(ServerHelper.getInstance().checkInternetConnection()) {
+                ServerHelper.getInstance().updateMoneyAndExperience(0, newXp, new Response.ErrorListener() {
+                    @Override
+                    public void onErrorResponse(VolleyError volleyError) {
+                        Log.d("logAchievedScore error", volleyError.getMessage());
+                    }
+                });
+            }
 
             double achievedScorePercentage;
             DBLog first = DatabaseHelper.getInstance().getFirstRecordOfDay();

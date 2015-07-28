@@ -2,7 +2,9 @@ package com.tomandfelix.stapp2.activity;
 
 import android.content.Context;
 import android.content.Intent;
+import android.media.Image;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -13,6 +15,9 @@ import android.widget.ListView;
 import android.widget.TextView;
 
 import com.tomandfelix.stapp2.R;
+import com.tomandfelix.stapp2.application.StApp;
+import com.tomandfelix.stapp2.persistency.DatabaseHelper;
+import com.tomandfelix.stapp2.persistency.Profile;
 import com.tomandfelix.stapp2.persistency.Solo;
 import com.tomandfelix.stapp2.persistency.SoloList;
 
@@ -20,12 +25,16 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class SoloQuestList extends DrawerActivity {
+    private Profile mProfile;
     SoloQuestListAdapter soloAdapter;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
         setContentView(R.layout.activity_quest_list);
         super.onCreate(savedInstanceState);
+
+        mProfile = DatabaseHelper.getInstance().getOwner();
+
         ListView questList = (ListView) findViewById(R.id.quest_list);
         soloAdapter = new SoloQuestListAdapter(this, R.layout.list_item_solo_quest, SoloList.getList());
         questList.setAdapter(soloAdapter);
@@ -61,17 +70,31 @@ public class SoloQuestList extends DrawerActivity {
                 ImageView difficulty = (ImageView) convertView.findViewById(R.id.solo_list_difficulty);
                 TextView name = (TextView) convertView.findViewById(R.id.solo_list_name);
                 TextView xp = (TextView) convertView.findViewById(R.id.solo_list_xp);
-
-                switch(s.getDifficulty()) {
-                    case EASY:
-                        difficulty.setImageResource(R.drawable.circle_green);
-                        break;
-                    case MEDIUM:
-                        difficulty.setImageResource(R.drawable.circle_orange);
-                        break;
-                    case HARD:
-                        difficulty.setImageResource(R.drawable.circle_red);
-                        break;
+                TextView xpNeeded = (TextView) convertView.findViewById(R.id.solo_list_xp_needed);
+                ImageView xpImage = (ImageView) convertView.findViewById(R.id.solo_list_xp_needed_icon);
+                if(s.getXpNeeded() < mProfile.getExperience()) {
+                    switch (s.getDifficulty()) {
+                        case EASY:
+                            difficulty.setImageResource(R.drawable.circle_green);
+                            break;
+                        case MEDIUM:
+                            difficulty.setImageResource(R.drawable.circle_orange);
+                            break;
+                        case HARD:
+                            difficulty.setImageResource(R.drawable.circle_red);
+                            break;
+                    }
+                    xpImage.setVisibility(View.INVISIBLE);
+                    xpNeeded.setVisibility(View.INVISIBLE);
+                }else{
+                    convertView.setOnClickListener(null);
+                    xpImage.setVisibility(View.VISIBLE);
+                    xpNeeded.setText(s.getXpNeeded() - mProfile.getExperience() + " xp needed");
+                    xpNeeded.setVisibility(View.VISIBLE);
+                    Log.d("experience needed", s.getXpNeeded() - mProfile.getExperience() + "");
+                   // difficulty.setImageResource(R.drawable.circle_grey);
+                    Log.d("not enough experience",s.toString());
+                    difficulty.setImageResource(R.drawable.abc_ab_share_pack_holo_light);
                 }
                 name.setText(s.getName());
                 xp.setText(Integer.toString(s.getxp()));

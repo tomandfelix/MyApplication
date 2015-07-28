@@ -19,9 +19,11 @@ import android.widget.Toast;
 
 import com.tomandfelix.stapp2.R;
 import com.tomandfelix.stapp2.persistency.DatabaseHelper;
+import com.tomandfelix.stapp2.persistency.Profile;
 import com.tomandfelix.stapp2.persistency.ServerHelper;
 
 public class SettingsView extends DrawerActivity {
+    private Profile mProfile;
     private ListView settingsList;
     private SettingsAdapter adapter;
     private Setting[] settings;
@@ -30,6 +32,8 @@ public class SettingsView extends DrawerActivity {
     protected void onCreate(Bundle savedInstanceState) {
         setContentView(R.layout.activity_settings);
         super.onCreate(savedInstanceState);
+
+        mProfile = DatabaseHelper.getInstance().getOwner();
 
         settings = new Setting[6];
         int freq = DatabaseHelper.getInstance().getUploadFrequency() / 60000;
@@ -68,7 +72,7 @@ public class SettingsView extends DrawerActivity {
                 adapter.notifyDataSetChanged();
                 break;
             case 2:
-                settings[2].subTitle = app.getProfile().getUsername();
+                settings[2].subTitle = mProfile.getUsername();
                 adapter.notifyDataSetChanged();
                 break;
             default:

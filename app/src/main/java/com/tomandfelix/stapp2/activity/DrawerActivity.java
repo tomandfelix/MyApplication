@@ -5,6 +5,7 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
+import android.provider.ContactsContract;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
 import android.util.Log;
@@ -20,6 +21,7 @@ import android.widget.TextView;
 
 import com.tomandfelix.stapp2.R;
 import com.tomandfelix.stapp2.persistency.DatabaseHelper;
+import com.tomandfelix.stapp2.persistency.Profile;
 
 /**
  * Created by Tom on 18/11/2014.
@@ -36,6 +38,7 @@ public abstract class DrawerActivity extends ServiceActivity {
     protected final static int SETTINGS = 8;
     protected final static int INITIAL = PROFILE;
     protected static int index = INITIAL;
+    private Profile mProfile;
     private DrawerLayout drawerLayout;
     private ActionBarDrawerToggle drawerToggle;
     private ListView leftDrawerList;
@@ -62,14 +65,12 @@ public abstract class DrawerActivity extends ServiceActivity {
         } else if(this instanceof SettingsView) {
             index = SETTINGS;
         }
-
+        mProfile = DatabaseHelper.getInstance().getOwner();
         backgroundColor = getResources().getColor(R.color.background);
         selectedBackgroundColor = getResources().getColor(R.color.drawerSelected);
         textColor = getResources().getColor(R.color.secondaryText);
         selectedTextColor = getResources().getColor(R.color.drawerSelectedText);
 
-
-        app.setProfile(DatabaseHelper.getInstance().getOwner());
         menuItems = getResources().getStringArray(R.array.sideMenu);
         leftDrawerList = (ListView) findViewById(R.id.drawer_list);
 
@@ -186,10 +187,10 @@ public abstract class DrawerActivity extends ServiceActivity {
             }
             switch(result) {
                 case PROF:
-                    int avatarId = getResources().getIdentifier("avatar_" + app.getProfile().getAvatar() + "_128", "drawable", getPackageName());
+                    int avatarId = getResources().getIdentifier("avatar_" + mProfile.getAvatar() + "_128", "drawable", getPackageName());
                     ((ImageView) convertView.findViewById(R.id.drawer_avatar)).setImageResource(avatarId);
                     TextView username = (TextView) convertView.findViewById(R.id.drawer_username);
-                    username.setText(app.getProfile().getUsername());
+                    username.setText(mProfile.getUsername());
                     if(position == index) {
                         setSelected(convertView, username);
                     } else {

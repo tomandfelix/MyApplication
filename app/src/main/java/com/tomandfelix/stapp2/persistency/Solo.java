@@ -10,6 +10,7 @@ public class Solo extends Quest{
     public enum Difficulty {EASY, MEDIUM, HARD}
 
     private int xp;
+    private int xpNeeded;
     private int duration;
     private Difficulty difficulty;
     private double progress;
@@ -17,9 +18,10 @@ public class Solo extends Quest{
     private Processor processor;
     private Handler handler;
 
-    public Solo(int id, String name, String description, int xp, int duration, Difficulty difficulty, Processor processor){
+    public Solo(int id, String name, String description, int xp,int xpNeeded, int duration, Difficulty difficulty, Processor processor){
         super(id, name, description);
         this.xp = xp;
+        this.xpNeeded = xpNeeded;
         this.duration = duration;
         this.difficulty = difficulty;
         this.progress = 0;
@@ -27,6 +29,10 @@ public class Solo extends Quest{
     }
     public int getxp() {
         return xp;
+    }
+
+    public int getXpNeeded() {
+        return xpNeeded;
     }
 
     public int getDuration() {

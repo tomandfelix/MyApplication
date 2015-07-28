@@ -30,8 +30,11 @@ import com.tomandfelix.stapp2.persistency.Profile;
 import com.tomandfelix.stapp2.persistency.ServerHelper;
 import com.tomandfelix.stapp2.persistency.ChallengeStatus.Status;
 import com.tomandfelix.stapp2.service.ShimmerService;
+import com.tomandfelix.stapp2.tools.Logging;
 
+import java.lang.ref.WeakReference;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Date;
 
 public class OpenChallenge extends ServiceActivity {

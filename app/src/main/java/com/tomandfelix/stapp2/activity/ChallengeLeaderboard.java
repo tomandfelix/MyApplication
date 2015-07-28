@@ -31,6 +31,7 @@ import com.tomandfelix.stapp2.persistency.ServerHelper;
 import java.util.ArrayList;
 
 public class ChallengeLeaderboard extends ServiceActivity {
+    private Profile mProfile;
     private ListView leaderboardList;
     private ButtonRectangle confirmBtn;
     private ChallengeLeaderboardAdapter adapter;
@@ -44,7 +45,7 @@ public class ChallengeLeaderboard extends ServiceActivity {
         setContentView(R.layout.activity_challenge_leaderboard);
         super.onCreate(savedInstanceState);
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
-
+        mProfile = DatabaseHelper.getInstance().getOwner();
         challengeID = getIntent().getExtras().getInt("challengeID", 0);
         confirmBtn = (ButtonRectangle) findViewById(R.id.challenge_leaderboard_confirm);
 
@@ -197,7 +198,7 @@ public class ChallengeLeaderboard extends ServiceActivity {
 
 
                 int avatarID = getResources().getIdentifier("avatar_" + p.getAvatar() +"_128", "drawable", getPackageName());
-                if(p.getId() == app.getProfile().getId()){
+                if(p.getId() == mProfile.getId()){
                     rank.setTextColor(accentColor);
                     username.setTextColor(accentColor);
                     experience.setTextColor(accentColor);

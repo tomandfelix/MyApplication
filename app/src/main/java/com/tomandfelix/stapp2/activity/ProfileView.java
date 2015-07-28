@@ -49,6 +49,7 @@ public class ProfileView extends DrawerActivity {
     private TextView username;
     private TextView rank;
     private ImageView avatar;
+    private Profile mProfile;
     private ButtonRectangle pauseButton;
     private ButtonRectangle startStopButton;
     private ProgressBarCircularIndeterminate connecting;
@@ -63,6 +64,8 @@ public class ProfileView extends DrawerActivity {
         setContentView(R.layout.activity_profile);
         super.onCreate(savedInstanceState);
 
+        mProfile = DatabaseHelper.getInstance().getOwner();
+
         username = (TextView) findViewById(R.id.profile_username);
         rank = (TextView) findViewById(R.id.profile_rank);
         avatar = (ImageView) findViewById(R.id.profile_avatar);
@@ -72,17 +75,16 @@ public class ProfileView extends DrawerActivity {
 
         Profile profile = getIntent().getParcelableExtra("profile");
         if (profile != null) {
-            app.setProfile(profile);
+            DatabaseHelper.getInstance().updateProfile(profile);
             updateVisual();
         } else {
-            app.setProfile(DatabaseHelper.getInstance().getOwner());
             updateVisual();
             if(ServerHelper.getInstance().checkInternetConnection()) {
                 ServerHelper.getInstance().getProfile(new ServerHelper.ResponseFunc<Profile>() {
                     @Override
                     public void onResponse(Profile response) {
                         if (response != null) {
-                            app.setProfile(response);
+                            DatabaseHelper.getInstance().updateProfile(response);
                             updateVisual();
                         }
                     }
@@ -119,7 +121,7 @@ public class ProfileView extends DrawerActivity {
                                     new ServerHelper.ResponseFunc<Profile>() {
                                         @Override
                                         public void onResponse(Profile response) {
-                                            app.setProfile(response);
+                                            DatabaseHelper.getInstance().updateProfile(response);
                                             updateVisual();
                                         }
                                     }, new Response.ErrorListener() {
@@ -160,10 +162,10 @@ public class ProfileView extends DrawerActivity {
     }
 
     private void updateVisual() {
-        getSupportActionBar().setTitle(app.getProfile().getFirstName() + " " + app.getProfile().getLastName());
-        rank.setText(Integer.toString(app.getProfile().getRank()));
-        username.setText(app.getProfile().getUsername());
-        int avatarID = getResources().getIdentifier("avatar_" + app.getProfile().getAvatar() + "_512", "drawable", getPackageName());
+        getSupportActionBar().setTitle(mProfile.getFirstName() + " " + mProfile.getLastName());
+        rank.setText(Integer.toString(mProfile.getRank()));
+        username.setText(mProfile.getUsername());
+        int avatarID = getResources().getIdentifier("avatar_" + mProfile.getAvatar() + "_512", "drawable", getPackageName());
         avatar.setImageResource(avatarID);
     }
 

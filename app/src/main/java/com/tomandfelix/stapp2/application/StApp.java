@@ -42,7 +42,6 @@ import java.util.Map;
  * Created by Tom on 11/03/2015.
  */
 public class StApp  extends Application {
-    private Profile mProfile;
     private static StApp singleton;
     private Messenger toService = null;
     private String PROJECT_NUMBER = "413268601960";
@@ -123,12 +122,9 @@ public class StApp  extends Application {
         v.vibrate(duration);
     }
 
-    public Profile getProfile() {
-        return mProfile;
-    }
-
-    public void setProfile(Profile mProfile) {
-        this.mProfile = mProfile;
+    public Profile getProfileAfterWin(Profile profile, int xp){
+        profile.setExperience(profile.getExperience() + xp);
+        return profile;
     }
 
     public static StApp getInstance() {

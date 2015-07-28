@@ -25,6 +25,7 @@ import com.tomandfelix.stapp2.persistency.ServerHelper;
  * Created by Tom on 24/03/2015.
  */
 public class AccountSettings extends ServiceActivity {
+    private Profile mProfile;
     private ImageView avatar;
     private GridView avatarGrid;
     private EditText username, firstname, lastname, email, password;
@@ -47,13 +48,13 @@ public class AccountSettings extends ServiceActivity {
         lastname = (EditText) findViewById(R.id.edit_lastname);
         email = (EditText) findViewById(R.id.edit_email);
         password = (EditText) findViewById(R.id.edit_password);
-
-        int avatarID = getResources().getIdentifier("avatar_" + app.getProfile().getAvatar() + "_512", "drawable", getPackageName());
+        mProfile = DatabaseHelper.getInstance().getOwner();
+        int avatarID = getResources().getIdentifier("avatar_" + mProfile.getAvatar() + "_512", "drawable", getPackageName());
         avatar.setImageResource(avatarID);
-        username.setText(app.getProfile().getUsername());
-        firstname.setText(app.getProfile().getFirstName());
-        lastname.setText(app.getProfile().getLastName());
-        email.setText(app.getProfile().getEmail());
+        username.setText(mProfile.getUsername());
+        firstname.setText(mProfile.getFirstName());
+        lastname.setText(mProfile.getLastName());
+        email.setText(mProfile.getEmail());
         if(ServerHelper.getInstance().checkInternetConnection()) {
             avatar.setOnClickListener(new View.OnClickListener() {
                 @Override
@@ -93,18 +94,18 @@ public class AccountSettings extends ServiceActivity {
     }
 
     public void onConfirm(View v) {
-        final String newUsername = validateInput(username.getText().toString(), app.getProfile().getUsername());
-        final String newFirstName =  validateInput(firstname.getText().toString(), app.getProfile().getFirstName());
-        final String newLastName =  validateInput(lastname.getText().toString(), app.getProfile().getLastName());
-        final String newEmail =  validateInput(email.getText().toString(), app.getProfile().getEmail());
+        final String newUsername = validateInput(username.getText().toString(), mProfile.getUsername());
+        final String newFirstName =  validateInput(firstname.getText().toString(), mProfile.getFirstName());
+        final String newLastName =  validateInput(lastname.getText().toString(), mProfile.getLastName());
+        final String newEmail =  validateInput(email.getText().toString(), mProfile.getEmail());
         final String newPassword = validateInput(password.getText().toString(), "");
-        newAvatar = validateInput(newAvatar, app.getProfile().getAvatar());
+        newAvatar = validateInput(newAvatar, mProfile.getAvatar());
 
-        if(newUsername != null) app.getProfile().setUsername(newUsername);
-        if(newFirstName != null) app.getProfile().setFirstName(newFirstName);
-        if(newLastName != null) app.getProfile().setLastName(newLastName);
-        if(newEmail != null) app.getProfile().setEmail(newEmail);
-        if(newAvatar != null) app.getProfile().setAvatar(newAvatar);
+        if(newUsername != null) mProfile.setUsername(newUsername);
+        if(newFirstName != null) mProfile.setFirstName(newFirstName);
+        if(newLastName != null) mProfile.setLastName(newLastName);
+        if(newEmail != null) mProfile.setEmail(newEmail);
+        if(newAvatar != null) mProfile.setAvatar(newAvatar);
 
         if(newUsername != null || newFirstName != null || newLastName != null || newEmail != null || newPassword != null || newAvatar != null) {
             if(newPassword != null) {
@@ -179,7 +180,7 @@ public class AccountSettings extends ServiceActivity {
                                                 new ServerHelper.ResponseFunc<Profile>() {
                                                     @Override
                                                     public void onResponse(Profile response) {
-                                                        app.setProfile(response);
+                                                        DatabaseHelper.getInstance().updateProfile(response);
                                                         onConfirm(null);
                                                     }
                                                 }, new Response.ErrorListener() {

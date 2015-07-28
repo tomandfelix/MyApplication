@@ -9,6 +9,6 @@
         android:layout_height="match_parent"
         android:background="@color/background"
         android:divider="@color/divider"
-        android:dividerHeight="0dp"
+        android:dividerHeight="1dp"
         android:choiceMode="singleChoice"/>
 </RelativeLayout>

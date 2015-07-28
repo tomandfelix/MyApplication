@@ -34,6 +34,7 @@ import java.util.ArrayList;
  * This is the class that will display the leaderboard
  */
 public class LeaderboardView extends DrawerActivity {
+    private Profile mProfile;
     private ListView leaderboardList;
     private LeaderboardListAdapter adapter;
     private ArrayList<Profile> list;
@@ -42,6 +43,7 @@ public class LeaderboardView extends DrawerActivity {
     protected void onCreate(Bundle savedInstanceState) {
         setContentView(R.layout.activity_leaderboard);
         super.onCreate(savedInstanceState);
+        mProfile = DatabaseHelper.getInstance().getOwner();
         leaderboardList = (ListView) findViewById(R.id.leaderboard_list);
         getLeaderboard();
     }
@@ -84,7 +86,7 @@ public class LeaderboardView extends DrawerActivity {
                                     new ServerHelper.ResponseFunc<Profile>() {
                                         @Override
                                         public void onResponse(Profile response) {
-                                            app.setProfile(response);
+                                            DatabaseHelper.getInstance().updateProfile(response);
                                             getLeaderboard();
                                         }
                                     }, new Response.ErrorListener() {
@@ -189,7 +191,7 @@ public class LeaderboardView extends DrawerActivity {
 
 
                 int avatarID = getResources().getIdentifier("avatar_" + p.getAvatar() +"_128", "drawable", getPackageName());
-                if(p.getId() == app.getProfile().getId()){
+                if(p.getId() == mProfile.getId()){
                     rank.setTextColor(accentColor);
                     username.setTextColor(accentColor);
                     experience.setTextColor(accentColor);
