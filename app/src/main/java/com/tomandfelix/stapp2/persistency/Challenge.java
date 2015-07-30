@@ -10,15 +10,35 @@ import com.tomandfelix.stapp2.persistency.ChallengeStatus.Status;
 public class Challenge extends Quest {
     private int minAmount;
     private int maxAmount;
+    private int xp;
     private int duration;
+    private double progress;
     private Processor processor;
 
-    public Challenge(int id, String name, String description, int minAmount, int maxAmount, int duration, Processor validator){
+    public Challenge(int id, String name, String description, int minAmount, int maxAmount,int xp, int duration, Processor validator){
         super(id, name, description);
+        this.progress = 0;
         this.minAmount = minAmount;
         this.maxAmount = maxAmount;
+        this.xp = xp;
         this.duration = duration;
         this.processor = validator;
+    }
+
+    public int getxp() {
+        return xp;
+    }
+
+    public void setxp(int xp) {
+        this.xp = xp;
+    }
+
+    public double getProgress() {
+        return progress;
+    }
+
+    public void setProgress(double progress) {
+        this.progress = progress;
     }
 
     public int getMinAmount() {
