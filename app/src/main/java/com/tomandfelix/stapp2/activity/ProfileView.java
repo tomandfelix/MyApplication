@@ -28,6 +28,7 @@ import com.gc.materialdesign.views.ButtonRectangle;
 import com.gc.materialdesign.views.ProgressBarCircularIndeterminate;
 import com.tomandfelix.stapp2.R;
 import com.tomandfelix.stapp2.application.StApp;
+import com.tomandfelix.stapp2.persistency.DBLog;
 import com.tomandfelix.stapp2.persistency.DatabaseHelper;
 import com.tomandfelix.stapp2.persistency.Profile;
 import com.tomandfelix.stapp2.persistency.ServerHelper;
@@ -43,13 +44,13 @@ import java.util.Set;
  * The activity that shows you your own profile
  */
 public class ProfileView extends DrawerActivity {
-//    private boolean avatarChanged;
     private static ImageView statusIcon;
     private Handler loggingMessageHandler = new ProfileHandler(this);
     private TextView username;
     private TextView rank;
+    private TextView experience;
+    private TextView todayExperience;
     private ImageView avatar;
-    private Profile mProfile;
     private ButtonRectangle pauseButton;
     private ButtonRectangle startStopButton;
     private ProgressBarCircularIndeterminate connecting;
@@ -57,6 +58,13 @@ public class ProfileView extends DrawerActivity {
     private static final String RESUME = "Resume";
     private static final String START = "Start";
     private static final String STOP = "Stop";
+    private Runnable updateXP = new Runnable() {
+        @Override
+        public void run() {
+            app.commandService(ShimmerService.XP_REQUEST);
+            loggingMessageHandler.postDelayed(this, 1000);
+        }
+    };
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -64,10 +72,10 @@ public class ProfileView extends DrawerActivity {
         setContentView(R.layout.activity_profile);
         super.onCreate(savedInstanceState);
 
-        mProfile = DatabaseHelper.getInstance().getOwner();
-
         username = (TextView) findViewById(R.id.profile_username);
         rank = (TextView) findViewById(R.id.profile_rank);
+        experience = (TextView) findViewById(R.id.profile_xp);
+        todayExperience = (TextView) findViewById(R.id.profile_xp_today);
         avatar = (ImageView) findViewById(R.id.profile_avatar);
         pauseButton = (ButtonRectangle) findViewById(R.id.profile_pause_button);
         startStopButton = (ButtonRectangle) findViewById(R.id.profile_start_stop_button);
@@ -85,6 +93,7 @@ public class ProfileView extends DrawerActivity {
                     public void onResponse(Profile response) {
                         if (response != null) {
                             DatabaseHelper.getInstance().updateProfile(response);
+
                             updateVisual();
                         }
                     }
@@ -151,6 +160,7 @@ public class ProfileView extends DrawerActivity {
             StApp.setHandler(loggingMessageHandler);
         }
         app.commandService(ShimmerService.REQUEST_STATE);
+        loggingMessageHandler.post(updateXP);
     }
 
     @Override
@@ -159,14 +169,21 @@ public class ProfileView extends DrawerActivity {
         if(StApp.getHandler() == loggingMessageHandler) {
             StApp.setHandler(null);
         }
+        loggingMessageHandler.removeCallbacks(updateXP);
     }
 
     private void updateVisual() {
-        getSupportActionBar().setTitle(mProfile.getFirstName() + " " + mProfile.getLastName());
-        rank.setText(Integer.toString(mProfile.getRank()));
-        username.setText(mProfile.getUsername());
-        int avatarID = getResources().getIdentifier("avatar_" + mProfile.getAvatar() + "_512", "drawable", getPackageName());
+        Profile profile = DatabaseHelper.getInstance().getOwner();
+        getSupportActionBar().setTitle(profile.getFirstName() + " " + profile.getLastName());
+        rank.setText(Integer.toString(profile.getRank()));
+        experience.setText(Integer.toString(profile.getExperience()));
+        username.setText(profile.getUsername());
+        int avatarID = getResources().getIdentifier("avatar_" + profile.getAvatar() + "_512", "drawable", getPackageName());
         avatar.setImageResource(avatarID);
+    }
+
+    private void updateXPToday(int xpToday) {
+        todayExperience.setText("+" + xpToday + " Today");
     }
 
     public void onPauseResume(View view) {
@@ -221,6 +238,7 @@ public class ProfileView extends DrawerActivity {
                 connecting.setVisibility(View.GONE);
                 pauseButton.setVisibility(View.GONE);
                 startStopButton.setText(START);
+                updateVisual();
                 break;
             case Logging.STATE_CONNECTED:
             case Logging.STATE_SIT:
@@ -317,7 +335,11 @@ public class ProfileView extends DrawerActivity {
         @Override
         public void handleMessage(Message msg) {
             if(mProfileView.get() != null) {
-                mProfileView.get().updateState(msg.what);
+                if(msg.what == 100) {
+                    mProfileView.get().updateXPToday(msg.arg1);
+                } else {
+                    mProfileView.get().updateState(msg.what);
+                }
             }
         }
     }

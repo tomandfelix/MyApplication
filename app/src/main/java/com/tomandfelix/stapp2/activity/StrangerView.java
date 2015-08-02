@@ -24,10 +24,7 @@ public class StrangerView extends ServiceActivity {
     protected void onCreate(Bundle savedInstanceState) {
         setContentView(R.layout.activity_stranger_profile);
         super.onCreate(savedInstanceState);
-
-        if(getSupportActionBar() != null) {
-            getSupportActionBar().setDisplayHomeAsUpEnabled(true);
-        }
+        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
 
         int strangerId = getIntent().getIntExtra("strangerId", -1);
         if(ServerHelper.getInstance().checkInternetConnection()) {
@@ -54,25 +51,29 @@ public class StrangerView extends ServiceActivity {
     }
 
     private void updateVisual(final Profile profile) {
+        getSupportActionBar().setTitle(profile.getUsername());
         TextView rank = (TextView) findViewById(R.id.stranger_rank);
         TextView username = (TextView) findViewById(R.id.stranger_username);
+        TextView experience = (TextView) findViewById(R.id.stranger_xp);
         final TextView progress = (TextView) findViewById(R.id.stranger_progress);
         ImageView avatar = (ImageView) findViewById(R.id.stranger_avatar);
 
         int avatarID = getResources().getIdentifier("avatar_" + profile.getAvatar() + "_512", "drawable", getPackageName());
 
-        rank.setText( profile.getRank() + "");
+        rank.setText(Integer.toString(profile.getRank()));
         username.setText(profile.getUsername());
+        experience.setText(Integer.toString(profile.getExperience()));
         avatar.setImageResource(avatarID);
         if(ServerHelper.getInstance().checkInternetConnection()) {
-            ServerHelper.getInstance().getProgressOfOther(profile.getId(), new ServerHelper.ResponseFunc<Float>() {
+            ServerHelper.getInstance().getProgressOfOther(profile.getId(), new ServerHelper.ResponseFunc<Double>() {
                 @Override
-                public void onResponse(Float response) {
+                public void onResponse(Double response) {
+                    Log.d("StrangerView", response + "");
                     if (response > 0) {
                         float roundedFloat = (float) Math.round(response);
-                        progress.setText(profile.getUsername() + " has a behaviour of " + roundedFloat + "%");
+                        progress.setText(profile.getUsername() + " has achieved an average daily score of " + roundedFloat + "% in the past two weeks.");
                     } else {
-                        progress.setText(profile.getUsername() + " has not been active in the past 2 weeks");
+                        progress.setText(profile.getUsername() + " has not been active in the past 2 weeks.");
                     }
                 }
             }, new Response.ErrorListener() {

@@ -2,6 +2,11 @@ package com.tomandfelix.stapp2.persistency;
 
 import android.os.Handler;
 import android.os.Looper;
+import android.util.Log;
+
+import com.android.volley.Response;
+import com.android.volley.VolleyError;
+import com.tomandfelix.stapp2.application.StApp;
 
 /**
  * Created by Flixse on 27/01/2015.
@@ -14,7 +19,7 @@ public class Solo extends Quest{
     private int duration;
     private Difficulty difficulty;
     private double progress;
-    private String data;
+    private Object data;
     private Processor processor;
     private Handler handler;
 
@@ -27,6 +32,12 @@ public class Solo extends Quest{
         this.progress = 0;
         this.processor = processor;
     }
+
+    @Override
+    public String getDescription() {
+        return super.getDescription().replace("<duration>", Integer.toString(duration));
+    }
+
     public int getxp() {
         return xp;
     }
@@ -48,14 +59,15 @@ public class Solo extends Quest{
     }
 
     public void setProgress(double progress) {
+        Log.d("solo", "Progress=" + progress);
         this.progress = progress;
     }
 
-    public String getData() {
+    public Object getData() {
         return data;
     }
 
-    public void setData(String data) {
+    public void setData(Object data) {
         this.data = data;
     }
 
@@ -73,7 +85,27 @@ public class Solo extends Quest{
         });
     }
 
-    public void stop() {
+    public void won() {
+        StApp.makeToast("Quest complete, you have won!");
+        data = "Quest complete, you have won!";
+        Log.d("Solo", "Quest complete, you have won!");
+        ServerHelper.getInstance().updateMoneyAndExperience(0, DatabaseHelper.getInstance().getOwner().getExperience() + xp, new Response.ErrorListener() {
+            @Override
+            public void onErrorResponse(VolleyError volleyError) {
+
+            }
+        });
+        stop();
+    }
+
+    public void lost() {
+        StApp.makeToast("Quest complete, you have lost!");
+        data = "Quest complete, you have lost!";
+        Log.d("Solo", "Quest complete, you have lost!");
+        stop();
+    }
+
+    private void stop() {
         handler.removeCallbacksAndMessages(null);
         handler = null;
         progress = 0;

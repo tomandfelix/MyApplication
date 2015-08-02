@@ -309,6 +309,21 @@ public class DatabaseHelper extends SQLiteOpenHelper{
         return result;
     }
 
+    public ArrayList<DBLog> getSitStandBetween(Date start, Date end) {
+        Log.i("getSitStandBetween", "getting sit and stand between " + dateToString(start) + " and " + dateToString(end));
+        String query = "SELECT " + KEY_ACTION + ", " + KEY_DATETIME + ", " + KEY_DATA +  " FROM " + TABLE_LOGS + " WHERE " + KEY_ACTION + " IN('" + LOG_SIT + "', '" + LOG_STAND + "') AND " + KEY_DATETIME + " > '" + dateToString(start) + "' AND " + KEY_DATETIME + " < '" + dateToString(end) + "' ORDER BY " + KEY_ID + " ASC";
+        Cursor cursor = db.rawQuery(query, null);
+        ArrayList<DBLog> result = null;
+        if(cursor != null && cursor.getCount() > 0) {
+            result = new ArrayList<>();
+            while(cursor.moveToNext()) {
+                result.add(new DBLog(cursor.getString(0), stringToDate(cursor.getString(1)), cursor.getDouble(2)));
+            }
+        }
+        if (cursor != null) cursor.close();
+        return result;
+    }
+
     public DBLog getLastLogBefore(Date dateTime) {
         Log.i("getLastLogBefore", "running");
         String query = "SELECT " + KEY_ACTION + ", " + KEY_DATETIME + ", " + KEY_DATA + " FROM " + TABLE_LOGS + " WHERE " + KEY_DATETIME + " < '" + dateToString(dateTime) + "' ORDER BY " + KEY_ID + " DESC LIMIT 1";
@@ -337,6 +352,9 @@ public class DatabaseHelper extends SQLiteOpenHelper{
 
     public DBLog getLastSitStand() {
         Log.i("getLastSitStand", "running");
+        if(dayStarted() == null) {
+            return null;
+        }
         String query = "SELECT " + KEY_ACTION + ", " + KEY_DATETIME + ", " + KEY_DATA + " FROM " + TABLE_LOGS + " WHERE " + KEY_ACTION + " IN('" + LOG_SIT + "', '" + LOG_STAND + "') AND " + KEY_ID + " > (SELECT " + KEY_ID + " FROM " + TABLE_LOGS + " WHERE " + KEY_ACTION + " = '" + LOG_START_DAY + "' ORDER BY " + KEY_ID + " DESC LIMIT 1) ORDER BY " + KEY_ID + " DESC LIMIT 1";
         Cursor cursor = db.rawQuery(query, null);
         DBLog result = null;

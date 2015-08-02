@@ -92,14 +92,10 @@ public abstract class DrawerActivity extends ServiceActivity {
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
-        int id = item.getItemId();
-        if(drawerToggle.onOptionsItemSelected(item)) {
-            return true;
-        }
-        return super.onOptionsItemSelected(item);
+        return drawerToggle.onOptionsItemSelected(item) || super.onOptionsItemSelected(item);
     }
 
-    private void loadActivity(int newIndex) {
+    protected void loadActivity(int newIndex) {
         Class destination;
         switch(newIndex) {
             case PROFILE:

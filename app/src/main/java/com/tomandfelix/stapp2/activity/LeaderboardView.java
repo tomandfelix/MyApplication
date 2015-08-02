@@ -70,7 +70,7 @@ public class LeaderboardView extends DrawerActivity {
 
     private void askForPassword() {
         AlertDialog.Builder alert = new AlertDialog.Builder(this);
-        alert.setMessage("It seems like an error occured, Please enter your password again").setTitle("Password");
+        alert.setMessage("It seems like an error occurred, Please enter your password again").setTitle("Password");
         final EditText input = new EditText(this);
         input.setInputType(InputType.TYPE_TEXT_VARIATION_PASSWORD);
         input.setTransformationMethod(PasswordTransformationMethod.getInstance());
@@ -147,8 +147,7 @@ public class LeaderboardView extends DrawerActivity {
                     } else if (position > 0 && position <= list.size()) {
                         int destId = list.get(position - 1).getId();
                         if (destId == DatabaseHelper.getInstance().getOwnerId()) {
-//                        drawer.setSelection(PROFILE);
-                            //TODO why was this here?
+                            loadActivity(PROFILE);
                         } else {
                             Intent intent = new Intent(LeaderboardView.this, StrangerView.class);
                             intent.putExtra("strangerId", destId);

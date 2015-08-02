@@ -1,14 +1,15 @@
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:orientation="horizontal"
     android:layout_width="match_parent"
-    android:layout_height="wrap_content">
+    android:layout_height="wrap_content"
+    android:paddingTop="3dp"
+    android:paddingBottom="3dp">
 
     <ImageView
         android:id="@+id/solo_list_difficulty"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_alignParentTop="true"
-        android:layout_marginTop="10dp"
+        android:layout_centerVertical="true"
         android:src="@drawable/circle_green"/>
 
     <TextView
@@ -30,14 +31,9 @@
         android:layout_toRightOf="@id/solo_list_difficulty"
         android:layout_marginLeft="@dimen/activity_margin">
 
-        <ImageView
+        <include
             android:id="@+id/solo_list_xp_icon"
-            android:layout_width="20dp"
-            android:layout_height="20dp"
-
-
-            android:scaleType="centerInside"
-            android:src="@drawable/icon_xp"/>
+            layout="@layout/icon_xp"/>
 
         <TextView
             android:id="@+id/solo_list_xp"
@@ -48,15 +44,9 @@
             android:layout_toRightOf="@+id/solo_list_xp_icon"
             android:layout_marginLeft="5dp"
             android:text="50" />
-
-        <ImageView
+        <include
             android:id="@+id/solo_list_xp_needed_icon"
-            android:layout_width="20dp"
-            android:layout_height="20dp"
-            android:layout_toRightOf="@id/solo_list_xp"
-            android:layout_marginLeft="@dimen/activity_margin"
-            android:scaleType="centerInside"
-            android:src="@drawable/icon_xp"/>
+            layout="@layout/icon_xp"/>
         <TextView
             android:id="@+id/solo_list_xp_needed"
             android:textSize="16sp"

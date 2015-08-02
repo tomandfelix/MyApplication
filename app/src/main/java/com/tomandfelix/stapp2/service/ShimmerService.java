@@ -80,6 +80,7 @@ public class ShimmerService extends Service {
     public static final int END_DAY = 5;
     public static final int REQUEST_STATE = 6;
     public static final int LOG_START_DAY = 7;
+    public static final int XP_REQUEST = 8;
     private Handler handler = new Handler(Looper.getMainLooper());
     final Runnable tryReconnectWithPause = new Runnable() {
         public void run() {
@@ -125,6 +126,9 @@ public class ShimmerService extends Service {
                 case END_DAY:
                     mShimmerService.get().endDay();
                     break;
+                case XP_REQUEST:
+                    mShimmerService.get().sendXPToApp(Logging.getInstance(mShimmerService.get()).getCurrentXP());
+                    break;
                 default:
                     super.handleMessage(msg);
             }
@@ -136,6 +140,16 @@ public class ShimmerService extends Service {
         if(toApp != null) {
             try {
                 toApp.send(Message.obtain(null, state));
+            } catch (RemoteException e) {
+                toApp = null;
+            }
+        }
+    }
+
+    public void sendXPToApp(int xp) {
+        if(toApp != null) {
+            try {
+                toApp.send(Message.obtain(null, 100, xp, -1));
             } catch (RemoteException e) {
                 toApp = null;
             }

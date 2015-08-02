@@ -470,6 +470,7 @@ public class ServerHelper {
      *                      * 'database' Something went wrong with the database
      */
     public void updateMoneyAndExperience(final int money, final int experience, final Response.ErrorListener errorListener) {
+        DatabaseHelper.getInstance().updateProfile(new Profile(DatabaseHelper.getInstance().getOwnerId(), null, null, null, null, money, experience, null, -1, null));
         JSONObject request = new JSONObject();
         try {
             request.put("id", DatabaseHelper.getInstance().getOwnerId());
@@ -730,7 +731,7 @@ public class ServerHelper {
      *                      * 'input' There was some input missing
      *                      * 'database' Something went wrong with the database
      */
-    public void getProgressOfOther(int id, final ResponseFunc<Float> responseListener, final Response.ErrorListener errorListener) {
+    public void getProgressOfOther(int id, final ResponseFunc<Double> responseListener, final Response.ErrorListener errorListener) {
 
         JSONObject request = new JSONObject();
         try {
@@ -738,36 +739,14 @@ public class ServerHelper {
         } catch (JSONException e) {
             e.printStackTrace();
         }
-        final JsonArrayRequest getProgressOfOther = new JsonArrayRequest(Request.Method.POST, "http://eng.studev.groept.be/thesis/a14_stapp2/getProgressOfOther.php", request, new Response.Listener<JSONArray>() {
+        final JsonObjectRequest getProgressOfOther = new JsonObjectRequest(Request.Method.POST, "http://eng.studev.groept.be/thesis/a14_stapp2/getProgressOfOther.php", request, new Response.Listener<JSONObject>() {
             @Override
-            public void onResponse(JSONArray response) {
-                try {
-                    if(!response.isNull(0) && !response.getJSONObject(0).getString("action").equals("end_day")){
-                        ArrayList<Integer> achieved_score = new ArrayList<>();
-                        ArrayList<Integer> time = new ArrayList<>();
-                        float divider = 0;
-                        float upper = 0 ;
-                        for(int i = 0; i < response.length();i++) {
-                            Log.d("response",response.get(i).toString());
-                            if(response.getJSONObject(i).getString("action").equals("achieved_score_percent")){
-                                achieved_score.add(response.getJSONObject(i).getInt("DATA"));
-                            }else{
-                                time.add(response.getJSONObject(i).getInt("DATA"));
-                            }
-                        }
-                        if(achieved_score.size() > 0 && time.size() > 0 ) {
-                            for (int i = 0; i < achieved_score.size(); i++) {
-                                upper += ((float) achieved_score.get(i)) * time.get(i);
-                                divider += ((float) time.get(i));
-                            }
-                            float result = upper / divider ;
-                            responseListener.onResponse(result);
-                            Log.d("end result", result + "");
-                        }else{
-                            Log.e("error", "one of the two arrays is empty");
-                        }
-                    }else{
-                        errorListener.onErrorResponse(new VolleyError("data"));
+            public void onResponse(JSONObject response) {
+                try{
+                    if(response.has("average")) {
+                        responseListener.onResponse(response.isNull("average") ? -1 : response.getDouble("average"));
+                    }else if(response.has("error")) {
+                        errorListener.onErrorResponse(new VolleyError(response.getString("error")));
                     }
                 } catch (JSONException e) {
                     e.printStackTrace();

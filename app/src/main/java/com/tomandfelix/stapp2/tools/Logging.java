@@ -132,6 +132,26 @@ public class Logging {
         }
     }
 
+    public int getCurrentXP() {
+        if(dayStarted && currentActivity != null) {
+            Date now = new Date();
+            long tempConnTimeSinceCurr = connTimeSinceCurr;
+            if (connected) {
+                tempConnTimeSinceCurr += now.getTime() - last.getDatetime().getTime();
+            }
+            double achievedScore;
+            if (last.getAction().equals(DatabaseHelper.LOG_START_DAY)) {
+                achievedScore = 0;
+            } else if (overtimeLogged) {
+                achievedScore = getDecreasingScore(tempConnTimeSinceCurr, currentActivity.getData());
+            } else {
+                achievedScore = getIncreasingScore(tempConnTimeSinceCurr, currentActivity.getData());
+            }
+            return (int) achievedScore;
+        }
+        return 0;
+    }
+
     public static double getIncreasingScore(long delta_t, double scoreBefore) {
         return scoreBefore + ppmax * (double) delta_t / (double) _30mn_to_ms;
     }
@@ -214,18 +234,13 @@ public class Logging {
                 achievedScore = getIncreasingScore(connTimeSinceCurr, currentActivity.getData());
             }
             overtimeLogged = false;
-            Profile profileXpAdded = DatabaseHelper.getInstance().getOwner();
-            int newXp = profileXpAdded.getExperience() + (int) achievedScore;
-            profileXpAdded.setExperience(newXp);
-            DatabaseHelper.getInstance().updateProfile(profileXpAdded);
-            if(ServerHelper.getInstance().checkInternetConnection()) {
-                ServerHelper.getInstance().updateMoneyAndExperience(0, newXp, new Response.ErrorListener() {
-                    @Override
-                    public void onErrorResponse(VolleyError volleyError) {
-                        Log.d("logAchievedScore error", volleyError.getMessage());
-                    }
-                });
-            }
+            int newXp = DatabaseHelper.getInstance().getOwner().getExperience() + (int) achievedScore;
+            ServerHelper.getInstance().updateMoneyAndExperience(0, newXp, new Response.ErrorListener() {
+                @Override
+                public void onErrorResponse(VolleyError volleyError) {
+                    Log.d("logAchievedScore error", volleyError.getMessage());
+                }
+            });
 
             double achievedScorePercentage;
             DBLog first = DatabaseHelper.getInstance().getFirstRecordOfDay();

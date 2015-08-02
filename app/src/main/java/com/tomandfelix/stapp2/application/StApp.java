@@ -118,13 +118,9 @@ public class StApp  extends Application {
     }
 
     public static void vibrate(int duration) {
+        Log.d("StApp", "Vibrating");
         Vibrator v = (Vibrator) singleton.getSystemService(Context.VIBRATOR_SERVICE);
         v.vibrate(duration);
-    }
-
-    public Profile getProfileAfterWin(Profile profile, int xp){
-        profile.setExperience(profile.getExperience() + xp);
-        return profile;
     }
 
     public static StApp getInstance() {
