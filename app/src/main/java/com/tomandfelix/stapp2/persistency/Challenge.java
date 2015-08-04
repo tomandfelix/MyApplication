@@ -9,17 +9,24 @@ public class Challenge extends Quest {
     private int maxAmount;
     private int xp;
     private int duration;
+    private boolean showProgressBar;
     private double progress;
     private Processor processor;
 
-    public Challenge(int id, String name, String description, int minAmount, int maxAmount,int xp, int duration, Processor validator){
+    public Challenge(int id, String name, String description, int minAmount, int maxAmount,int xp, int duration, boolean showProgressBar, Processor validator){
         super(id, name, description);
         this.progress = 0;
         this.minAmount = minAmount;
         this.maxAmount = maxAmount;
         this.xp = xp;
         this.duration = duration;
+        this.showProgressBar = showProgressBar;
         this.processor = validator;
+    }
+
+    @Override
+    public String getDescription() {
+        return super.getDescription().replace("<duration>", Integer.toString(duration));
     }
 
     public int getxp() {
@@ -48,6 +55,10 @@ public class Challenge extends Quest {
 
     public int getDuration() {
         return duration;
+    }
+
+    public boolean showProgress() {
+        return showProgressBar;
     }
 
     public Processor getProcessor() {

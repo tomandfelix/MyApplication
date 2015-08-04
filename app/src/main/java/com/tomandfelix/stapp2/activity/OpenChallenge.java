@@ -60,7 +60,6 @@ public class OpenChallenge extends ServiceActivity {
     private static final String DECLINE = "Decline";
     private static final String DISMISS = "Dismiss";
     private static final String PLS_CONNECT = "Connect a sensor first";
-    private static final String WAIT_FOR_RESULT_MSG = "Waiting for results from other players";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -141,7 +140,6 @@ public class OpenChallenge extends ServiceActivity {
             case NOT_ACCEPTED:
                 buttons.setVisibility(View.VISIBLE);
                 progress.setVisibility(View.INVISIBLE);
-                resultView.setVisibility(View.INVISIBLE);
                 negativeButton.setVisibility(View.VISIBLE);
                 negativeButton.setText(DECLINE);
                 positiveButton.setVisibility(View.VISIBLE);
@@ -153,7 +151,6 @@ public class OpenChallenge extends ServiceActivity {
                     if(Arrays.asList(Logging.STATE_CONNECTED, Logging.STATE_SIT, Logging.STATE_STAND, Logging.STATE_OVERTIME).contains(state)) {
                         buttons.setVisibility(View.VISIBLE);
                         progress.setVisibility(View.INVISIBLE);
-                        resultView.setVisibility(View.INVISIBLE);
                         negativeButton.setVisibility(View.GONE);
                         positiveButton.setVisibility(View.VISIBLE);
                         positiveButton.setText(START);
@@ -161,7 +158,6 @@ public class OpenChallenge extends ServiceActivity {
                     } else {
                         buttons.setVisibility(View.VISIBLE);
                         progress.setVisibility(View.INVISIBLE);
-                        resultView.setVisibility(View.INVISIBLE);
                         negativeButton.setVisibility(View.GONE);
                         positiveButton.setVisibility(View.VISIBLE);
                         positiveButton.setText(PLS_CONNECT);
@@ -170,7 +166,6 @@ public class OpenChallenge extends ServiceActivity {
                 } else {
                     buttons.setVisibility(View.VISIBLE);
                     progress.setVisibility(View.INVISIBLE);
-                    resultView.setVisibility(View.INVISIBLE);
                     negativeButton.setVisibility(View.GONE);
                     positiveButton.setVisibility(View.VISIBLE);
                     positiveButton.setText(WAITING);
@@ -179,34 +174,39 @@ public class OpenChallenge extends ServiceActivity {
                 break;
             case STARTED:
                 buttons.setVisibility(View.INVISIBLE);
-                progress.setVisibility(View.VISIBLE);
-                resultView.setVisibility(View.INVISIBLE);
-                progress.setMin(0);
-                progress.setMax(challenge.getChallenge().getDuration() * 60);
-                if(startTime == null)
-                    startTime = DatabaseHelper.stringToDate(challenge.getMyStatusData());
-                progress.setProgress((int) ((new Date().getTime() - startTime.getTime()) / 1000));
-                if(!timerRunning) {
-                    timerRunning = true;
-                    startTimer();
+                if(challenge.getChallenge().showProgress()) {
+                    progress.setVisibility(View.VISIBLE);
+                    progress.setMin(0);
+                    progress.setMax(challenge.getChallenge().getDuration() * 60);
+                    if (startTime == null)
+                        startTime = DatabaseHelper.stringToDate(challenge.getMyStatusData().split("\\|")[0]);
+                    progress.setProgress((int) ((new Date().getTime() - startTime.getTime()) / 1000));
+                    if (!timerRunning) {
+                        timerRunning = true;
+                        startTimer();
+                    }
+                } else {
+                    progress.setVisibility(View.INVISIBLE);
                 }
                 break;
             case DONE:
                 buttons.setVisibility(View.INVISIBLE);
                 progress.setVisibility(View.INVISIBLE);
-                resultView.setVisibility(View.VISIBLE);
-                resultView.setText(WAIT_FOR_RESULT_MSG);
                 break;
             case SCORED:
                 buttons.setVisibility(View.VISIBLE);
                 progress.setVisibility(View.INVISIBLE);
-                resultView.setVisibility(View.VISIBLE);
-                resultView.setText(challenge.getMyStatusData().split("\\|")[1]);
                 negativeButton.setVisibility(View.GONE);
                 positiveButton.setVisibility(View.VISIBLE);
                 positiveButton.setText(DISMISS);
                 positiveButton.setEnabled(true);
                 break;
+        }
+        if(challenge.getStatusMessage() != null) {
+            resultView.setVisibility(View.VISIBLE);
+            resultView.setText(challenge.getStatusMessage());
+        } else {
+            resultView.setVisibility(View.INVISIBLE);
         }
     }
 
@@ -265,7 +265,7 @@ public class OpenChallenge extends ServiceActivity {
 
         TextView challengeTitle = (TextView) findViewById(R.id.open_challenge_title);
         TextView challengeDescription = (TextView) findViewById(R.id.open_challenge_description); challengeTitle.setText(challenge.getChallenge().getName());
-        challengeDescription.setText(challenge.getChallenge().getDescription() + "\n" + "duration : " + challenge.getChallenge().getDuration() + " minutes");
+        challengeDescription.setText(challenge.getChallenge().getDescription());
     }
 
     private class OpenChallengeListAdapter extends ArrayAdapter<Profile> {

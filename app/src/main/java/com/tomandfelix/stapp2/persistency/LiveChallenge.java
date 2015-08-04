@@ -25,6 +25,9 @@ public class LiveChallenge extends Handler {
     private Challenge challenge;
     private ChallengeStatus myStatus;
     private Map<Integer, ChallengeStatus> opponentStatus;
+    public static final String WAIT_FOR_RESULT_MSG = "Waiting for results from other players";
+
+    private String statusMessage;
 
     public LiveChallenge(int id, int[] opponents) {
         this(UUID.randomUUID().toString(), id, opponents);
@@ -39,14 +42,16 @@ public class LiveChallenge extends Handler {
         for(int opp : opponents) {
             opponentStatus.put(opp, new ChallengeStatus(Status.NOT_ACCEPTED, null));
         }
+        statusMessage = null;
         DatabaseHelper.getInstance().createLC(this);
     }
 
-    public LiveChallenge(String uniqueId, int id, Status status, String data, Map<Integer, ChallengeStatus> opponentStatus) {
+    public LiveChallenge(String uniqueId, int id, Status status, String data, Map<Integer, ChallengeStatus> opponentStatus, String statusMessage) {
         this.uniqueId = uniqueId;
         this.challenge = ChallengeList.getChallenge(id);
         myStatus = new ChallengeStatus(status, data);
         this.opponentStatus = opponentStatus;
+        this.statusMessage = statusMessage;
     }
 
     public String getUniqueId() {
@@ -70,10 +75,11 @@ public class LiveChallenge extends Handler {
     }
 
     public void setMyStatus(Status status, String data) {
-        myStatus.setStatus(status);
+        if(status != null)
+            myStatus.setStatus(status);
         if(data != null)
             myStatus.setData(data);
-        DatabaseHelper.getInstance().updateLC(uniqueId, myStatus.getStatus(), myStatus.getData());
+        DatabaseHelper.getInstance().updateLC(uniqueId, myStatus.getStatus(), myStatus.getData(), statusMessage);
     }
 
     public void setStatusById(int id, Status status, String data) {
@@ -85,6 +91,14 @@ public class LiveChallenge extends Handler {
 
     public Map<Integer, ChallengeStatus> getOpponentStatus() {
         return opponentStatus;
+    }
+
+    public String getStatusMessage() {
+        return statusMessage;
+    }
+
+    public void setStatusMessage(String statusMessage) {
+        this.statusMessage = statusMessage;
     }
 
     public boolean hasEveryoneAccepted() {
@@ -155,7 +169,12 @@ public class LiveChallenge extends Handler {
     }
 
     public void won(String message) {
+        ServerHelper.getInstance().updateMoneyAndExperience(0, DatabaseHelper.getInstance().getOwner().getExperience() + challenge.getxp(), new Response.ErrorListener() {
+            @Override
+            public void onErrorResponse(VolleyError volleyError) {
 
+            }
+        });
         scored(message);
     }
 
@@ -165,14 +184,9 @@ public class LiveChallenge extends Handler {
 
     private void scored(String message) {
         StApp.makeToast(message);
-        setMyStatus(Status.SCORED, getMyStatusData() + "|" + message);
+        setMyStatus(Status.SCORED, null);
+        statusMessage = message;
         Log.d("Challenge", message);
-        ServerHelper.getInstance().updateMoneyAndExperience(0, DatabaseHelper.getInstance().getOwner().getExperience() + challenge.getxp(), new Response.ErrorListener() {
-            @Override
-            public void onErrorResponse(VolleyError volleyError) {
-
-            }
-        });
     }
 
     public void postGCMmessage(final GCMMessage msg) {

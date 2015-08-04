@@ -60,7 +60,7 @@ public class GCMMessageHandler extends IntentService {
             for(int i = 0; i < recIdsJSON.length(); i++) {
                 recIds[i] = recIdsJSON.getInt(i);
             }
-        } catch (JSONException e) {
+        } catch (JSONException | NullPointerException e) {
             e.printStackTrace();
         }
         GCMMessage message = new GCMMessage(recIds,
