@@ -42,6 +42,7 @@ public abstract class DrawerActivity extends ServiceActivity {
     private DrawerLayout drawerLayout;
     private ActionBarDrawerToggle drawerToggle;
     private ListView leftDrawerList;
+
     private ArrayAdapter<String> navigationDrawerAdapter;
     private static int backgroundColor;
     private static int selectedBackgroundColor;
@@ -127,6 +128,10 @@ public abstract class DrawerActivity extends ServiceActivity {
         finish();
     }
 
+    protected ArrayAdapter<String> getNavigationDrawerAdapter() {
+        return navigationDrawerAdapter;
+    }
+
     private class DrawerListener implements AdapterView.OnItemClickListener {
         @Override
         public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
@@ -149,7 +154,6 @@ public abstract class DrawerActivity extends ServiceActivity {
     }
 
     private class DrawerAdapter extends ArrayAdapter<String> {
-        private String[] data;
         private int profileLayoutId;
         private int dividerLayoutId;
         private int normalLayoutId;
@@ -162,12 +166,11 @@ public abstract class DrawerActivity extends ServiceActivity {
             this.profileLayoutId = profileLayoutId;
             this.dividerLayoutId = dividerLayoutId;
             this.normalLayoutId = normalLayoutId;
-            this.data = data;
         }
 
         @Override
         public View getView(int position, View convertView, ViewGroup parent) {
-            int result = position == PROFILE ? PROF : (data[position].equals("div") ? DIV : NORMAL);
+            int result = position == PROFILE ? PROF : (getItem(position).equals("div") ? DIV : NORMAL);
             if(convertView == null || ((int) convertView.getTag()) != position) {
                 LayoutInflater inflater = (LayoutInflater) getContext().getSystemService(LAYOUT_INFLATER_SERVICE);
                 if (result == PROF) {
@@ -195,7 +198,7 @@ public abstract class DrawerActivity extends ServiceActivity {
                     break;
                 case NORMAL:
                     TextView name = (TextView) convertView.findViewById(R.id.drawer_item_name);
-                    name.setText(data[position]);
+                    name.setText(getItem(position));
                     if(position == index) {
                         setSelected(convertView, name);
                     } else {
@@ -208,7 +211,13 @@ public abstract class DrawerActivity extends ServiceActivity {
 
         @Override
         public boolean isEnabled(int position) {
-            return super.isEnabled(position) && !data[position].equals("div");
+            return super.isEnabled(position) && !getItem(position).equals("div");
+        }
+
+        @Override
+        public void notifyDataSetChanged() {
+            mProfile = DatabaseHelper.getInstance().getOwner();
+            super.notifyDataSetChanged();
         }
     }
 }

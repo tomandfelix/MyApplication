@@ -127,6 +127,8 @@ public class ServerHelper {
             e.printStackTrace();
         }
 
+        Log.d("ServerHelper", request.toString());
+
         JsonObjectRequest createProfile = new JsonObjectRequest(Request.Method.POST, "http://eng.studev.groept.be/thesis/a14_stapp2/createProfile.php", request, new Response.Listener<JSONObject>() {
             @Override
             public void onResponse(JSONObject response) {

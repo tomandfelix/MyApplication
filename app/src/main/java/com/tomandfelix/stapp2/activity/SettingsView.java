@@ -74,7 +74,9 @@ public class SettingsView extends DrawerActivity {
                 adapter.notifyDataSetChanged();
                 break;
             case 2:
+                mProfile = DatabaseHelper.getInstance().getOwner();
                 settings[2].subTitle = mProfile.getUsername();
+                getNavigationDrawerAdapter().notifyDataSetChanged();
                 adapter.notifyDataSetChanged();
                 break;
             default:
