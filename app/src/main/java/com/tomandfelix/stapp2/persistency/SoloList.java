@@ -27,6 +27,7 @@ public class SoloList {
 
     private static List<Solo> createSoloList() {
         ArrayList<Solo> list = new ArrayList<>();
+
         Solo.Processor standToWinProcessor = new Solo.Processor() {
             @Override
             public void start(Solo solo) {
@@ -219,6 +220,7 @@ public class SoloList {
                 }
             }
         };
+
         String standToWinTitle = "Stand to win";
         String randomStandUpTitle = "Random stand up";
         String randomSwitchTitle = "Random switch";

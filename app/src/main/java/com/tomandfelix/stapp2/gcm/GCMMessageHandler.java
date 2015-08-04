@@ -74,7 +74,6 @@ public class GCMMessageHandler extends IntentService {
             StApp.makeToast(extras.getString("message"));
         } else {
             if(message.getMessageType() == MessageType.REQUEST) {
-
                 handleRequest(message);
             } else {
                 synchronized (StApp.challenges) {

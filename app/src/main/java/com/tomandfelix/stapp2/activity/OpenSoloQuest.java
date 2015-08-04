@@ -95,8 +95,7 @@ public class OpenSoloQuest extends ServiceActivity {
             } else {
                 button.setText("Dismiss");
                 button.setVisibility(View.VISIBLE);
-                progress.setProgress((int) solo.getProgress());
-                progress.setVisibility(View.VISIBLE);
+                progress.setVisibility(View.INVISIBLE);
                 if(solo.getData() instanceof String) {
                     result.setText((String) solo.getData());
                     result.setVisibility(View.VISIBLE);

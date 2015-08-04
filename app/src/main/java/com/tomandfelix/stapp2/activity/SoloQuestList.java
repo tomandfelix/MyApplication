@@ -52,12 +52,10 @@ public class SoloQuestList extends DrawerActivity {
     }
 
     private class SoloQuestListAdapter extends ArrayAdapter<Solo> {
-        private List<Solo> data;
         private int itemLayoutId;
 
         public SoloQuestListAdapter(Context context, int itemLayoutId, List<Solo> data) {
             super(context, itemLayoutId, data);
-            this.data = data;
             this.itemLayoutId = itemLayoutId;
         }
 
@@ -67,7 +65,7 @@ public class SoloQuestList extends DrawerActivity {
                 LayoutInflater inflater = (LayoutInflater) getContext().getSystemService(LAYOUT_INFLATER_SERVICE);
                 convertView = inflater.inflate(itemLayoutId, parent, false);
             }
-            Solo s = data.get(position);
+            Solo s = getItem(position);
             if(s != null) {
                 ImageView difficulty = (ImageView) convertView.findViewById(R.id.solo_list_difficulty);
                 TextView name = (TextView) convertView.findViewById(R.id.solo_list_name);
@@ -104,7 +102,7 @@ public class SoloQuestList extends DrawerActivity {
 
         @Override
         public boolean isEnabled(int position) {
-            return data.get(position).getXpNeeded() <= mProfile.getExperience();
+            return getItem(position).getXpNeeded() <= mProfile.getExperience();
         }
     }
 }

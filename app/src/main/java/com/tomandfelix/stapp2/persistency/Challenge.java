@@ -1,8 +1,5 @@
 package com.tomandfelix.stapp2.persistency;
 
-import com.tomandfelix.stapp2.activity.OpenChallenge;
-import com.tomandfelix.stapp2.gcm.GCMMessageHandler;
-import com.tomandfelix.stapp2.persistency.ChallengeStatus.Status;
 
 /**
  * Created by Flixse on 27/01/2015.

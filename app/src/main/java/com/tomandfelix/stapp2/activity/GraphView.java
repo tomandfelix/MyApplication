@@ -9,7 +9,11 @@ import android.support.v4.view.ViewPager;
 import android.view.View;
 
 import com.tomandfelix.stapp2.R;
+import com.tomandfelix.stapp2.persistency.DatabaseHelper;
 import com.tomandfelix.stapp2.tabs.SlidingTabLayout;
+
+import java.util.Calendar;
+import java.util.Date;
 
 public class GraphView extends DrawerActivity {
     private SlidingTabLayout tabLayout;
@@ -63,7 +67,7 @@ public class GraphView extends DrawerActivity {
 
         @Override
         public CharSequence getPageTitle(int position) {
-            return position == 0 ? "1 Day" : "2 Weeks";
+            return position == 0 ? (DatabaseHelper.getInstance().dayStarted() == null ? "YESTERDAY" : "TODAY") : "Past 2 Weeks";
         }
     }
 }

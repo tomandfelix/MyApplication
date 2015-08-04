@@ -114,14 +114,16 @@ public class OpenChallengesFragment extends ListFragment {
                 convertView = inflater.inflate(itemLayoutId, parent, false);
             }
 
-            LiveChallenge solution = data.get(position);
+            LiveChallenge c = getItem(position);
 
-            if(solution != null) {
-                TextView title = (TextView) convertView.findViewById(R.id.challenge_list_name);
-                TextView amount = (TextView) convertView.findViewById(R.id.challenge_list_people);
+            if(c != null) {
+                TextView name = (TextView) convertView.findViewById(R.id.challenge_list_name);
+                TextView xp = (TextView) convertView.findViewById(R.id.challenge_list_xp);
+                TextView people = (TextView) convertView.findViewById(R.id.challenge_list_people);
 
-                title.setText(solution.getChallenge().getName());
-                amount.setText(solution.getChallenge().getMinAmount() == solution.getChallenge().getMaxAmount() ? Integer.toString(solution.getChallenge().getMinAmount()) : solution.getChallenge().getMinAmount() + " - " + solution.getChallenge().getMaxAmount());
+                name.setText(c.getChallenge().getName());
+                xp.setText(Integer.toString(c.getChallenge().getxp()));
+                people.setText(Integer.toString(c.getOpponents().length + 1));
             }
             return convertView;
         }
@@ -131,6 +133,13 @@ public class OpenChallengesFragment extends ListFragment {
             if(observer != null) {
                 super.unregisterDataSetObserver(observer);
             }
+        }
+
+        @Override
+        public void notifyDataSetChanged() {
+            data.clear();
+            data.addAll(StApp.challenges.values());
+            super.notifyDataSetChanged();
         }
     }
 }

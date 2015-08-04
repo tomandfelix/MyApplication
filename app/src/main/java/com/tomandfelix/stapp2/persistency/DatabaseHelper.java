@@ -18,6 +18,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
+import com.tomandfelix.stapp2.application.StApp;
 import com.tomandfelix.stapp2.persistency.ChallengeStatus.Status;
 
 
@@ -36,7 +37,6 @@ public class DatabaseHelper extends SQLiteOpenHelper{
     private static final String TABLE_LOGS = "logs";
     private static final String TABLE_PROFILES = "profiles";
     private static final String TABLE_SETTINGS = "settings";
-    private static final String TABLE_SENSORS = "sensors";
     private static final String TABLE_LC = "livechallenges";
     private static final String TABLE_OPPONENTSTATUS = "opponentstatus";
     private static final String KEY_ID = "id";
@@ -55,8 +55,6 @@ public class DatabaseHelper extends SQLiteOpenHelper{
     private static final String KEY_SETTING = "name";
     private static final String KEY_VALUE_INT = "intValue";
     private static final String KEY_VALUE_STRING = "stringValue";
-    private static final String KEY_MAC = "mac_address";
-    private static final String KEY_FRIENDLY_NAME = "friendly_name";
     private static final String KEY_UNIQUE_ID = "unique_id";
     private static final String KEY_CHALLENGE_ID = "challenge_id";
     private static final String KEY_STATUS = "status";
@@ -103,7 +101,6 @@ public class DatabaseHelper extends SQLiteOpenHelper{
         db.execSQL("CREATE TABLE " + TABLE_LOGS + " (" + KEY_ID + " INTEGER PRIMARY KEY AUTOINCREMENT, " + KEY_ACTION + " TEXT, " + KEY_DATETIME + " DATETIME, " + KEY_DATA + " DOUBLE)");
         db.execSQL("CREATE TABLE " + TABLE_PROFILES + " (" + KEY_ID + " INTEGER PRIMARY KEY NOT NULL UNIQUE, " + KEY_FIRSTNAME + " TEXT, " + KEY_LASTNAME + " TEXT, " + KEY_USERNAME + " TEXT, " + KEY_EMAIL + " TEXT, " + KEY_MONEY + " INT, " + KEY_EXPERIENCE + " INT, " + KEY_AVATAR + " TEXT, " + KEY_RANK + " INT, " + KEY_UPDATED + " DATETIME)");
         db.execSQL("CREATE TABLE " + TABLE_SETTINGS + " (" + KEY_SETTING + " TEXT PRIMARY KEY NOT NULL UNIQUE, " + KEY_VALUE_INT + " INTEGER, " + KEY_VALUE_STRING + " TEXT)");
-        db.execSQL("CREATE TABLE " + TABLE_SENSORS + " (" + KEY_MAC + " TEXT PRIMARY KEY NOT NULL UNIQUE, " + KEY_FRIENDLY_NAME + " TEXT)");
         db.execSQL("CREATE TABLE " + TABLE_LC + " (" + KEY_ID + " INTEGER PRIMARY KEY AUTOINCREMENT, " + KEY_UNIQUE_ID + " TEXT NOT NULL UNIQUE, " + KEY_CHALLENGE_ID + " INTEGER, " + KEY_STATUS + " TEXT, " + KEY_DATA + " TEXT)");
         db.execSQL("CREATE TABLE " + TABLE_OPPONENTSTATUS + " (" + KEY_ID + " INTEGER PRIMARY KEY AUTOINCREMENT, " + KEY_UNIQUE_ID + " TEXT, " + KEY_OPPONENT_ID + " INTEGER, " + KEY_STATUS + " TEXT, " + KEY_DATA + " TEXT, FOREIGN KEY(" + KEY_UNIQUE_ID + ") REFERENCES " + TABLE_LC + "(" + KEY_UNIQUE_ID + "))");
         ContentValues values = new ContentValues(2);
@@ -145,7 +142,6 @@ public class DatabaseHelper extends SQLiteOpenHelper{
         db.execSQL("DROP TABLE IF EXISTS " + TABLE_LOGS);
         db.execSQL("DROP TABLE IF EXISTS " + TABLE_PROFILES);
         db.execSQL("DROP TABLE IF EXISTS " + TABLE_SETTINGS);
-        db.execSQL("DROP TABLE IF EXISTS " + TABLE_SENSORS);
         db.execSQL("DROP TABLE IF EXISTS " + TABLE_LC);
         db.execSQL("DROP TABLE IF EXISTS " + TABLE_OPPONENTSTATUS);
         onCreate(db);
@@ -278,7 +274,7 @@ public class DatabaseHelper extends SQLiteOpenHelper{
         Log.i("get2WeekEndLogs", "getting end day logs from last 2 weeks");
         Calendar cal = Calendar.getInstance();
         cal.setTime(new Date());
-        cal.set(Calendar.SECOND, 0);cal.set(Calendar.MINUTE, 0);cal.set(Calendar.HOUR, 0);cal.set(Calendar.MILLISECOND, 0);
+        cal.set(Calendar.SECOND, 0);cal.set(Calendar.MINUTE, 0);cal.set(Calendar.HOUR_OF_DAY, 0);cal.set(Calendar.MILLISECOND, 0);
         Date stop = cal.getTime();
         cal.add(Calendar.DATE, -14);
         String query = "SELECT " + KEY_ACTION + ", " + KEY_DATETIME + ", " + KEY_DATA + " FROM " + TABLE_LOGS + " WHERE " + KEY_ACTION + " IN ('" + LOG_ACH_SCORE_PERC + "', '" + LOG_STOP_DAY + "') AND " + KEY_DATETIME + " > '" + dateToString(cal.getTime()) + "' AND " + KEY_DATETIME + " < '" + dateToString(stop) + "' ORDER BY " + KEY_ID + " ASC";
@@ -558,6 +554,10 @@ public class DatabaseHelper extends SQLiteOpenHelper{
         if(newOwnerId != getOwnerId()) {
             setIntSetting(OWNER, newOwnerId);
             truncateLogs();
+            truncateLC();
+            synchronized (StApp.challenges) {
+                StApp.challenges.clear();
+            }
         }
     }
 
@@ -613,34 +613,14 @@ public class DatabaseHelper extends SQLiteOpenHelper{
         setStringSetting(LAST_USED_SENSOR, newSensor);
     }
 
-    //--------------------------------------------------------SENSORS---------------------------------------------------------------------------
-
-    public void setFriendlyName(String macAddress, String friendlyName) {
-        ContentValues input = new ContentValues(2);
-        input.put(KEY_MAC, macAddress);
-        input.put(KEY_FRIENDLY_NAME, friendlyName);
-        db.insert(TABLE_SENSORS, null, input);
-    }
-
-    public void updateFriendlyName(String macAddress, String newFriendlyName) {
-        ContentValues input = new ContentValues(1);
-        input.put(KEY_FRIENDLY_NAME, newFriendlyName);
-        db.update(TABLE_SENSORS, input, KEY_MAC + " = ?", new String[]{macAddress});
-    }
-
-    public String getFriendlyName(String macAddress) {
-        String query = "SELECT " + KEY_FRIENDLY_NAME + " FROM " + TABLE_SENSORS + " WHERE " + KEY_MAC + " = ?";
-        Cursor cursor = db.rawQuery(query, new String[]{macAddress});
-        String result = null;
-        if(cursor != null && cursor.getCount() > 0) {
-            cursor.moveToFirst();
-            result = cursor.getString(0);
-        }
-        if (cursor != null) cursor.close();
-        return result;
-    }
-
     //-----------------------------------------------------LIVECHALLENGES-----------------------------------------------------------------------
+
+    public void truncateLC() {
+        db.execSQL("DELETE FROM " + TABLE_LC);
+        db.execSQL("DELETE FROM " + TABLE_OPPONENTSTATUS);
+        db.execSQL("DELETE FROM sqlite_sequence where name='" + TABLE_LC + "'");
+        db.execSQL("DELETE FROM sqlite_sequence where name='" + TABLE_OPPONENTSTATUS + "'");
+    }
 
     public void createLC(LiveChallenge lc) {
         ContentValues input = new ContentValues(4);
@@ -664,6 +644,11 @@ public class DatabaseHelper extends SQLiteOpenHelper{
         input.put(KEY_STATUS, status.name());
         input.put(KEY_DATA, data);
         db.update(TABLE_LC, input, KEY_UNIQUE_ID + " = ?", new String[]{uniqueId});
+    }
+
+    public void removeLC(String uniqueId) {
+        db.delete(TABLE_LC, KEY_UNIQUE_ID + " = ?", new String[]{uniqueId});
+        db.delete(TABLE_OPPONENTSTATUS, KEY_UNIQUE_ID + " = ?", new String[]{uniqueId});
     }
 
     public void updateOpponent(String uniqueId, int opponentId, Status status, String data) {

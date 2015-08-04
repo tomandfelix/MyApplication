@@ -154,6 +154,27 @@ public class LiveChallenge extends Handler {
         });
     }
 
+    public void won(String message) {
+
+        scored(message);
+    }
+
+    public void lost(String message) {
+        scored(message);
+    }
+
+    private void scored(String message) {
+        StApp.makeToast(message);
+        setMyStatus(Status.SCORED, getMyStatusData() + "|" + message);
+        Log.d("Challenge", message);
+        ServerHelper.getInstance().updateMoneyAndExperience(0, DatabaseHelper.getInstance().getOwner().getExperience() + challenge.getxp(), new Response.ErrorListener() {
+            @Override
+            public void onErrorResponse(VolleyError volleyError) {
+
+            }
+        });
+    }
+
     public void postGCMmessage(final GCMMessage msg) {
         post(new Runnable() {
             @Override

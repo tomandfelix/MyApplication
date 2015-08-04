@@ -29,6 +29,7 @@ public class ChallengeList {
 
     private static List<Challenge> createChallengesList() {
         ArrayList<Challenge> list = new ArrayList<>();
+
         Challenge.Processor standMostIn30Min = new Challenge.Processor() {
             @Override
             public void start(final LiveChallenge challenge) {
@@ -70,21 +71,17 @@ public class ChallengeList {
                     maxOthers = Math.max(maxOthers, Long.parseLong(cs.getData()));
                 }
                 if(mine > maxOthers) {
-                    StApp.makeToast("You won, big time!");
-                    challenge.setMyStatus(Status.SCORED, challenge.getMyStatusData() + "|You won, big time!");
+                    challenge.won("You won, big time!");
                 } else if(mine == maxOthers) {
-                    StApp.makeToast("It's a Tie, how did you pull this off?");
-                    challenge.setMyStatus(Status.SCORED, challenge.getMyStatusData() + "|It's a Tie, how did you pull this off?");
+                    challenge.lost("It's a Tie, better luck next time!");
                 } else {
-                    StApp.makeToast("You had one thing to do, ONE! (you lost)");
-                    challenge.setMyStatus(Status.SCORED, challenge.getMyStatusData() + "|You had one thing to do, ONE! (you lost)");
+                    challenge.lost("You lost, keep trying!");
                 }
                 if(OpenChallenge.getHandler() != null) {
                     OpenChallenge.getHandler().obtainMessage(OpenChallenge.MSG_REFRESH).sendToTarget();
                 }
             }
         };
-
         Challenge.Processor followTheLeader = new Challenge.Processor() {
             @Override
             void start(final LiveChallenge challenge) {
@@ -163,7 +160,6 @@ public class ChallengeList {
 
             }
         };
-
         Challenge.Processor standInGroup = new Challenge.Processor(){
             @Override
             void start(LiveChallenge challenge) {
@@ -175,6 +171,7 @@ public class ChallengeList {
 
             }
         };
+
         list.add(0, new Challenge(0, "Quick test", "Stand longer than your opponent", 2, 2, 500,  30, standMostIn30Min));
         list.add(1, new Challenge(1, "Group challenge", "Stand longer than your opponent", 3, 5, 750, 30, standMostIn30Min));
         list.add(2, new Challenge(2, "Follow the leader", "Is the leader standing? Than you need to stand. Is the leader sitting? Than you need to sit. Simple as that. How do you know when to change position? When your phone is vibrating! If one isn't able to follow the leader, the game stops!", 2, 5, 500, 30, followTheLeader));

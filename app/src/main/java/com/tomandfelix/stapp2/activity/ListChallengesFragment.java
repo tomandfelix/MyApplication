@@ -62,12 +62,10 @@ public class ListChallengesFragment extends ListFragment {
     }
 
     private class ChallengeListAdapter extends ArrayAdapter<Challenge> {
-        private List<Challenge> data;
         private int itemLayoutId;
 
         public ChallengeListAdapter(Context context, int itemLayoutId, List<Challenge> data) {
             super(context, itemLayoutId, data);
-            this.data = data;
             this.itemLayoutId = itemLayoutId;
         }
 
@@ -78,13 +76,15 @@ public class ListChallengesFragment extends ListFragment {
                 convertView = inflater.inflate(itemLayoutId, parent, false);
             }
 
-            Challenge c = data.get(position);
+            Challenge c = getItem(position);
 
             if(c != null) {
                 TextView name = (TextView) convertView.findViewById(R.id.challenge_list_name);
+                TextView xp = (TextView) convertView.findViewById(R.id.challenge_list_xp);
                 TextView people = (TextView) convertView.findViewById(R.id.challenge_list_people);
 
                 name.setText(c.getName());
+                xp.setText(Integer.toString(c.getxp()));
                 people.setText(c.getMinAmount() == c.getMaxAmount() ? Integer.toString(c.getMinAmount()) : c.getMinAmount() + " - " + c.getMaxAmount());
             }
             return convertView;

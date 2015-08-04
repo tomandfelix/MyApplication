@@ -18,7 +18,6 @@
         android:layout_width="fill_parent"
         android:layout_height="wrap_content"
         android:layout_alignParentTop="true"
-        android:layout_marginTop="3dp"
         android:layout_toRightOf="@+id/solo_list_difficulty"
         android:layout_marginLeft="@dimen/activity_margin"
         android:text="Quest name, this is long" />
@@ -41,7 +40,6 @@
             android:layout_weight="0.2"
             android:layout_width = "0dip"
             android:layout_height="wrap_content"
-            android:layout_toRightOf="@+id/solo_list_xp_icon"
             android:layout_marginLeft="5dp"
             android:text="50" />
         <include
@@ -53,7 +51,6 @@
             android:layout_weight="0.5"
             android:layout_width="0dip"
             android:layout_height="wrap_content"
-            android:layout_toRightOf="@+id/solo_list_xp_needed_icon"
             android:layout_marginLeft="5dp"
             android:text="50" />
     </LinearLayout>

@@ -173,12 +173,10 @@ public class ChallengeLeaderboard extends ServiceActivity {
     private class ChallengeLeaderboardAdapter extends ArrayAdapter<Profile> {
         private int normalColor = getResources().getColor(R.color.secondaryText);
         private int accentColor = getResources().getColor(R.color.accentColor);
-        private ArrayList<Profile> data;
         private int itemLayoutId;
 
         public ChallengeLeaderboardAdapter(Context context, int itemLayoutId, ArrayList<Profile> data) {
             super(context, itemLayoutId, data);
-            this.data = data;
             this.itemLayoutId = itemLayoutId;
         }
 
@@ -187,7 +185,7 @@ public class ChallengeLeaderboard extends ServiceActivity {
             if(convertView == null) {
                 convertView = getLayoutInflater().inflate(itemLayoutId, parent, false);
             }
-            Profile p = data.get(position);
+            Profile p = getItem(position);
 
             if(p != null) {
                 TextView rank = (TextView) convertView.findViewById(R.id.leaderboard_rank);

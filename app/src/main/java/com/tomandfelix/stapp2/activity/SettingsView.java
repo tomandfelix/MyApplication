@@ -18,6 +18,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.tomandfelix.stapp2.R;
+import com.tomandfelix.stapp2.application.StApp;
 import com.tomandfelix.stapp2.persistency.DatabaseHelper;
 import com.tomandfelix.stapp2.persistency.Profile;
 import com.tomandfelix.stapp2.persistency.ServerHelper;
@@ -35,7 +36,7 @@ public class SettingsView extends DrawerActivity {
 
         mProfile = DatabaseHelper.getInstance().getOwner();
 
-        settings = new Setting[6];
+        settings = new Setting[7];
         int freq = DatabaseHelper.getInstance().getUploadFrequency() / 60000;
         settings[0] = new Setting("Upload frequency", freq + (freq == 1 ? " minute" : " minutes"));
         settings[1] = new Setting("Sensor", DatabaseHelper.getInstance().getSensor());
@@ -55,6 +56,7 @@ public class SettingsView extends DrawerActivity {
                     }
                 });
         settings[5] = new Setting("Logout", null);
+        settings[6] = new Setting("Clear Open Challenges", null);
 
         settingsList = (ListView) findViewById(R.id.settings_list);
         adapter = new SettingsAdapter(this, R.layout.list_item_settings, settings);
@@ -99,12 +101,10 @@ public class SettingsView extends DrawerActivity {
     }
 
     private class SettingsAdapter extends ArrayAdapter<Setting> {
-        private Setting[] data;
         private int resourceId;
 
         public SettingsAdapter(Context context, int resource, Setting[] objects) {
             super(context, resource, objects);
-            this.data = objects;
             this.resourceId = resource;
         }
 
@@ -114,7 +114,7 @@ public class SettingsView extends DrawerActivity {
                 convertView = getLayoutInflater().inflate(resourceId, parent, false);
             }
 
-            final Setting s = data[position];
+            final Setting s = getItem(position);
 
             if(s != null) {
                 ((TextView) convertView.findViewById(R.id.setting_title)).setText(s.title);
@@ -139,7 +139,7 @@ public class SettingsView extends DrawerActivity {
 
         @Override
         public boolean isEnabled(int position) {
-            return data[position].listener == null;
+            return getItem(position).listener == null;
         }
     }
 
@@ -213,6 +213,12 @@ public class SettingsView extends DrawerActivity {
                         alertDialog.show();
                     }else{
                         Toast.makeText(getApplicationContext(), "unable to logout without internet connection!", Toast.LENGTH_SHORT).show();
+                    }
+                    break;
+                case 6:
+                    DatabaseHelper.getInstance().truncateLC();
+                    synchronized (StApp.challenges) {
+                        StApp.challenges.clear();
                     }
                     break;
             }

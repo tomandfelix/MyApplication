@@ -1,6 +1,7 @@
 package com.tomandfelix.stapp2.graphtools;
 
 import android.graphics.Color;
+import android.util.Log;
 
 import com.androidplot.util.PixelUtils;
 import com.androidplot.xy.BoundaryMode;
@@ -292,11 +293,12 @@ public abstract class GraphParser {
     private static int getTimeIndex(DBLog log, Calendar ref) {
         Calendar cal = Calendar.getInstance();
         cal.setTime(log.getDatetime());
-        cal.set(Calendar.HOUR, 12);
+        cal.set(Calendar.HOUR_OF_DAY, 12);
         cal.set(Calendar.MINUTE, 0);
         cal.set(Calendar.SECOND, 0);
         cal.set(Calendar.MILLISECOND, 0);
-        return Math.round((cal.getTimeInMillis() - ref.getTimeInMillis()) / (24 * 60 * 60 * 1000));
+        int result =  Math.round((cal.getTimeInMillis() - ref.getTimeInMillis()) / (24 * 60 * 60 * 1000));
+        return result;
     }
 
     public static LongTermGraphData formatLongTermData(ArrayList<DBLog> logs, Date now) {
@@ -307,11 +309,11 @@ public abstract class GraphParser {
 
             Calendar ref  = Calendar.getInstance();
             ref.setTime(now);
-            ref.set(Calendar.HOUR, 12);
+            ref.set(Calendar.HOUR_OF_DAY, 12);
             ref.set(Calendar.MINUTE, 0);
             ref.set(Calendar.SECOND, 0);
             ref.set(Calendar.MILLISECOND, 0);
-            ref.add(Calendar.DATE, -15);
+            ref.add(Calendar.DATE, -14);
             final Date refDate = ref.getTime();
 
             for(int i = 0; i < logs.size(); i++) {

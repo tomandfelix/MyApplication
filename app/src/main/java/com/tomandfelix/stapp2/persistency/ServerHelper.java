@@ -171,7 +171,8 @@ public class ServerHelper {
         try {
             request.put("username", username);
             request.put("password", password);
-            request.put("gcm_reg_id", ((StApp) context).getGcmRegistrationId());
+            if(((StApp) context).getGcmRegistrationId() != null)
+                request.put("gcm_reg_id", ((StApp) context).getGcmRegistrationId());
         } catch (JSONException e) {
             e.printStackTrace();
         }

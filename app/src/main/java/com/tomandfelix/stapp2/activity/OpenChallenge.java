@@ -5,8 +5,10 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
+import android.support.v4.app.NavUtils;
 import android.util.Log;
 import android.view.LayoutInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
@@ -124,6 +126,16 @@ public class OpenChallenge extends ServiceActivity {
         timerRunning = false;
     }
 
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        switch (item.getItemId()) {
+            case android.R.id.home:
+                finish();
+                return true;
+        }
+        return super.onOptionsItemSelected(item);
+    }
+
     private void updateChallengeViews() {
         switch(challenge.getMyStatus()) {
             case NOT_ACCEPTED:
@@ -170,7 +182,7 @@ public class OpenChallenge extends ServiceActivity {
                 progress.setVisibility(View.VISIBLE);
                 resultView.setVisibility(View.INVISIBLE);
                 progress.setMin(0);
-                progress.setMax(challenge.getChallenge().getDuration());
+                progress.setMax(challenge.getChallenge().getDuration() * 60);
                 if(startTime == null)
                     startTime = DatabaseHelper.stringToDate(challenge.getMyStatusData());
                 progress.setProgress((int) ((new Date().getTime() - startTime.getTime()) / 1000));
@@ -208,7 +220,7 @@ public class OpenChallenge extends ServiceActivity {
             @Override
             public void run() {
                 progress.setProgress((int) ((new Date().getTime() - startTime.getTime()) / 1000));
-                if (progress.getProgress() < challenge.getChallenge().getDuration()) {
+                if (progress.getProgress() < challenge.getChallenge().getDuration() * 60) {
                     startTimer();
                 } else {
                     timerRunning = false;
@@ -229,6 +241,7 @@ public class OpenChallenge extends ServiceActivity {
                 break;
             case SCORED:
                 StApp.challenges.remove(challenge.getUniqueId());
+                DatabaseHelper.getInstance().removeLC(challenge.getUniqueId());
                 challenge.removeCallbacksAndMessages(null);
                 finish();
                 break;
@@ -252,7 +265,7 @@ public class OpenChallenge extends ServiceActivity {
 
         TextView challengeTitle = (TextView) findViewById(R.id.open_challenge_title);
         TextView challengeDescription = (TextView) findViewById(R.id.open_challenge_description); challengeTitle.setText(challenge.getChallenge().getName());
-        challengeDescription.setText(challenge.getChallenge().getDescription() + "\n" + "duration : " + challenge.getChallenge().getDuration() + " seconds");
+        challengeDescription.setText(challenge.getChallenge().getDescription() + "\n" + "duration : " + challenge.getChallenge().getDuration() + " minutes");
     }
 
     private class OpenChallengeListAdapter extends ArrayAdapter<Profile> {
