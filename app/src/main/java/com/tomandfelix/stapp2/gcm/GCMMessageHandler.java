@@ -63,24 +63,31 @@ public class GCMMessageHandler extends IntentService {
         } catch (JSONException | NullPointerException e) {
             e.printStackTrace();
         }
-        GCMMessage message = new GCMMessage(recIds,
-                extras.getString("challenge_unique_id"),
-                MessageType.valueOf(extras.getString("message_type")),
-                Integer.parseInt(extras.getString("sender_id")),
-                extras.getString("message"));
-        Log.d("GCM", "Received : " + message.toString());
-
-        if(message.getMessageType() == MessageType.TEST_TOAST) {
-            StApp.makeToast(extras.getString("message"));
-        } else {
-            if(message.getMessageType() == MessageType.REQUEST) {
-                handleRequest(message);
+        try {
+            GCMMessage message = new GCMMessage(recIds,
+                    extras.getString("challenge_unique_id"),
+                    MessageType.valueOf(extras.getString("message_type")),
+                    Integer.parseInt(extras.getString("sender_id")),
+                    extras.getString("message"));
+            Log.d("GCM", "Received : " + message.toString());
+            if(message.getMessageType() == MessageType.TEST_TOAST) {
+                StApp.makeToast(extras.getString("message"));
             } else {
-                synchronized (StApp.challenges) {
-                    StApp.challenges.get(message.getUniqueId()).postGCMmessage(message);
+                if(message.getMessageType() == MessageType.REQUEST) {
+                    handleRequest(message);
+                } else {
+                    synchronized (StApp.challenges) {
+                        LiveChallenge challenge = StApp.challenges.get(message.getUniqueId());
+                        if(challenge != null)
+                            challenge.postGCMmessage(message);
+                    }
                 }
             }
+        } catch (NullPointerException e) {
+            return;
         }
+
+
         GCMBroadCastReceiver.completeWakefulIntent(intent);
     }
 

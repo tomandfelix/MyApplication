@@ -1,6 +1,8 @@
 package com.tomandfelix.stapp2.persistency;
 
 
+import android.os.Message;
+
 /**
  * Created by Flixse on 27/01/2015.
  */
@@ -79,5 +81,6 @@ public class Challenge extends Quest {
         abstract void start(LiveChallenge challenge);
         void handleCommunicationMessage(LiveChallenge challenge, GCMMessage msg) {}
         abstract void onEverybodyDone(LiveChallenge challenge);
+        void handleLoggingMessage(LiveChallenge challenge, Message message) {}
     }
 }

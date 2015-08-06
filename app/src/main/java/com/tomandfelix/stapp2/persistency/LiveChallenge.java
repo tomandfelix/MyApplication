@@ -2,6 +2,7 @@ package com.tomandfelix.stapp2.persistency;
 
 import android.os.Handler;
 import android.os.Looper;
+import android.os.Message;
 import android.util.Log;
 
 import com.android.volley.Response;
@@ -99,6 +100,9 @@ public class LiveChallenge extends Handler {
 
     public void setStatusMessage(String statusMessage) {
         this.statusMessage = statusMessage;
+        if(OpenChallenge.getHandler() != null) {
+            OpenChallenge.getHandler().obtainMessage(OpenChallenge.MSG_REFRESH).sendToTarget();
+        }
     }
 
     public boolean hasEveryoneAccepted() {
@@ -178,15 +182,29 @@ public class LiveChallenge extends Handler {
         scored(message);
     }
 
+    public void wonCustomXP(String message, int xp) {
+        ServerHelper.getInstance().updateMoneyAndExperience(0, DatabaseHelper.getInstance().getOwner().getExperience() + xp, new Response.ErrorListener() {
+            @Override
+            public void onErrorResponse(VolleyError volleyError) {
+
+            }
+        });
+        scored(message);
+    }
+
     public void lost(String message) {
         scored(message);
     }
 
     private void scored(String message) {
-        StApp.makeToast(message);
         setMyStatus(Status.SCORED, null);
         statusMessage = message;
         Log.d("Challenge", message);
+        if(OpenChallenge.getHandler() != null) {
+            OpenChallenge.getHandler().obtainMessage(OpenChallenge.MSG_REFRESH).sendToTarget();
+        } else {
+            StApp.makeToast(message);
+        }
     }
 
     public void postGCMmessage(final GCMMessage msg) {
@@ -230,5 +248,10 @@ public class LiveChallenge extends Handler {
                 }
             }
         });
+    }
+
+    @Override
+    public void handleMessage(Message msg) {
+        challenge.getProcessor().handleLoggingMessage(LiveChallenge.this, msg);
     }
 }

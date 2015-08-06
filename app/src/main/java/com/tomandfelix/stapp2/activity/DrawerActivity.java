@@ -1,11 +1,8 @@
 package com.tomandfelix.stapp2.activity;
 
-import android.app.AlertDialog;
 import android.content.Context;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
-import android.provider.ContactsContract;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
 import android.util.Log;
@@ -33,9 +30,8 @@ public abstract class DrawerActivity extends ServiceActivity {
     protected final static int LEADERBOARD = 2;
     protected final static int GRAPHS = 3;
     protected final static int SOLO_QUEST = 4;
-    protected final static int CHALLENGE = 5;
-    protected final static int CO_OPERATIVE = 6;
-    protected final static int SETTINGS = 8;
+    protected final static int CHALLENGE_COOP = 5;
+    protected final static int SETTINGS = 7;
     protected final static int INITIAL = PROFILE;
     protected static int index = INITIAL;
     private Profile mProfile;
@@ -62,7 +58,7 @@ public abstract class DrawerActivity extends ServiceActivity {
         } else if(this instanceof SoloQuestList) {
             index = SOLO_QUEST;
         } else if(this instanceof ChallengeView) {
-            index = CHALLENGE;
+            index = CHALLENGE_COOP;
         } else if(this instanceof SettingsView) {
             index = SETTINGS;
         }
@@ -111,7 +107,7 @@ public abstract class DrawerActivity extends ServiceActivity {
             case SOLO_QUEST:
                 destination = SoloQuestList.class;
                 break;
-            case CHALLENGE:
+            case CHALLENGE_COOP:
                 destination = ChallengeView.class;
                 break;
             case SETTINGS:

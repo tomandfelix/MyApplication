@@ -238,9 +238,9 @@ public class SoloList {
         list.add(6, new Solo(6, randomSwitchTitle, randomSwitchDescription, 250, 5000, 10, Solo.Difficulty.EASY, randomSwitchProcessor));
         list.add(7, new Solo(7, randomSwitchTitle, randomSwitchDescription, 500, 10000, 15, Solo.Difficulty.MEDIUM, randomSwitchProcessor));
         list.add(8, new Solo(8, randomSwitchTitle, randomSwitchDescription, 750, 15000, 20, Solo.Difficulty.HARD, randomSwitchProcessor));
-        list.add(9, new Solo(9, enduranceTitle, enduranceDescription.replace("<max>", "1 minute"), 250, 1000, 10, Solo.Difficulty.EASY, enduranceProcessor));
-        list.add(10, new Solo(10, enduranceTitle, enduranceDescription.replace("<max>", "30 seconds"), 600, 1000, 10, Solo.Difficulty.MEDIUM, enduranceProcessor));
-        list.add(11, new Solo(11, enduranceTitle, enduranceDescription.replace("<max>", "30 seconds"), 1000, 1000, 15, Solo.Difficulty.HARD, enduranceProcessor));
+        list.add(9, new Solo(9, enduranceTitle, enduranceDescription.replace("<max>", "1 minute"), 250, 3000, 10, Solo.Difficulty.EASY, enduranceProcessor));
+        list.add(10, new Solo(10, enduranceTitle, enduranceDescription.replace("<max>", "30 seconds"), 600, 5000, 10, Solo.Difficulty.MEDIUM, enduranceProcessor));
+        list.add(11, new Solo(11, enduranceTitle, enduranceDescription.replace("<max>", "30 seconds"), 1000, 10000, 15, Solo.Difficulty.HARD, enduranceProcessor));
         return list;
     }
 

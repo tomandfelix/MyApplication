@@ -62,7 +62,7 @@ public class ServerHelper {
          *
          * @param response input of type INPUT to the call function
          */
-        public void onResponse(INPUT response);
+        void onResponse(INPUT response);
     }
 
     private int minutesAgo(Date input) {

@@ -138,7 +138,7 @@ public class FragmentViewer extends FragmentActivity implements FragmentProvider
                         password.setText(null);
                         v.setEnabled(true);
                     } else {
-                        //Log.e("loginBtn", error.getMessage());
+                        Log.e("loginBtn", "Something went wrong, we don't know exactly what.");
                     }
                 }
             });

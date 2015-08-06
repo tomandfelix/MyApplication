@@ -211,7 +211,15 @@ public class ShimmerService extends Service {
                         if(volleyError.getMessage() != null && volleyError.getMessage().equals("token")) {
                             // TODO password prompt
                         } else {
-                            Log.e("uploadData", volleyError.getMessage());
+                            if(volleyError.getMessage() != null) {
+                                Log.e("uploadData", volleyError.getMessage());
+                            } else {
+                                if(volleyError.networkResponse != null) {
+                                    Log.e("uploadDat", Integer.toString(volleyError.networkResponse.statusCode));
+                                } else {
+                                    Log.e("uploadData", "Something went wrong, we don't know exactly what.");
+                                }
+                            }
                         }
                     }
                 });
@@ -296,7 +304,8 @@ public class ShimmerService extends Service {
 
     public void endDay() {
         address = "";
-        sensor.stop();
+        if(sensor != null)
+            sensor.stop();
         Logging.getInstance(this).logDisconnect();
         Logging.getInstance(this).logAchievedScore();
     }

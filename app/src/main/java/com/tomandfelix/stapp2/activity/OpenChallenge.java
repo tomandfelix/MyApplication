@@ -263,8 +263,8 @@ public class OpenChallenge extends ServiceActivity {
         adapter = new OpenChallengeListAdapter(OpenChallenge.this, R.layout.list_item_open_challenge, mProfileList);
         openChallengeList.setAdapter(adapter);
 
-        TextView challengeTitle = (TextView) findViewById(R.id.open_challenge_title);
-        TextView challengeDescription = (TextView) findViewById(R.id.open_challenge_description); challengeTitle.setText(challenge.getChallenge().getName());
+        getSupportActionBar().setTitle(challenge.getChallenge().getName());
+        TextView challengeDescription = (TextView) findViewById(R.id.open_challenge_description);
         challengeDescription.setText(challenge.getChallenge().getDescription());
     }
 

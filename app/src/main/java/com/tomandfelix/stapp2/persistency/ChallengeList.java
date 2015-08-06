@@ -1,11 +1,13 @@
 package com.tomandfelix.stapp2.persistency;
 
+import android.os.Message;
 import android.util.Log;
 
 import com.tomandfelix.stapp2.activity.OpenChallenge;
 import com.tomandfelix.stapp2.application.StApp;
 import com.tomandfelix.stapp2.persistency.ChallengeStatus.Status;
 import com.tomandfelix.stapp2.tools.Algorithms;
+import com.tomandfelix.stapp2.tools.Logging;
 
 import java.util.ArrayList;
 import java.util.Date;
@@ -34,9 +36,6 @@ public class ChallengeList {
             public void start(final LiveChallenge challenge) {
                 challenge.setMyStatus(Status.STARTED, DatabaseHelper.dateToString(new Date()));
                 challenge.setStatusMessage(null);
-                if(OpenChallenge.getHandler() != null) {
-                    OpenChallenge.getHandler().obtainMessage(OpenChallenge.MSG_REFRESH).sendToTarget();
-                }
                 challenge.postDelayed(new Runnable() {
                     @Override
                     public void run() {
@@ -58,9 +57,6 @@ public class ChallengeList {
                     if(challenge.isEverybodyDone()) {
                         challenge.getChallenge().getProcessor().onEverybodyDone(challenge);
                     }
-                    if (OpenChallenge.getHandler() != null) {
-                        OpenChallenge.getHandler().obtainMessage(OpenChallenge.MSG_REFRESH).sendToTarget();
-                    }
                 }
             }
 
@@ -78,12 +74,8 @@ public class ChallengeList {
                 } else {
                     challenge.lost("You lost, keep trying!");
                 }
-                if(OpenChallenge.getHandler() != null) {
-                    OpenChallenge.getHandler().obtainMessage(OpenChallenge.MSG_REFRESH).sendToTarget();
-                }
             }
         };
-
         Challenge.Processor followTheLeader = new Challenge.Processor() {
             private final String startStanding = "Start standing in the next 30 seconds";
             private final String startSitting = "Start sitting in the next 30 seconds";
@@ -112,9 +104,6 @@ public class ChallengeList {
                     challenge.setMyStatus(Status.STARTED, DatabaseHelper.dateToString(new Date()) + "|" + challenge.getMyStatusData());
                 }
                 challenge.setStatusMessage(startStanding);
-                if(OpenChallenge.getHandler() != null) {
-                    OpenChallenge.getHandler().obtainMessage(OpenChallenge.MSG_REFRESH).sendToTarget();
-                }
                 challenge.postDelayed(new Runnable() {
                     @Override
                     public void run() {
@@ -141,7 +130,6 @@ public class ChallengeList {
             }
 
             private void alert(final LiveChallenge challenge, final int index) {
-                Log.d("FollowTheLeader", "alert running");
                 StApp.vibrate(2000);
                 final int[] sequence = getSequence(challenge);
                 if(sequence != null) {
@@ -169,13 +157,9 @@ public class ChallengeList {
                         }, 30000);
                     }
                 }
-                if(OpenChallenge.getHandler() != null) {
-                    OpenChallenge.getHandler().obtainMessage(OpenChallenge.MSG_REFRESH).sendToTarget();
-                }
             }
 
             private void firstCheck(final LiveChallenge challenge) {
-                Log.d("FollowTheLeader", "firstCheck running");
                 if(DatabaseHelper.getInstance().getLastSitStand().getAction().equals(DatabaseHelper.LOG_STAND)) {
                     challenge.setStatusMessage(keepStanding);
                     int[] sequence  = getSequence(challenge);
@@ -192,13 +176,9 @@ public class ChallengeList {
                     challenge.sendMessage(GCMMessage.MessageType.RESULT, "0");
                     challenge.lost("You lost, you were too late!");
                 }
-                if(OpenChallenge.getHandler() != null) {
-                    OpenChallenge.getHandler().obtainMessage(OpenChallenge.MSG_REFRESH).sendToTarget();
-                }
             }
 
             public void checkProgress(final LiveChallenge challenge, final int index) {
-                Log.d("FollowTheLeader", "checkProgress running");
                 final int[] sequence = getSequence(challenge);
                 if(sequence != null) {
                     Date now = new Date();
@@ -225,13 +205,9 @@ public class ChallengeList {
                         }
                     }
                 }
-                if(OpenChallenge.getHandler() != null) {
-                    OpenChallenge.getHandler().obtainMessage(OpenChallenge.MSG_REFRESH).sendToTarget();
-                }
             }
             @Override
             void onEverybodyDone(LiveChallenge challenge) {
-                Log.d("FollowTheLeader", "onEveryBodyDone running");
                 long mine = Long.parseLong(challenge.getMyStatusData());
                 long maxOthers = 0;
                 for(ChallengeStatus cs : challenge.getOpponentStatus().values()) {
@@ -244,9 +220,6 @@ public class ChallengeList {
                 } else {
                     challenge.lost("You lost, keep trying!");
                 }
-                if(OpenChallenge.getHandler() != null) {
-                    OpenChallenge.getHandler().obtainMessage(OpenChallenge.MSG_REFRESH).sendToTarget();
-                }
             }
 
             @Override
@@ -256,10 +229,113 @@ public class ChallengeList {
                 }
             }
         };
+        Challenge.Processor alternateStanding = new Challenge.Processor() {
+            private Runnable end;
+
+            @Override
+            void start(final LiveChallenge challenge) {
+                Log.d("AlternateStanding", "start running");
+                challenge.setMyStatus(Status.STARTED, DatabaseHelper.dateToString(new Date()));
+                StApp.subscribeChallenge(challenge.getUniqueId());
+                check(challenge, isStanding(), true);
+                end = new Runnable() {
+                    @Override
+                    public void run() {
+                        StApp.unsubscribeChallenge(challenge.getUniqueId());
+                        challenge.wonCustomXP("Congratulations, you have endured this assignment for 60 minutes. you won!", calculateScore(challenge));
+                        challenge.setMyStatus(Status.SCORED, null);
+                    }
+                };
+                challenge.postDelayed(end, 3600000);
+            }
+
+            private boolean isStanding() {
+                DBLog last = DatabaseHelper.getInstance().getLastSitStand();
+                return last != null && last.getAction().equals(DatabaseHelper.LOG_STAND);
+            }
+
+            private int getAmountOthersStanding(LiveChallenge challenge) {
+                int result = 0;
+                for(ChallengeStatus cs : challenge.getOpponentStatus().values()) {
+                    String data = cs.getData();
+                    if(data != null && Boolean.parseBoolean(data)) {
+                        result++;
+                    }
+                }
+                return result;
+            }
+
+            private void check(LiveChallenge challenge, boolean standing, boolean sendMessage) {
+                if(sendMessage) {
+                    challenge.sendMessage(GCMMessage.MessageType.COMMUNICATION, Boolean.toString(standing));
+                }
+                int othersStanding = getAmountOthersStanding(challenge);
+                if(!standing && othersStanding == 0) {
+                    StApp.unsubscribeChallenge(challenge.getUniqueId());
+                    challenge.removeCallbacks(end);
+                    int score = calculateScore(challenge);
+                    challenge.wonCustomXP("Challenge finished because nobody was standing." + (score == 0 ? " Keep in mind that the person that starts first, has to be standing!" : ""), score);
+                } else {
+                    challenge.setStatusMessage(othersStanding + " out of " + challenge.getOpponentStatus().size() + " of the other players are standing.");
+                }
+            }
+
+            private int calculateScore(LiveChallenge challenge) {
+                Log.d("AlternateStanding", "calculateScore running");
+                Date start = DatabaseHelper.stringToDate(challenge.getMyStatusData());
+                Log.d("AlternateStanding", "start = " + DatabaseHelper.dateToString(start));
+                if(start == null)
+                    return 0;
+                else {
+                    long time = Math.min(new Date().getTime() - start.getTime(), 3600000);
+                    Log.d("AlternateStanding", "time = " + time);
+                    if(time < 2000) {
+                        return 0;
+                    } else {
+                        double result = (105 * Math.exp(time / 1200000d) - 105) / (challenge.getOpponentStatus().size() + 1);
+                        Log.d("AlternateStanding", "result = " + result);
+                        return (int) result;
+                    }
+                }
+            }
+
+            @Override
+            void onEverybodyDone(LiveChallenge challenge) {}
+
+            @Override
+            void handleCommunicationMessage(LiveChallenge challenge, GCMMessage msg) {
+                if(challenge.getMyStatus().equals(Status.ACCEPTED)) {
+                    challenge.setStatusById(msg.getSenderId(), Status.STARTED, msg.getMessage());
+                    if(getAmountOthersStanding(challenge) == 0)
+                        challenge.lost("The challenge is already over, you joined too late!");
+                } else if(!challenge.getMyStatus().equals(Status.SCORED)) {
+                    challenge.setStatusById(msg.getSenderId(), Status.STARTED, msg.getMessage());
+                    check(challenge, isStanding(), false);
+                }
+            }
+
+            @Override
+            void handleLoggingMessage(LiveChallenge challenge, Message message) {
+                switch(message.what) {
+                    case Logging.STATE_CONNECTING:
+                    case Logging.STATE_DISCONNECTED:
+                    case Logging.STATE_DAY_STOPPED:
+                    case Logging.STATE_CONNECTED:
+                    case Logging.STATE_SIT:
+                    case Logging.STATE_OVERTIME:
+                        check(challenge, false, true);
+                        break;
+                    case Logging.STATE_STAND:
+                        check(challenge, true, true);
+                        break;
+                }
+            }
+        };
 
         list.add(0, new Challenge(0, "1-on-1", "Stand longer than your opponent in a period of <duration> minutes", 2, 2, 500,  30, true, standMostIn30Min));
         list.add(1, new Challenge(1, "Group competition", "Stand longer than all your opponents in a period of <duration> minutes", 3, 5, 750, 30, true, standMostIn30Min));
         list.add(2, new Challenge(2, "Follow the leader", "Everybody will get the same leader. If the leader stands up, you have to stand up. If the leader sits, you have to sit. The person that is able to endure the longest wins. Your phone will vibrate if you have to change position.", 2, 5, 500, 0, false, followTheLeader));
+        list.add(3, new Challenge(3, "Alternate standing", "At every moment, one of the participating players should always be standing. The longer this assignment is fulfilled (max 60 minutes), the more experience is gained. Your score will depend on how long you participated and the amount of people that participated. The person that starts first should start standing up", 2, 5, 1000, 60, false, alternateStanding));
         return list;
     }
 }

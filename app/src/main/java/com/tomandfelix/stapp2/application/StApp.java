@@ -50,7 +50,7 @@ public class StApp  extends Application {
     private static Handler gcmHandler = new Handler();
     private static Handler handler = null;
     public static final Map<String, LiveChallenge> challenges = Collections.synchronizedMap(new HashMap<String, LiveChallenge>());
-
+    private static final List<String> subscribed = new ArrayList<>();
 
     private static class ServiceHandler extends Handler {
         @Override
@@ -59,6 +59,11 @@ public class StApp  extends Application {
                 Message copy = Message.obtain();
                 copy.copyFrom(msg);
                 handler.sendMessage(copy);
+            }
+            for(String id : subscribed) {
+                Message copy = Message.obtain();
+                copy.copyFrom(msg);
+                challenges.get(id).sendMessage(copy);
             }
         }
     }
@@ -89,6 +94,14 @@ public class StApp  extends Application {
         } else {
             Log.i("StApp", "handler set");
         }
+    }
+
+    public static void subscribeChallenge(String uniqueId) {
+        subscribed.add(uniqueId);
+    }
+
+    public static void unsubscribeChallenge(String uniqueId) {
+        subscribed.remove(uniqueId);
     }
 
     public void commandService(int command) {
