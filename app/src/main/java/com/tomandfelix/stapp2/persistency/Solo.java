@@ -24,7 +24,7 @@ public class Solo extends Quest{
     private Handler handler;
 
     public Solo(int id, String name, String description, int xp,int xpNeeded, int duration, Difficulty difficulty, Processor processor){
-        super(id, name, description);
+        super(id, name, description, Type.SOLO);
         this.xp = xp;
         this.xpNeeded = xpNeeded;
         this.duration = duration;

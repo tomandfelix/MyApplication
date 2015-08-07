@@ -156,19 +156,25 @@ public class ProfileView extends DrawerActivity {
     @Override
     protected void onResume() {
         super.onResume();
-        if(StApp.getHandler() != loggingMessageHandler) {
-            StApp.setHandler(loggingMessageHandler);
-        }
+        StApp.setHandler(loggingMessageHandler);
         app.commandService(ShimmerService.REQUEST_STATE);
+        loggingMessageHandler.postDelayed(new Runnable() {
+            @Override
+            public void run() {
+                if (ProfileView.this.findViewById(R.id.profile_status).getVisibility() == View.INVISIBLE) {
+                    StApp.setHandler(loggingMessageHandler);
+                    app.commandService(ShimmerService.REQUEST_STATE);
+                    loggingMessageHandler.postDelayed(this, 500);
+                }
+            }
+        }, 500);
         loggingMessageHandler.post(updateXP);
     }
 
     @Override
     protected void onPause() {
         super.onPause();
-        if(StApp.getHandler() == loggingMessageHandler) {
-            StApp.setHandler(null);
-        }
+        StApp.setHandler(null);
         loggingMessageHandler.removeCallbacks(updateXP);
     }
 
@@ -266,6 +272,7 @@ public class ProfileView extends DrawerActivity {
                 startStopButton.setText(STOP);
                 break;
         }
+        findViewById(R.id.profile_status).setVisibility(View.VISIBLE);
     }
 
     @Override

@@ -123,7 +123,8 @@
             <LinearLayout
                 android:id="@+id/profile_status"
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content">
+                android:layout_height="wrap_content"
+                android:visibility="invisible">
 
                 <ImageView
                     android:id="@+id/profile_status_icon"

@@ -9,6 +9,7 @@ import com.android.volley.Response;
 import com.android.volley.VolleyError;
 import com.google.common.primitives.Ints;
 import com.tomandfelix.stapp2.activity.OpenChallenge;
+import com.tomandfelix.stapp2.activity.OpenChallengesFragment;
 import com.tomandfelix.stapp2.application.StApp;
 import com.tomandfelix.stapp2.persistency.ChallengeStatus.Status;
 import com.tomandfelix.stapp2.persistency.GCMMessage.MessageType;
@@ -214,7 +215,16 @@ public class LiveChallenge extends Handler {
                 switch (msg.getMessageType()) {
                     case DECLINE:
                         StApp.challenges.remove(uniqueId);
+                        DatabaseHelper.getInstance().removeLC(uniqueId);
                         removeCallbacksAndMessages(null);
+                        if(OpenChallengesFragment.hasAdapter()) {
+                            OpenChallengesFragment.getBoundedView().post(new Runnable() {
+                                @Override
+                                public void run() {
+                                    OpenChallengesFragment.getAdapter().notifyDataSetChanged();
+                                }
+                            });
+                        }
                         break;
                     case ACCEPT:
                         setStatusById(msg.getSenderId(), Status.ACCEPTED, null);

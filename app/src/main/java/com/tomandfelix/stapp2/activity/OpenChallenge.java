@@ -38,6 +38,7 @@ import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
+import java.util.Map;
 
 public class OpenChallenge extends ServiceActivity {
     private static OpenChallengeHandler openHandler = new OpenChallengeHandler();
@@ -80,6 +81,9 @@ public class OpenChallenge extends ServiceActivity {
         Intent intent = getIntent();
         String challengeIndex = intent.getStringExtra("challenge_unique_index");
         challenge = StApp.challenges.get(challengeIndex);
+        getSupportActionBar().setTitle(challenge.getChallenge().getName());
+        TextView challengeDescription = (TextView) findViewById(R.id.open_challenge_description);
+        challengeDescription.setText(challenge.getChallenge().getDescription());
         updateChallengeViews();
         if(ServerHelper.getInstance().checkInternetConnection()) {
             ServerHelper.getInstance().getProfilesByIds(challenge.getOpponents(), new ServerHelper.ResponseFunc<ArrayList<Profile>>() {
@@ -123,16 +127,6 @@ public class OpenChallenge extends ServiceActivity {
         }
         openHandler.removeCallbacksAndMessages(null);
         timerRunning = false;
-    }
-
-    @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        switch (item.getItemId()) {
-            case android.R.id.home:
-                finish();
-                return true;
-        }
-        return super.onOptionsItemSelected(item);
     }
 
     private void updateChallengeViews() {
@@ -208,6 +202,21 @@ public class OpenChallenge extends ServiceActivity {
         } else {
             resultView.setVisibility(View.INVISIBLE);
         }
+        if(challenge.getChallenge().showOpponentStatusIcons()) {
+            int i = 0;
+            for(Map.Entry<Integer, ChallengeStatus> e : challenge.getOpponentStatus().entrySet()) {
+                View row = openChallengeList.getChildAt(i);
+                if(row == null) {
+                    return;
+                } else if(e.getValue().getData() == null) {
+                    row.findViewById(R.id.open_challenge_opponent_status_icon).setVisibility(View.INVISIBLE);
+                } else {
+                    ((ImageView) row.findViewById(R.id.open_challenge_opponent_status_icon)).setImageResource(Boolean.parseBoolean(e.getValue().getData()) ? R.drawable.icon_stand : R.drawable.icon_sit_red);
+                    row.findViewById(R.id.open_challenge_opponent_status_icon).setVisibility(View.VISIBLE);
+                }
+                i++;
+            }
+        }
     }
 
     private void updateState(int state) {
@@ -262,10 +271,6 @@ public class OpenChallenge extends ServiceActivity {
     private void updateProfileViews() {
         adapter = new OpenChallengeListAdapter(OpenChallenge.this, R.layout.list_item_open_challenge, mProfileList);
         openChallengeList.setAdapter(adapter);
-
-        getSupportActionBar().setTitle(challenge.getChallenge().getName());
-        TextView challengeDescription = (TextView) findViewById(R.id.open_challenge_description);
-        challengeDescription.setText(challenge.getChallenge().getDescription());
     }
 
     private class OpenChallengeListAdapter extends ArrayAdapter<Profile> {

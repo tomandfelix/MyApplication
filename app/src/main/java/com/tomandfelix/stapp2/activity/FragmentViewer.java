@@ -139,6 +139,7 @@ public class FragmentViewer extends FragmentActivity implements FragmentProvider
                         v.setEnabled(true);
                     } else {
                         Log.e("loginBtn", "Something went wrong, we don't know exactly what.");
+                        loginBtn(v);
                     }
                 }
             });

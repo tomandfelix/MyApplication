@@ -118,7 +118,9 @@ public class ShimmerService extends Service {
                     mShimmerService.get().disconnect();
                     break;
                 case REQUEST_STATE:
-                    mShimmerService.get().sendToApp(Logging.getInstance(mShimmerService.get()).getState());
+                    int state = Logging.getInstance(mShimmerService.get()).getState();
+                    Log.d("REQUEST_STATE", state + "");
+                    mShimmerService.get().sendToApp(state);
                     break;
                 case LOG_START_DAY:
                     Logging.getInstance(mShimmerService.get()).logStartDay();

@@ -194,7 +194,7 @@ public class Logging {
     }
 
     public void logConnect() {
-        if(!DatabaseHelper.getInstance().isConnected()) {
+        if(!DatabaseHelper.getInstance().isConnected() && DatabaseHelper.getInstance().dayStarted() != null) {
             last = new DBLog(DatabaseHelper.LOG_CONNECT, new Date(), -1);
             DatabaseHelper.getInstance().addLog(last);
             connecting = false;

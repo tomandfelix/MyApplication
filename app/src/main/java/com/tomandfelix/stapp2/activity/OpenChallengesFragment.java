@@ -11,12 +11,14 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
+import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.TextView;
 
 import com.tomandfelix.stapp2.R;
 import com.tomandfelix.stapp2.application.StApp;
 import com.tomandfelix.stapp2.persistency.LiveChallenge;
+import com.tomandfelix.stapp2.persistency.Quest;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -117,10 +119,12 @@ public class OpenChallengesFragment extends ListFragment {
             LiveChallenge c = getItem(position);
 
             if(c != null) {
+                ImageView type = (ImageView) convertView.findViewById(R.id.challenge_list_type);
                 TextView name = (TextView) convertView.findViewById(R.id.challenge_list_name);
                 TextView xp = (TextView) convertView.findViewById(R.id.challenge_list_xp);
                 TextView people = (TextView) convertView.findViewById(R.id.challenge_list_people);
 
+                type.setImageResource(c.getChallenge().getType().equals(Quest.Type.CHALLENGE) ? R.drawable.icon_competition : R.drawable.icon_collaboration);
                 name.setText(c.getChallenge().getName());
                 xp.setText(Integer.toString(c.getChallenge().getxp()));
                 people.setText(Integer.toString(c.getOpponents().length + 1));

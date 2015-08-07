@@ -11,6 +11,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
+import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.TextView;
 
@@ -27,6 +28,8 @@ import java.util.List;
  */
 public class ListChallengesFragment extends ListFragment {
     private List<Challenge> list;
+    private static int expandedIndex = -1;
+
     public ListChallengesFragment(){
         super();
         list = ChallengeList.getList();
@@ -39,6 +42,12 @@ public class ListChallengesFragment extends ListFragment {
     }
 
     @Override
+    public void onDestroy() {
+        expandedIndex = -1;
+        super.onDestroy();
+    }
+
+    @Override
     public void onActivityCreated(Bundle savedInstanceState){
         super.onActivityCreated(savedInstanceState);
         ChallengeListAdapter challengeAdapter = new ChallengeListAdapter(getActivity(), R.layout.list_item_challenge, list);
@@ -46,13 +55,28 @@ public class ListChallengesFragment extends ListFragment {
         this.getListView().setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                Log.i("ChallengesList", list.get(position).toString());
-                Intent intent = new Intent(getActivity(), ChallengeLeaderboard.class);
-                intent.putExtra("challengeID", position);
-                startActivity(intent);
-                getActivity().overridePendingTransition(R.anim.enter_right, R.anim.leave_left);
+                if (expandedIndex == -1) {
+                    expandedIndex = position;
+                    view.findViewById(R.id.challenge_list_description).setVisibility(View.VISIBLE);
+                    view.findViewById(R.id.challenge_list_button).setVisibility(View.VISIBLE);
+                } else if (expandedIndex == position) {
+                    expandedIndex = -1;
+                    view.findViewById(R.id.challenge_list_description).setVisibility(View.GONE);
+                    view.findViewById(R.id.challenge_list_button).setVisibility(View.GONE);
+                } else {
+                    View expanded = getListView().getChildAt(expandedIndex);
+                    expanded.findViewById(R.id.challenge_list_description).setVisibility(View.GONE);
+                    expanded.findViewById(R.id.challenge_list_button).setVisibility(View.GONE);
+                    expandedIndex = position;
+                    view.findViewById(R.id.challenge_list_description).setVisibility(View.VISIBLE);
+                    view.findViewById(R.id.challenge_list_button).setVisibility(View.VISIBLE);
+                }
             }
         });
+    }
+
+    public static Challenge getExpandedChallenge() {
+        return ChallengeList.getChallenge(expandedIndex);
     }
 
     @Override
@@ -79,13 +103,17 @@ public class ListChallengesFragment extends ListFragment {
             Challenge c = getItem(position);
 
             if(c != null) {
+                ImageView type = (ImageView) convertView.findViewById(R.id.challenge_list_type);
                 TextView name = (TextView) convertView.findViewById(R.id.challenge_list_name);
                 TextView xp = (TextView) convertView.findViewById(R.id.challenge_list_xp);
                 TextView people = (TextView) convertView.findViewById(R.id.challenge_list_people);
+                TextView description = (TextView) convertView.findViewById(R.id.challenge_list_description);
 
+                type.setImageResource(c.getType().equals(Quest.Type.CHALLENGE) ? R.drawable.icon_competition : R.drawable.icon_collaboration);
                 name.setText(c.getName());
                 xp.setText(Integer.toString(c.getxp()));
                 people.setText(c.getMinAmount() == c.getMaxAmount() ? Integer.toString(c.getMinAmount()) : c.getMinAmount() + " - " + c.getMaxAmount());
+                description.setText(c.getDescription());
             }
             return convertView;
         }

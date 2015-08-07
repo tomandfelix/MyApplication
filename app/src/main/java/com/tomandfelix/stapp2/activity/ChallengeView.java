@@ -6,13 +6,16 @@ package com.tomandfelix.stapp2.activity;
 
 import android.app.Fragment;
 import android.app.FragmentManager;
+import android.content.Intent;
 import android.content.res.Configuration;
 import android.os.Bundle;
 import android.support.v13.app.FragmentPagerAdapter;
 import android.support.v4.view.ViewPager;
+import android.util.Log;
 import android.view.View;
 
 import com.tomandfelix.stapp2.R;
+import com.tomandfelix.stapp2.persistency.Challenge;
 import com.tomandfelix.stapp2.tabs.SlidingTabLayout;
 
 public class ChallengeView extends DrawerActivity {
@@ -41,6 +44,15 @@ public class ChallengeView extends DrawerActivity {
         findViewById(R.id.tabs_bar).setVisibility(View.VISIBLE);
         else
         findViewById(R.id.tabs_bar).setVisibility(View.GONE);
+    }
+
+    public void onInviteButton(View v) {
+        Challenge c = ListChallengesFragment.getExpandedChallenge();
+        Log.i("ChallengesList", c.toString());
+        Intent intent = new Intent(this, ChallengeLeaderboard.class);
+        intent.putExtra("challengeID", c.getId());
+        startActivity(intent);
+        overridePendingTransition(R.anim.enter_right, R.anim.leave_left);
     }
 
     private class ChallengePagerAdapter extends FragmentPagerAdapter {

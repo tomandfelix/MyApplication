@@ -121,7 +121,8 @@ public abstract class DrawerActivity extends ServiceActivity {
         Intent intent = new Intent(this, destination);
         intent.setFlags(Intent.FLAG_ACTIVITY_NO_ANIMATION);
         startActivity(intent);
-        finish();
+        if(index != 0)
+            finish();
     }
 
     protected ArrayAdapter<String> getNavigationDrawerAdapter() {
