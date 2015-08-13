@@ -109,7 +109,6 @@ public class ProfileView extends DrawerActivity {
         }
 
         statusIcon = (ImageView) findViewById(R.id.profile_status_icon);
-        app.commandService(ShimmerService.REQUEST_STATE);
     }
 
     private void askForPassword() {
@@ -158,16 +157,6 @@ public class ProfileView extends DrawerActivity {
         super.onResume();
         StApp.setHandler(loggingMessageHandler);
         app.commandService(ShimmerService.REQUEST_STATE);
-        loggingMessageHandler.postDelayed(new Runnable() {
-            @Override
-            public void run() {
-                if (ProfileView.this.findViewById(R.id.profile_status).getVisibility() == View.INVISIBLE) {
-                    StApp.setHandler(loggingMessageHandler);
-                    app.commandService(ShimmerService.REQUEST_STATE);
-                    loggingMessageHandler.postDelayed(this, 500);
-                }
-            }
-        }, 500);
         loggingMessageHandler.post(updateXP);
     }
 

@@ -9,7 +9,9 @@ import android.content.ServiceConnection;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Handler;
+import android.os.HandlerThread;
 import android.os.IBinder;
+import android.os.Looper;
 import android.os.Message;
 import android.os.Messenger;
 import android.os.RemoteException;
@@ -42,7 +44,7 @@ import java.util.Map;
  * Created by Tom on 11/03/2015.
  */
 public class StApp  extends Application {
-    private static StApp singleton;
+    private static StApp context;
     private Messenger toService = null;
     private String PROJECT_NUMBER = "413268601960";
     private String gcmRegistrationId = null;
@@ -51,6 +53,7 @@ public class StApp  extends Application {
     private static Handler handler = null;
     public static final Map<String, LiveChallenge> challenges = Collections.synchronizedMap(new HashMap<String, LiveChallenge>());
     private static final List<String> subscribed = new ArrayList<>();
+    private static HandlerThread challengesThread;
 
     private static class ServiceHandler extends Handler {
         @Override
@@ -104,6 +107,10 @@ public class StApp  extends Application {
         subscribed.remove(uniqueId);
     }
 
+    public static Looper getChallengeLooper() {
+        return challengesThread.getLooper();
+    }
+
     public void commandService(int command) {
         sendToService(Message.obtain(null, command));
     }
@@ -127,23 +134,19 @@ public class StApp  extends Application {
     }
 
     public static void makeToast(String text) {
-        Toast.makeText(singleton, text, Toast.LENGTH_LONG).show();
+        Toast.makeText(context, text, Toast.LENGTH_LONG).show();
     }
 
     public static void vibrate(int duration) {
         Log.d("StApp", "Vibrating");
-        Vibrator v = (Vibrator) singleton.getSystemService(Context.VIBRATOR_SERVICE);
+        Vibrator v = (Vibrator) context.getSystemService(Context.VIBRATOR_SERVICE);
         v.vibrate(duration);
-    }
-
-    public static StApp getInstance() {
-        return singleton;
     }
 
     protected boolean isServiceRunning() {
         ActivityManager manager = (ActivityManager) getSystemService(Context.ACTIVITY_SERVICE);
         for (ActivityManager.RunningServiceInfo service : manager.getRunningServices(Integer.MAX_VALUE)) {
-            if (service.service.getClassName().equals("com.example.tom.stapp3.service.ShimmerService")) {
+            if (service.service.getClassName().equals("com.tomandfelix.stapp2.service.ShimmerService")) {
                 return true;
             }
         }
@@ -161,18 +164,35 @@ public class StApp  extends Application {
     @Override
     public void onCreate() {
         super.onCreate();
-        singleton = this;
+        context = this;
         DatabaseHelper.init(this);
         DatabaseHelper.getInstance().openDB();
         ServerHelper.init(this);
         VolleyQueue.init(this);
+        if(!isServiceProcess())
+            onlyOnAppProcess();
+    }
+
+    public void onlyOnAppProcess() {
         new GCMMessageHandler();
+        challengesThread = new HandlerThread("challenges");
+        challengesThread.start();
         challenges.putAll(DatabaseHelper.getInstance().getLiveChallenges());
-        if(!isServiceRunning()) {
+        if(!isServiceRunning())
             startService(new Intent(this, ShimmerService.class));
-        }
         bindService(new Intent(this, ShimmerService.class), mServiceConnection, Context.BIND_AUTO_CREATE);
         handleGCM();
+    }
+
+    private boolean isServiceProcess() {
+        int pid = android.os.Process.myPid();
+        ActivityManager manager = (ActivityManager) this.getSystemService(Context.ACTIVITY_SERVICE);
+        for(ActivityManager.RunningAppProcessInfo info : manager.getRunningAppProcesses()) {
+            if(info.pid == pid) {
+                return info.processName.equals("com.tomandfelix.stapp2:Sensor");
+            }
+        }
+        return false;
     }
 
     private void handleGCM() {

@@ -84,7 +84,6 @@ public class Logging {
     private double S[] = { 219.2, 98.4, 98.6, 1089.4, 1951.5 };
     private double gmeans[][] = { { 77.2, -113.9, -85.7, 823.4, 3917.8 },
             { -17.1, -382.8, 14.4, 4134.7, 5058.4 } };
-    public static final int STATE_DAY_STARTED = 0;
     public static final int STATE_DAY_STOPPED = 1;
     public static final int STATE_CONNECTING = 2;
     public static final int STATE_CONNECTED = 3;

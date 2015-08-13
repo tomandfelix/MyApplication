@@ -100,7 +100,6 @@ public class ShimmerService extends Service {
         public void handleMessage(Message msg) {
             switch(msg.what) {
                 case REGISTER_MESSENGER:
-                    Log.d(TAG, "received messenger");
                     toApp = msg.replyTo;
                     break;
                 case UPLOAD_DATA:
@@ -118,9 +117,7 @@ public class ShimmerService extends Service {
                     mShimmerService.get().disconnect();
                     break;
                 case REQUEST_STATE:
-                    int state = Logging.getInstance(mShimmerService.get()).getState();
-                    Log.d("REQUEST_STATE", state + "");
-                    mShimmerService.get().sendToApp(state);
+                    mShimmerService.get().sendToApp(Logging.getInstance(mShimmerService.get()).getState());
                     break;
                 case LOG_START_DAY:
                     Logging.getInstance(mShimmerService.get()).logStartDay();
@@ -142,6 +139,7 @@ public class ShimmerService extends Service {
         if(toApp != null) {
             try {
                 toApp.send(Message.obtain(null, state));
+                Log.d(TAG, "State=" + state);
             } catch (RemoteException e) {
                 toApp = null;
             }

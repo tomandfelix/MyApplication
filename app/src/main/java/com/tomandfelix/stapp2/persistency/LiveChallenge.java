@@ -36,7 +36,7 @@ public class LiveChallenge extends Handler {
     }
 
     public LiveChallenge(String uniqueId, int id, int[] opponents) {
-        super(Looper.getMainLooper());
+        super(StApp.getChallengeLooper());
         this.uniqueId = uniqueId;
         challenge = ChallengeList.getChallenge(id);
         myStatus = new ChallengeStatus(Status.NOT_ACCEPTED, null);

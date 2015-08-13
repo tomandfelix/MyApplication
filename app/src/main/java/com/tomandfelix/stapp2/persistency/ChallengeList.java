@@ -307,7 +307,7 @@ public class ChallengeList {
                     } else {
                         double result = (105 * Math.exp(time / 1200000d) - 105) / (challenge.getOpponentStatus().size() + 1);
                         Log.d("AlternateStanding", "result = " + result);
-                        return (int) result;
+                        return Math.max((int) result, 1);
                     }
                 }
             }
