@@ -51,6 +51,12 @@ public class SoloQuestList extends DrawerActivity {
         questList.setOnItemClickListener(listener);
     }
 
+    @Override
+    protected void onResume() {
+        super.onResume();
+        soloAdapter.notifyDataSetChanged();
+    }
+
     private class SoloQuestListAdapter extends ArrayAdapter<Solo> {
         private int itemLayoutId;
 
@@ -73,16 +79,20 @@ public class SoloQuestList extends DrawerActivity {
                 TextView xpNeeded = (TextView) convertView.findViewById(R.id.solo_list_xp_needed);
                 View xpImage = convertView.findViewById(R.id.solo_list_xp_needed_icon);
                 if(s.getXpNeeded() <= mProfile.getExperience()) {
-                    switch (s.getDifficulty()) {
-                        case EASY:
-                            difficulty.setImageResource(R.drawable.circle_green);
-                            break;
-                        case MEDIUM:
-                            difficulty.setImageResource(R.drawable.circle_orange);
-                            break;
-                        case HARD:
-                            difficulty.setImageResource(R.drawable.circle_red);
-                            break;
+                    if(s.getHandler() == null) {
+                        switch (s.getDifficulty()) {
+                            case EASY:
+                                difficulty.setImageResource(R.drawable.circle_green);
+                                break;
+                            case MEDIUM:
+                                difficulty.setImageResource(R.drawable.circle_orange);
+                                break;
+                            case HARD:
+                                difficulty.setImageResource(R.drawable.circle_red);
+                                break;
+                        }
+                    } else {
+                        difficulty.setImageResource(R.drawable.circle_blue);
                     }
                     xpImage.setVisibility(View.INVISIBLE);
                     xpNeeded.setVisibility(View.INVISIBLE);
@@ -90,8 +100,6 @@ public class SoloQuestList extends DrawerActivity {
                     xpImage.setVisibility(View.VISIBLE);
                     xpNeeded.setText(s.getXpNeeded() - mProfile.getExperience() + " xp needed");
                     xpNeeded.setVisibility(View.VISIBLE);
-                    Log.d("experience needed", s.getXpNeeded() - mProfile.getExperience() + "");
-                    Log.d("not enough experience",s.toString());
                     difficulty.setImageResource(R.drawable.circle_grey);
                 }
                 name.setText(s.getName());

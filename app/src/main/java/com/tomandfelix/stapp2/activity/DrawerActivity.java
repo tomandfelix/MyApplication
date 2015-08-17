@@ -88,6 +88,13 @@ public abstract class DrawerActivity extends ServiceActivity {
     }
 
     @Override
+    public void onBackPressed() {
+        if(index != 0) {
+            loadActivity(0);
+        }
+    }
+
+    @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         return drawerToggle.onOptionsItemSelected(item) || super.onOptionsItemSelected(item);
     }
@@ -121,8 +128,7 @@ public abstract class DrawerActivity extends ServiceActivity {
         Intent intent = new Intent(this, destination);
         intent.setFlags(Intent.FLAG_ACTIVITY_NO_ANIMATION);
         startActivity(intent);
-        if(index != 0)
-            finish();
+        finish();
     }
 
     protected ArrayAdapter<String> getNavigationDrawerAdapter() {

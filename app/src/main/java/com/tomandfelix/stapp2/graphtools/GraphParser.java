@@ -258,7 +258,7 @@ public abstract class GraphParser {
             setGraphParameters(plot);
 
             //Sets the right margins for the graph
-            plot.getGraphWidget().setMargins(PixelUtils.dpToPix(5), PixelUtils.dpToPix(10), PixelUtils.dpToPix(15), PixelUtils.dpToPix(5));
+            plot.getGraphWidget().setMargins(PixelUtils.dpToPix(20), PixelUtils.dpToPix(20), PixelUtils.dpToPix(20), PixelUtils.dpToPix(20));
             return true;
         } else {
             return false;
@@ -381,7 +381,7 @@ public abstract class GraphParser {
             setGraphParameters(plot);
 
             //Sets the right margins for the graph
-            plot.getGraphWidget().setMargins(PixelUtils.dpToPix(5), PixelUtils.dpToPix(10), PixelUtils.dpToPix(15), PixelUtils.dpToPix(15));
+            plot.getGraphWidget().setMargins(PixelUtils.dpToPix(20), PixelUtils.dpToPix(20), PixelUtils.dpToPix(20), PixelUtils.dpToPix(20));
             return true;
         } else {
             return false;

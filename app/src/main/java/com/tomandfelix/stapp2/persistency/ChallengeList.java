@@ -243,23 +243,20 @@ public class ChallengeList {
             }
         };
         Challenge.Processor alternatelyStanding = new Challenge.Processor() {
-            private Runnable end;
 
             @Override
             void start(final LiveChallenge challenge) {
                 Log.d("AlternateStanding", "start running");
                 challenge.setMyStatus(Status.STARTED, DatabaseHelper.dateToString(new Date()));
                 StApp.subscribeChallenge(challenge.getUniqueId());
-                check(challenge, isStanding(), true);
-                end = new Runnable() {
+                challenge.postDelayed(new Runnable() {
                     @Override
                     public void run() {
                         StApp.unsubscribeChallenge(challenge.getUniqueId());
                         challenge.wonCustomXP("Congratulations, you have endured this assignment for 60 minutes. you won!", calculateScore(challenge));
-                        challenge.setMyStatus(Status.SCORED, null);
                     }
-                };
-                challenge.postDelayed(end, 3600000);
+                }, 3600000);
+                check(challenge, isStanding(), true);
             }
 
             private boolean isStanding() {
@@ -285,7 +282,7 @@ public class ChallengeList {
                 int othersStanding = getAmountOthersStanding(challenge);
                 if(!standing && othersStanding == 0) {
                     StApp.unsubscribeChallenge(challenge.getUniqueId());
-                    challenge.removeCallbacks(end);
+                    challenge.removeCallbacksAndMessages(null);
                     int score = calculateScore(challenge);
                     challenge.wonCustomXP("Challenge finished because nobody was standing." + (score == 0 ? " Keep in mind that the person that starts first, has to be standing!" : ""), score);
                 } else {
@@ -311,9 +308,6 @@ public class ChallengeList {
                     }
                 }
             }
-
-            @Override
-            void onEverybodyDone(LiveChallenge challenge) {}
 
             @Override
             void handleCommunicationMessage(LiveChallenge challenge, GCMMessage msg) {

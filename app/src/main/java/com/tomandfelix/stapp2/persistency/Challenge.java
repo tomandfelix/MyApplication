@@ -86,7 +86,7 @@ public class Challenge extends Quest {
     public static abstract class Processor {
         abstract void start(LiveChallenge challenge);
         void handleCommunicationMessage(LiveChallenge challenge, GCMMessage msg) {}
-        abstract void onEverybodyDone(LiveChallenge challenge);
+        void onEverybodyDone(LiveChallenge challenge) {}
         void handleLoggingMessage(LiveChallenge challenge, Message message) {}
     }
 }

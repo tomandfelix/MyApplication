@@ -5,7 +5,7 @@ package com.tomandfelix.stapp2.persistency;
  */
 public class ChallengeStatus {
     public enum Status {
-        NOT_ACCEPTED, ACCEPTED, STARTED, DONE, SCORED, LOST
+        NOT_ACCEPTED, ACCEPTED, STARTED, DONE, SCORED
     }
 
     private Status status;

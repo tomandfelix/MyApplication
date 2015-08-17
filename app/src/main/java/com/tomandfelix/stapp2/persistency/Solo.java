@@ -76,7 +76,7 @@ public class Solo extends Quest{
     }
 
     public void start() {
-        handler = new Handler(Looper.getMainLooper());
+        handler = new Handler(StApp.getChallengeLooper());
         handler.post(new Runnable() {
             @Override
             public void run() {

@@ -41,7 +41,7 @@ import java.util.Date;
 import java.util.Map;
 
 public class OpenChallenge extends ServiceActivity {
-    private static OpenChallengeHandler openHandler = new OpenChallengeHandler();
+    private static OpenChallengeHandler openHandler = null;
     private ListView openChallengeList;
     private OpenChallengeListAdapter adapter;
     private ArrayList<Profile> mProfileList = new ArrayList<>();
@@ -67,8 +67,6 @@ public class OpenChallenge extends ServiceActivity {
         setContentView(R.layout.activity_open_challenge);
         super.onCreate(savedInstanceState);
 
-        openHandler.setInstance(this);
-
         openChallengeList = (ListView) findViewById(R.id.open_challenge_list_view);
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
 
@@ -84,7 +82,6 @@ public class OpenChallenge extends ServiceActivity {
         getSupportActionBar().setTitle(challenge.getChallenge().getName());
         TextView challengeDescription = (TextView) findViewById(R.id.open_challenge_description);
         challengeDescription.setText(challenge.getChallenge().getDescription());
-        updateChallengeViews();
         if(ServerHelper.getInstance().checkInternetConnection()) {
             ServerHelper.getInstance().getProfilesByIds(challenge.getOpponents(), new ServerHelper.ResponseFunc<ArrayList<Profile>>() {
                 @Override
@@ -98,7 +95,6 @@ public class OpenChallenge extends ServiceActivity {
                     Log.e("OpenChallenge", volleyError.getMessage());
                 }
             }, false);
-            app.commandService(ShimmerService.REQUEST_STATE);
          } else {
             StApp.makeToast("Unable to get opponent information, no internet connection");
         }
@@ -111,10 +107,8 @@ public class OpenChallenge extends ServiceActivity {
     @Override
     protected void onResume() {
         super.onResume();
-        openHandler.setInstance(this);
-        if(StApp.getHandler() != openHandler) {
-            StApp.setHandler(openHandler);
-        }
+        openHandler = new OpenChallengeHandler(this);
+        StApp.setHandler(openHandler);
         updateChallengeViews();
         app.commandService(ShimmerService.REQUEST_STATE);
     }
@@ -122,10 +116,9 @@ public class OpenChallenge extends ServiceActivity {
     @Override
     protected void onPause() {
         super.onPause();
-        if(StApp.getHandler() == openHandler) {
-            StApp.setHandler(null);
-        }
+        StApp.setHandler(null);
         openHandler.removeCallbacksAndMessages(null);
+        openHandler = null;
         timerRunning = false;
     }
 
@@ -319,7 +312,7 @@ public class OpenChallenge extends ServiceActivity {
     private static class OpenChallengeHandler extends Handler {
         private WeakReference<OpenChallenge> oc;
 
-        public void setInstance(OpenChallenge oc) {
+        public OpenChallengeHandler(OpenChallenge oc) {
             this.oc = new WeakReference<>(oc);
         }
         @Override
